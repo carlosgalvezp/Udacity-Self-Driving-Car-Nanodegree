@@ -2,6 +2,10 @@ FROM ubuntu:14.04
 
 MAINTAINER Carlos Galvez <carlosgalvezp@gmail.com>
 
+# Add CUDA and cuDNN files
+COPY cuda-repo-ubuntu1404-7-5-local_7.5-18_amd64.deb /root/
+COPY cudnn-7.5-linux-x64-v5.0-ga.tgz /root/
+
 # Install base packages
 RUN apt-get update
 RUN apt-get install -y build-essential
