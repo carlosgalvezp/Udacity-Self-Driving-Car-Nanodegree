@@ -1,2 +1,4 @@
 *.tgz
 *.deb
+
+*.ipynb_checkpoints/
