@@ -2,3 +2,5 @@
 *.deb
 
 *.ipynb_checkpoints/
+
+.python-version
