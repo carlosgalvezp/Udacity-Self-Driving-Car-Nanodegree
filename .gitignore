@@ -1,5 +1,6 @@
 *.tgz
 *.deb
+*.zip
 
 *.ipynb_checkpoints/
 
