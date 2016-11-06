@@ -24,7 +24,13 @@ Run these commands in your terminal to install all requirements:
 ```
 $ git clone https://github.com/udacity/CarND-TensorFlow-Lab.git
 $ conda env create -f environment.yml
-$ conda install --name CarND-TensorFlow-Lab -c conda-forge tensorflow
+```
+
+To install TensorFlow:
+```
+$ source activate CarND-TensorFlow-Lab
+$ export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow-0.11.0rc2-cp35-cp35m-linux_x86_64.whl
+$ pip install --ignore-installed --upgrade $TF_BINARY_URL
 ```
 ## Run the Notebook
 ### Start a Jupyter Server
