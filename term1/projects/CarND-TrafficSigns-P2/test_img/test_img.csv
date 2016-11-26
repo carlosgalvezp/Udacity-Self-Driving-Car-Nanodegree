@@ -3,3 +3,8 @@ test_img/keep_right2.jpg,1850,1125,500,Keep right
 test_img/priority2.jpg,1350,650,750,Priority road
 test_img/speed_30_2.jpg,1800,350,500,Speed limit (30km/h)
 test_img/speed_80.jpg,1925,975,200,Speed limit (80km/h)
+test_img/speed_80.jpg,2400,875,350,Yield
+test_img/road_narrows_right2_flipped.jpg,1400,300,1000,Road narrows on the right
+test_img/road_work2_flipped.jpg,1800,550,700,Road work
+test_img/priority1.jpg,1600,1100,650,Priority road
+test_img/keep_right1.jpg,1550,1350,750,Keep right
