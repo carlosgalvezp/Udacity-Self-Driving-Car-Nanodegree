@@ -10,3 +10,5 @@
 *.p
 
 *__pycache__
+*.npy
+*.pyc
