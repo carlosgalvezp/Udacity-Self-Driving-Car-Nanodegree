@@ -1,6 +1,10 @@
 import pickle
 import tensorflow as tf
+import numpy as np
+
 # TODO: import Keras layers you need here
+from keras.models import Sequential
+from keras.layers import Dense, Flatten, Input
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -8,6 +12,8 @@ FLAGS = flags.FLAGS
 # command line flags
 flags.DEFINE_string('training_file', '', "Bottleneck features training file (.p)")
 flags.DEFINE_string('validation_file', '', "Bottleneck features validation file (.p)")
+flags.DEFINE_string('n_epochs', 50, "Number of training epochs")
+flags.DEFINE_string('batch_size', 256, "Batch size for training")
 
 
 def load_bottleneck_data(training_file, validation_file):
@@ -38,17 +44,24 @@ def main(_):
     # load bottleneck data
     X_train, y_train, X_val, y_val = load_bottleneck_data(FLAGS.training_file, FLAGS.validation_file)
 
-    print(X_train.shape, y_train.shape)
-    print(X_val.shape, y_val.shape)
-
     # TODO: define your model and hyperparams here
     # make sure to adjust the number of classes based on
     # the dataset
     # 10 for cifar10
     # 43 for traffic
+    n_classes = len(np.unique(y_train))
+    n_input_features = np.prod(X_train.shape[1:])
+
+    model = Sequential()
+    model.add(Flatten(input_shape=X_train.shape[1:]))
+    model.add(Dense(n_classes, input_shape = (n_input_features,), activation='softmax'))
+    model.summary()
+
+    model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
     # TODO: train your model here
-
+    model.fit(X_train, y_train, nb_epoch=FLAGS.n_epochs, batch_size=FLAGS.batch_size, 
+              validation_data=(X_val, y_val), shuffle=True)
 
 # parses flags and calls the `main` function above
 if __name__ == '__main__':
