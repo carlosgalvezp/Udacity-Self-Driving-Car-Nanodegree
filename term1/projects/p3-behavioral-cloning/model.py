@@ -1,5 +1,6 @@
 import os
 import cv2
+import numpy as np
 import csv
 import time
 import argparse
@@ -8,31 +9,23 @@ def save_model(args, model):
     raise NotImplemented
 
 
-def load_log_file(log_file):
-    X_train = []
-    y_train = []
-
-    with open(log_file, 'rb') as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-
-        for row in csv_reader:
-            X_train.append(cv2.imread(row[0]))
-            y_train.append(float(row[3]))
-
-    return X_train, y_train
-
 def load_dataset(log_files):
     """ Loads the raw training dataset """
     # Declare outputs
     X_train = []
     y_train = []
 
+    # Loop through log files
     for log_file in log_files:
-        X_train_i, y_train_i = load_log_file(log_file)
-        X_train.append(X_train_i)
-        y_train.append(y_train_i)
+        with open(log_file, 'r') as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
 
-    return X_train, y_train
+            # Read image from center camera and steering angle
+            for row in csv_reader:
+                X_train.append(cv2.imread(row[0]))
+                y_train.append(float(row[3]))
+
+    return np.array(X_train), np.array(y_train)
 
 
 def get_training_data(log_files):
