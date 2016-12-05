@@ -64,7 +64,7 @@ def parse_input():
     """ Sets up the required input arguments and parses them """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('log_file(s)', nargs='+', dest='log_files',
+    parser.add_argument('log_files', nargs='+',
                         help='list of CSV files of log data')
     parser.add_argument('-o, --out_dir', dest='out_dir', metavar='',
                         default=time.strftime("%Y%m%d_%H%M%S"),
