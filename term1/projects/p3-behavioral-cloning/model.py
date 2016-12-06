@@ -37,6 +37,8 @@ def normalize(x):
 def preprocess_input(X):
     """ Preprocesses input data
         X is a tensor (n_img, height, width, depth) """
+    print('Preprocessing training data...')
+
     X_out = []
     for i in range(X.shape[0]):
         img = X[i,:]
@@ -51,6 +53,8 @@ def preprocess_input(X):
 
 def load_dataset(log_files):
     """ Loads the raw training dataset """
+    print('Loading training data...')
+
     # Declare outputs
     X_train = []
     y_train = []
@@ -75,9 +79,6 @@ def get_training_data(log_files):
 
     # Preprocess input
     X_train = preprocess_input(X_train)
-    print(X_train.shape)
-    cv2.imshow('asd', X_train[0,:])
-    cv2.waitKey(0)
 
     # Pack and output
     out_data = {'X_train': X_train, 'y_train': y_train}
@@ -144,12 +145,28 @@ def define_model():
 
 
 def train_model(model, data):
+    print('Training model...')
+
     batch_size = 128
     n_epochs = 2
     history = model.fit(data['X_train'], data['y_train'],
                         batch_size=batch_size, nb_epoch=n_epochs,
                         verbose=1, validation_split=0.2)
 
+def save_model(out_dir, model):
+    print('Saving model in %s...' % out_dir)
+
+    # Create directory if needed
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
+    # Save model
+    model_json = model.to_json()
+    with open(os.path.join(out_dir, 'model.json'), 'w+') as json_file:
+        json_file.write(model_json)
+
+    # Save weights
+    model.save_weights(os.path.join(out_dir, 'model.h5'))
 
 def build_model(log_files):
     """ Builds and trains the network given the input data in train_dir """
@@ -158,8 +175,7 @@ def build_model(log_files):
 
     # Build and train the network
     model = define_model()
-    model = train_model(model, data)
-
+    train_model(model, data)
     return model
 
 
@@ -187,6 +203,7 @@ def main():
     # Save model
     save_model(args.out_dir, model)
 
+    print('Finished!')
 
 if __name__ == '__main__':
     main()
