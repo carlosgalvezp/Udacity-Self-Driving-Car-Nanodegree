@@ -8,6 +8,29 @@ import argparse
 def save_model(args, model):
     raise NotImplemented
 
+def rgb_to_gray(x):
+    return cv2.cvtColor(x, cv2.COLOR_RGB2GRAY)
+
+def normalize(x):
+    a =  0.1
+    b =  0.9
+    x_min = 0.0
+    x_max = 255.0
+
+    return a + (x - x_min) * (b - a) / (x_max - x_min)
+
+def preprocess_input(X):
+    """ Preprocesses input data
+        X is a tensor (n_img, height, width, depth) """
+    X_out = []
+    for i in range(X.shape[0]):
+        img = rgb_to_gray(X[i,:])
+        img = normalize(img)
+
+        X_out.append(img)
+
+    return np.array(X_out)
+
 
 def load_dataset(log_files):
     """ Loads the raw training dataset """
