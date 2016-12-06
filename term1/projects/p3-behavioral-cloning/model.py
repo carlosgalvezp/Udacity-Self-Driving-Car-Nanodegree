@@ -8,30 +8,43 @@ from keras.models import Sequential
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.core import Dense, Dropout, Flatten
+from keras.optimizers import Adam
+
+IMG_SHAPE_IN = (66, 200, 1)
 
 def save_model(args, model):
     raise NotImplemented
+
+def resize(x):
+    height = x.shape[0]
+    width = x.shape[1]
+
+    factor = float(IMG_SHAPE_IN[1]) / float(width)
+
+    resized_size = (int(width*factor), int(height*factor))
+    x = cv2.resize(x, resized_size)
+    crop_height = resized_size[1] - IMG_SHAPE_IN[0]
+
+    return x[crop_height:, :, :]
 
 def rgb_to_gray(x):
     return cv2.cvtColor(x, cv2.COLOR_RGB2GRAY)
 
 def normalize(x):
-    a =  0.1
-    b =  0.9
-    x_min = 0.0
-    x_max = 255.0
-
-    return a + (x - x_min) * (b - a) / (x_max - x_min)
+    # Approximately zero-mean, unit variance
+    return (np.array(x, dtype=np.float32) - 128.0) / 128.0
 
 def preprocess_input(X):
     """ Preprocesses input data
         X is a tensor (n_img, height, width, depth) """
     X_out = []
     for i in range(X.shape[0]):
-        img = rgb_to_gray(X[i,:])
+        img = X[i,:]
+        img = resize(img)
+        img = rgb_to_gray(img)
         img = normalize(img)
 
-        X_out.append(img)
+        X_out.append(np.reshape(img, IMG_SHAPE_IN))
 
     return np.array(X_out)
 
@@ -62,6 +75,9 @@ def get_training_data(log_files):
 
     # Preprocess input
     X_train = preprocess_input(X_train)
+    print(X_train.shape)
+    cv2.imshow('asd', X_train[0,:])
+    cv2.waitKey(0)
 
     # Pack and output
     out_data = {'X_train': X_train, 'y_train': y_train}
@@ -72,7 +88,7 @@ def train_model(model, data):
 
 def define_model():
     # Parameters
-    input_shape = (66, 200, 3)
+    input_shape = IMG_SHAPE_IN
     conv1_filter_size = 5
     conv2_filter_size = 3
     conv3_filter_size = 3
@@ -121,10 +137,19 @@ def define_model():
     model.summary()
 
     # Compile it
-    model.compile(loss='mean_squared_error', optimizer='adam',
+    model.compile(loss='mean_squared_error', optimizer=Adam(lr=0.001),
                   metrics=['accuracy'])
 
     return model
+
+
+def train_model(model, data):
+    batch_size = 128
+    n_epochs = 2
+    history = model.fit(data['X_train'], data['y_train'],
+                        batch_size=batch_size, nb_epoch=n_epochs,
+                        verbose=1, validation_split=0.2)
+
 
 def build_model(log_files):
     """ Builds and trains the network given the input data in train_dir """
