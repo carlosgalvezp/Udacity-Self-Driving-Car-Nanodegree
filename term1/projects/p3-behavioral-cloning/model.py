@@ -4,6 +4,7 @@ import numpy as np
 import csv
 import time
 import argparse
+import json
 from keras.models import Sequential
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
@@ -141,7 +142,7 @@ def train_model(model, data):
     print('Training model...')
 
     batch_size = 128
-    n_epochs = 10
+    n_epochs = 5
     history = model.fit(data['X_train'], data['y_train'],
                         batch_size=batch_size, nb_epoch=n_epochs,
                         verbose=1, validation_split=0.2)
@@ -155,8 +156,8 @@ def save_model(out_dir, model):
 
     # Save model
     model_json = model.to_json()
-    with open(os.path.join(out_dir, 'model.json'), 'w+') as json_file:
-        json_file.write(model_json)
+    with open(os.path.join(out_dir, 'model.json'), 'w+') as f:
+        json.dump(model_json, f)
 
     # Save weights
     model.save_weights(os.path.join(out_dir, 'model.h5'))
