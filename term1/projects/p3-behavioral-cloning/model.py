@@ -103,38 +103,31 @@ def define_model():
 
     # Define model
     model = Sequential()
-    model.add(Convolution2D(16, conv1_filter_size, conv1_filter_size,
-                            activation='relu', border_mode = padding,
-                            input_shape=input_shape))
+
     model.add(Convolution2D(32, conv1_filter_size, conv1_filter_size,
-                            activation='relu', border_mode = padding))
+                            border_mode=padding, activation = 'relu',
+                            input_shape=input_shape))
     model.add(MaxPooling2D(pool_size=pool_size))
     model.add(Dropout(dropout_prob))
 
     model.add(Convolution2D(64, conv2_filter_size, conv2_filter_size,
-                            activation='relu', border_mode = padding))
-    model.add(Convolution2D(64, conv2_filter_size, conv2_filter_size,
-                            activation='relu', border_mode = padding))
+                            border_mode=padding, activation = 'relu'))
     model.add(MaxPooling2D(pool_size=pool_size))
     model.add(Dropout(dropout_prob))
 
     model.add(Convolution2D(128, conv3_filter_size, conv3_filter_size,
-                            activation='relu', border_mode = padding))
-    model.add(Convolution2D(128, conv3_filter_size, conv3_filter_size,
-                            activation='relu', border_mode = padding))
+                            border_mode=padding, activation = 'relu'))
     model.add(MaxPooling2D(pool_size=pool_size))
     model.add(Dropout(dropout_prob))
 
     model.add(Flatten())
 
-    model.add(Dense(n_fc1, activation='relu'))
+    model.add(Dense(n_fc1, activation = 'relu'))
     model.add(Dropout(dropout_prob))
-    model.add(Dense(n_fc2, activation='relu'))
+    model.add(Dense(n_fc2, activation = 'relu'))
     model.add(Dropout(dropout_prob))
+    model.add(Dense(1))
 
-    model.add(Dense(1, name='output'))
-
-    # Print summary
     model.summary()
 
     # Compile it
@@ -148,7 +141,7 @@ def train_model(model, data):
     print('Training model...')
 
     batch_size = 128
-    n_epochs = 2
+    n_epochs = 10
     history = model.fit(data['X_train'], data['y_train'],
                         batch_size=batch_size, nb_epoch=n_epochs,
                         verbose=1, validation_split=0.2)
