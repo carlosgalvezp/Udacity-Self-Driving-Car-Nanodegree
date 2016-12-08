@@ -11,45 +11,10 @@ from keras.layers.pooling import MaxPooling2D
 from keras.layers.core import Dense, Dropout, Flatten
 from keras.optimizers import Adam
 
-IMG_SHAPE_IN = (66, 200, 1)
+import preprocess_input
 
 def save_model(args, model):
     raise NotImplemented
-
-def resize(x):
-    height = x.shape[0]
-    width = x.shape[1]
-
-    factor = float(IMG_SHAPE_IN[1]) / float(width)
-
-    resized_size = (int(width*factor), int(height*factor))
-    x = cv2.resize(x, resized_size)
-    crop_height = resized_size[1] - IMG_SHAPE_IN[0]
-
-    return x[crop_height:, :, :]
-
-def rgb_to_gray(x):
-    return cv2.cvtColor(x, cv2.COLOR_RGB2GRAY)
-
-def normalize(x):
-    # Approximately zero-mean, unit variance
-    return (np.array(x, dtype=np.float32) - 128.0) / 128.0
-
-def preprocess_input(X):
-    """ Preprocesses input data
-        X is a tensor (n_img, height, width, depth) """
-    print('Preprocessing training data...')
-
-    X_out = []
-    for i in range(X.shape[0]):
-        img = X[i,:]
-        img = resize(img)
-        img = rgb_to_gray(img)
-        img = normalize(img)
-
-        X_out.append(np.reshape(img, IMG_SHAPE_IN))
-
-    return np.array(X_out)
 
 
 def load_dataset(log_files):
@@ -79,7 +44,7 @@ def get_training_data(log_files):
     X_train, y_train = load_dataset(log_files)
 
     # Preprocess input
-    X_train = preprocess_input(X_train)
+    X_train = preprocess_input.main(X_train)
 
     # Pack and output
     out_data = {'X_train': X_train, 'y_train': y_train}
@@ -90,7 +55,7 @@ def train_model(model, data):
 
 def define_model():
     # Parameters
-    input_shape = IMG_SHAPE_IN
+    input_shape = preprocess_input.FINAL_IMG_SHAPE
     conv1_filter_size = 5
     conv2_filter_size = 3
     conv3_filter_size = 3
