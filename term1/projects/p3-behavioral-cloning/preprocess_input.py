@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-FINAL_IMG_SHAPE = (66, 200, 1)
+FINAL_IMG_SHAPE = (66, 200, 3)
 
 def resize(x):
     height = x.shape[0]
@@ -18,9 +18,18 @@ def resize(x):
 def rgb_to_gray(x):
     return cv2.cvtColor(x, cv2.COLOR_RGB2GRAY)
 
+def rgb_to_yuv(x):
+    return cv2.cvtColor(x, cv2.COLOR_RGB2YUV)
+
+
 def normalize(x):
     # Approximately zero-mean, unit variance
-    return (np.array(x, dtype=np.float32) - 128.0) / 128.0
+    a = -0.5
+    b =  0.5
+    x_min = 0.0
+    x_max = 255.0
+
+    return a + (x - x_min) * (b - a) / (x_max - x_min)
 
 def main(X):
     """ Preprocesses input data
@@ -29,7 +38,7 @@ def main(X):
     for i in range(X.shape[0]):
         img = X[i,:]
         img = resize(img)
-        img = rgb_to_gray(img)
+        img = rgb_to_yuv(img)
         img = normalize(img)
 
         X_out.append(np.reshape(img, FINAL_IMG_SHAPE))

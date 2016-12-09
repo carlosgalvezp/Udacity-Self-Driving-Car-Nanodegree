@@ -86,50 +86,38 @@ def define_model():
     n_fc1 = 100
     n_fc2 = 50
     n_fc3 = 10
+    n_fc4 = 1
 
     # Define model
     model = Sequential()
 
     model.add(Convolution2D(24, conv1_filter_size, conv1_filter_size,
                             border_mode=padding, activation = 'relu',
-                            init='normal', subsample=(2, 2),
-                            input_shape=input_shape))
-    model.add(Dropout(dropout_prob))
-
+                            subsample=(2, 2), input_shape=input_shape))
     model.add(Convolution2D(36, conv2_filter_size, conv2_filter_size,
                             border_mode=padding, activation = 'relu',
-                            subsample=(2, 2), init='normal'))
-    model.add(Dropout(dropout_prob))
-
+                            subsample=(2, 2)))
     model.add(Convolution2D(48, conv3_filter_size, conv3_filter_size,
                             border_mode=padding, activation = 'relu',
-                            subsample=(2, 2), init='normal'))
-    model.add(Dropout(dropout_prob))
-
+                            subsample=(2, 2)))
     model.add(Convolution2D(64, conv4_filter_size, conv4_filter_size,
                             border_mode=padding, activation = 'relu',
-                            subsample=(1, 1), init='normal'))
-    model.add(Dropout(dropout_prob))
-
+                            subsample=(1, 1)))
     model.add(Convolution2D(64, conv5_filter_size, conv5_filter_size,
                             border_mode=padding, activation = 'relu',
-                            subsample=(1, 1), init='normal'))
-    model.add(Dropout(dropout_prob))
+                            subsample=(1, 1)))
 
     model.add(Flatten())
 
-    model.add(Dense(n_fc1, activation = 'relu', init='normal'))
-    model.add(Dropout(dropout_prob))
-    model.add(Dense(n_fc2, activation = 'relu', init='normal'))
-    model.add(Dropout(dropout_prob))
-    model.add(Dense(n_fc3, activation = 'relu', init='normal'))
-    model.add(Dropout(dropout_prob))
-    model.add(Dense(1))
+    model.add(Dense(n_fc1, activation = 'relu'))
+    model.add(Dense(n_fc2, activation = 'relu'))
+    model.add(Dense(n_fc3))
+    model.add(Dense(n_fc4, name = 'output'))
 
     model.summary()
 
     # Compile it
-    model.compile(loss='mean_squared_error', optimizer=Adam(lr=0.001),
+    model.compile(loss='mse', optimizer=Adam(lr=0.0001),
                   metrics=['accuracy'])
 
     return model
@@ -139,10 +127,13 @@ def train_model(model, data):
     print('Training model...')
 
     batch_size = 128
-    n_epochs = 5
+    n_epochs = 15
     history = model.fit(data['X_train'], data['y_train'],
                         batch_size=batch_size, nb_epoch=n_epochs,
-                        verbose=1, validation_split=0.2)
+                        verbose=1, validation_split=0.2, shuffle=True)
+    print(model.predict(data['X_train'][1:10]))
+    print('---')
+    print(model.predict(data['X_train'][5000:5009]))
 
 def save_model(out_dir, model):
     print('Saving model in %s...' % out_dir)
