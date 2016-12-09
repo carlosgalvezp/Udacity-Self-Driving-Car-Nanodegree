@@ -13,10 +13,6 @@ from keras.optimizers import Adam
 
 import preprocess_input
 
-def save_model(args, model):
-    raise NotImplemented
-
-
 def load_dataset(log_files):
     """ Loads the raw training dataset """
     print('Loading training data...')
@@ -37,11 +33,34 @@ def load_dataset(log_files):
 
     return np.array(X_train), np.array(y_train)
 
+def flip_images(X_train, y_train):
+    X_extra = []
+    y_extra = []
+
+    for i in range(X_train.shape[0]):
+        X_extra.append(cv2.flip(X_train[i], 1))
+        y_extra.append(-y_train[i])
+
+    X_train = np.concatenate((X_train, np.array(X_extra)), axis = 0)
+    y_train = np.concatenate((y_train, np.array(y_extra)), axis = 0)
+
+    return X_train, y_train
+
+def extend_training_data(X_train, y_train):
+    # Horizontally flip images and negate steering angle
+    X_train, y_train = flip_images(X_train, y_train)
+
+    return X_train, y_train
 
 def get_training_data(log_files):
     """ Loads and preprocesses the training data """
     # Load data data
     X_train, y_train = load_dataset(log_files)
+    print('Input dataset: ', X_train.shape)
+
+    # Extend dataset
+    X_train, y_train = extend_training_data(X_train, y_train)
+    print('Extended dataset: ', X_train.shape)
 
     # Preprocess input
     X_train = preprocess_input.main(X_train)
@@ -49,9 +68,6 @@ def get_training_data(log_files):
     # Pack and output
     out_data = {'X_train': X_train, 'y_train': y_train}
     return out_data
-
-def train_model(model, data):
-    raise NotImplemented
 
 def define_model():
     # Parameters
