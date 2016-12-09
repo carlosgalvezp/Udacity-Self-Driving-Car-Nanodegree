@@ -70,39 +70,50 @@ def get_training_data(log_files):
     return out_data
 
 def define_model():
+    # Based on http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
     # Parameters
     input_shape = preprocess_input.FINAL_IMG_SHAPE
     conv1_filter_size = 5
-    conv2_filter_size = 3
-    conv3_filter_size = 3
+    conv2_filter_size = 5
+    conv3_filter_size = 5
+    conv4_filter_size = 3
+    conv5_filter_size = 3
 
     padding = 'valid'
     pool_size = (2,2)
     dropout_prob = 0.5
 
-    n_fc1 = 128
-    n_fc2 = 64
+    n_fc1 = 100
+    n_fc2 = 50
+    n_fc3 = 10
 
     # Define model
     model = Sequential()
 
-    model.add(Convolution2D(32, conv1_filter_size, conv1_filter_size,
+    model.add(Convolution2D(24, conv1_filter_size, conv1_filter_size,
                             border_mode=padding, activation = 'relu',
-                            init='normal',
+                            init='normal', subsample=(2, 2),
                             input_shape=input_shape))
-    model.add(MaxPooling2D(pool_size=pool_size))
     model.add(Dropout(dropout_prob))
 
-    model.add(Convolution2D(64, conv2_filter_size, conv2_filter_size,
+    model.add(Convolution2D(36, conv2_filter_size, conv2_filter_size,
                             border_mode=padding, activation = 'relu',
-                            init='normal'))
-    model.add(MaxPooling2D(pool_size=pool_size))
+                            subsample=(2, 2), init='normal'))
     model.add(Dropout(dropout_prob))
 
-    model.add(Convolution2D(128, conv3_filter_size, conv3_filter_size,
+    model.add(Convolution2D(48, conv3_filter_size, conv3_filter_size,
                             border_mode=padding, activation = 'relu',
-                            init='normal'))
-    model.add(MaxPooling2D(pool_size=pool_size))
+                            subsample=(2, 2), init='normal'))
+    model.add(Dropout(dropout_prob))
+
+    model.add(Convolution2D(64, conv4_filter_size, conv4_filter_size,
+                            border_mode=padding, activation = 'relu',
+                            subsample=(1, 1), init='normal'))
+    model.add(Dropout(dropout_prob))
+
+    model.add(Convolution2D(64, conv5_filter_size, conv5_filter_size,
+                            border_mode=padding, activation = 'relu',
+                            subsample=(1, 1), init='normal'))
     model.add(Dropout(dropout_prob))
 
     model.add(Flatten())
@@ -110,6 +121,8 @@ def define_model():
     model.add(Dense(n_fc1, activation = 'relu', init='normal'))
     model.add(Dropout(dropout_prob))
     model.add(Dense(n_fc2, activation = 'relu', init='normal'))
+    model.add(Dropout(dropout_prob))
+    model.add(Dense(n_fc3, activation = 'relu', init='normal'))
     model.add(Dropout(dropout_prob))
     model.add(Dense(1))
 
