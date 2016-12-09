@@ -111,7 +111,7 @@ def define_model():
 
     model.add(Dense(n_fc1, activation = 'relu'))
     model.add(Dense(n_fc2, activation = 'relu'))
-    model.add(Dense(n_fc3))
+    model.add(Dense(n_fc3, activation = 'relu'))
     model.add(Dense(n_fc4, name = 'output'))
 
     model.summary()
