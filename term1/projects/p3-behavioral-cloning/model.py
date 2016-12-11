@@ -86,26 +86,31 @@ def define_model():
 
     model.add(Convolution2D(24, conv1_filter_size, conv1_filter_size,
                             border_mode=padding, activation = 'relu',
+                            init='normal',
                             subsample=(2, 2), input_shape=input_shape))
     model.add(Convolution2D(36, conv2_filter_size, conv2_filter_size,
                             border_mode=padding, activation = 'relu',
+                            init='normal',
                             subsample=(2, 2)))
     model.add(Convolution2D(48, conv3_filter_size, conv3_filter_size,
                             border_mode=padding, activation = 'relu',
+                            init='normal',
                             subsample=(2, 2)))
     model.add(Convolution2D(64, conv4_filter_size, conv4_filter_size,
                             border_mode=padding, activation = 'relu',
+                            init='normal',
                             subsample=(1, 1)))
     model.add(Convolution2D(64, conv5_filter_size, conv5_filter_size,
                             border_mode=padding, activation = 'relu',
+                            init='normal',
                             subsample=(1, 1)))
 
     model.add(Flatten())
 
-    model.add(Dense(n_fc1, activation = 'relu'))
-    model.add(Dense(n_fc2, activation = 'relu'))
-    model.add(Dense(n_fc3, activation = 'relu'))
-    model.add(Dense(n_fc4, name = 'output'))
+    model.add(Dense(n_fc1, init='normal', activation = 'relu'))
+    model.add(Dense(n_fc2, init='normal', activation = 'relu'))
+    model.add(Dense(n_fc3, init='normal', activation = 'relu'))
+    model.add(Dense(n_fc4, init='normal', name = 'output'))
 
     model.summary()
 
