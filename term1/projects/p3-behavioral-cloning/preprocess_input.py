@@ -16,10 +16,10 @@ def resize(x):
     return x[crop_height:, :, :]
 
 def rgb_to_gray(x):
-    return cv2.cvtColor(x, cv2.COLOR_RGB2GRAY)
+    return cv2.cvtColor(x, cv2.COLOR_BGR2GRAY)
 
 def rgb_to_yuv(x):
-    return cv2.cvtColor(x, cv2.COLOR_RGB2YUV)
+    return cv2.cvtColor(x, cv2.COLOR_BGR2YUV)
 
 
 def normalize(x):

@@ -120,7 +120,7 @@ def train_model(model, log_data_csv):
     print('Training model...')
 
     batch_size = 128
-    n_epochs = 15
+    n_epochs = 10
     samples_per_epoch = math.ceil(2 * len(log_data_csv)/batch_size) * batch_size
 
     gen = image_generator(log_data_csv, batch_size)
