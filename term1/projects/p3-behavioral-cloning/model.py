@@ -1,6 +1,8 @@
 import os
 import cv2
+import math
 import numpy as np
+import pandas as pd
 import csv
 import time
 import argparse
@@ -13,61 +15,52 @@ from keras.optimizers import Adam
 
 import preprocess_input
 
-def load_dataset(log_files):
-    """ Loads the raw training dataset """
-    print('Loading training data...')
+def image_generator(log_file_csv, batch_size,
+                    img_shape = preprocess_input.FINAL_IMG_SHAPE):
+    """ Provides a batch of images from a log file. The main advantage
+        of using a generator is that we do not need to read the whole log file,
+        only one batch at a time, so it will fit in RAM.
+        This function also generates extended data on the fly. """
+    log_idx = 0
+    batch_size_half = int(batch_size/2)
 
-    # Declare outputs
-    X_train = []
-    y_train = []
+    n_log_img = len(log_file_csv)
 
-    # Loop through log files
-    for log_file in log_files:
-        with open(log_file, 'r') as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
+    # Pre-allocate data
+    x = np.ndarray(shape=(batch_size, img_shape[0], img_shape[1], img_shape[2]))
+    y = np.ndarray(shape=(batch_size,))
 
-            # Read image from center camera and steering angle
-            for row in csv_reader:
-                X_train.append(cv2.imread(row[0]))
-                y_train.append(float(row[3]))
+    shuffle_idx = np.arange(0, n_log_img)
 
-    return np.array(X_train), np.array(y_train)
+    while 1:
+        if log_idx  < batch_size_half:
+            # shuffle
+            np.random.shuffle(shuffle_idx)
 
-def flip_images(X_train, y_train):
-    X_extra = []
-    y_extra = []
+        for j in range(0, batch_size_half):
+            log_idx  = (log_idx  + 1) % n_log_img
 
-    for i in range(X_train.shape[0]):
-        X_extra.append(cv2.flip(X_train[i], 1))
-        y_extra.append(-y_train[i])
+            # Compute shuffled idx
+            i_shuffle = shuffle_idx[log_idx]
 
-    X_train = np.concatenate((X_train, np.array(X_extra)), axis = 0)
-    y_train = np.concatenate((y_train, np.array(y_extra)), axis = 0)
+            # Read image from log file
+            x_i = cv2.imread(log_file_csv.iloc[i_shuffle][0])
+            y_i = float(log_file_csv.iloc[i_shuffle][3])
 
-    return X_train, y_train
+            # Preprocess image
+            x_i = np.squeeze(preprocess_input.main(np.reshape(x_i, (1,) + x_i.shape)))
 
-def extend_training_data(X_train, y_train):
-    # Horizontally flip images and negate steering angle
-    X_train, y_train = flip_images(X_train, y_train)
+            # Add to batch
+            i = 2*j
+            x[i] = x_i
+            y[i] = y_i
 
-    return X_train, y_train
+            # Add a horizontally-flipped copy
+            x[i + 1] = cv2.flip(x_i, 1)
+            y[i + 1] = -y_i
 
-def get_training_data(log_files):
-    """ Loads and preprocesses the training data """
-    # Load data data
-    X_train, y_train = load_dataset(log_files)
-    print('Input dataset: ', X_train.shape)
+        yield (x, y)
 
-    # Extend dataset
-    X_train, y_train = extend_training_data(X_train, y_train)
-    print('Extended dataset: ', X_train.shape)
-
-    # Preprocess input
-    X_train = preprocess_input.main(X_train)
-
-    # Pack and output
-    out_data = {'X_train': X_train, 'y_train': y_train}
-    return out_data
 
 def define_model():
     # Based on http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
@@ -123,17 +116,20 @@ def define_model():
     return model
 
 
-def train_model(model, data):
+def train_model(model, log_data_csv):
     print('Training model...')
 
     batch_size = 128
     n_epochs = 15
-    history = model.fit(data['X_train'], data['y_train'],
-                        batch_size=batch_size, nb_epoch=n_epochs,
-                        verbose=1, validation_split=0.2, shuffle=True)
-    print(model.predict(data['X_train'][1:10]))
-    print('---')
-    print(model.predict(data['X_train'][5000:5009]))
+    samples_per_epoch = math.ceil(2 * len(log_data_csv)/batch_size) * batch_size
+
+    gen = image_generator(log_data_csv, batch_size)
+
+    model.fit_generator(image_generator(log_data_csv, batch_size),
+                        samples_per_epoch = samples_per_epoch,
+                        nb_epoch = n_epochs,
+                        verbose = 1)
+
 
 def save_model(out_dir, model):
     print('Saving model in %s...' % out_dir)
@@ -150,10 +146,10 @@ def save_model(out_dir, model):
     # Save weights
     model.save_weights(os.path.join(out_dir, 'model.h5'))
 
-def build_model(log_files):
+def build_model(log_file_path):
     """ Builds and trains the network given the input data in train_dir """
-    # Get training data
-    data = get_training_data(log_files)
+    # Read CSV file with pandas
+    data = pd.read_csv(log_file_path)
 
     # Build and train the network
     model = define_model()
@@ -165,8 +161,7 @@ def parse_input():
     """ Sets up the required input arguments and parses them """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('log_files', nargs='+',
-                        help='list of CSV files of log data')
+    parser.add_argument('log_file', help='CSV file of log data')
     parser.add_argument('-o, --out_dir', dest='out_dir', metavar='',
                         default=time.strftime("%Y%m%d_%H%M%S"),
                         help='directory where the model is stored')
@@ -180,7 +175,7 @@ def main():
     args = parse_input()
 
     # Build a model
-    model = build_model(args.log_files)
+    model = build_model(args.log_file)
 
     # Save model
     save_model(args.out_dir, model)
