@@ -72,7 +72,6 @@ def define_model():
     weight_init='normal'
     activation = 'relu'
     padding = 'valid'
-    pool_size = (2,2)
     dropout_prob = 0.5
 
     # Define model
