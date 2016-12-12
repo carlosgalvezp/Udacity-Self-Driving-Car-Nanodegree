@@ -131,7 +131,10 @@ have to be done to smooth out the signal.
 We recorded data in the following way, keeping a constant speed of 30 mph:
 
 - **Normal driving**, with the vehicle kept in the center of the road.
-Approximately 2 laps of driving.
+Approximately 2 laps of driving. Example images:
+
+![](res/normal1.jpg) ![](res/normal2.jpg)
+
 
 - **Recovery**. This was the crucial part to manage to get the car driving
 the whole lap. Without it, it cannot recover from getting off-center (and
@@ -141,7 +144,9 @@ without recording. Then we turned on recording, and used the joystick
 to steer the vehicle back on track. This was performed at different
 distances from the center of the lane. We took 2 laps of recording
 the vehicle recovering from left to center, and another 2 laps of
-recovery from right to center.
+recovery from right to center. Example images:
+
+![](res/recovery1.jpg) ![](res/recovery2.jpg)
 
 It was not necessary to drive in the opposite direction, since we extend
 the dataset by flipping the image, as mentioned before.
