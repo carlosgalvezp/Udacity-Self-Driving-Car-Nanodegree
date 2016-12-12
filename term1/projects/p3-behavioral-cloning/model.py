@@ -63,7 +63,9 @@ def image_generator(log_file_csv, batch_size,
 
 
 def define_model():
-    # Based on http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf
+    """ Defines the network architecture, following Nvidia's example on:
+        http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf """
+
     # Parameters
     input_shape = preprocess_input.FINAL_IMG_SHAPE
     conv1_filter_size = 5
@@ -124,6 +126,7 @@ def define_model():
 
 
 def train_model(model, train_csv, val_csv):
+    """ Trains model """
     print('Training model...')
 
     batch_size = 128
@@ -144,6 +147,7 @@ def train_model(model, train_csv, val_csv):
 
 
 def save_model(out_dir, model):
+    """ Saves model (json) and weights (h5) to disk """
     print('Saving model in %s...' % out_dir)
 
     # Create directory if needed
@@ -160,6 +164,7 @@ def save_model(out_dir, model):
 
 
 def evaluate_model(model, test_csv):
+    """ Evaluates the model on test data, printing out the loss """
     print('Evaluating model on test set...')
     batch_size = 128
     n_test_samples = math.ceil(2 * len(test_csv)/batch_size) * batch_size
@@ -171,6 +176,8 @@ def evaluate_model(model, test_csv):
 
 
 def split_training_data(csv_data, train_ratio, val_ratio):
+    """ Split input log file (CSV) into train, validation and test sets,
+        according to train_ratio and val_ratio """
     assert train_ratio + val_ratio < 1.0
 
     n_total = len(csv_data)
