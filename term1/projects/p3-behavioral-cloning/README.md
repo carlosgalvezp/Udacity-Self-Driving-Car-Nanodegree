@@ -49,26 +49,26 @@ is crucial. This was recommended also by many other students in Confluence.
 
 The implemented network consists of the following layers:
 
--**Input**. Image of size (66, 200, 3).
--**Convolutional 1**. 24 filters of size 5x5x3 (since the input has 3 channels).
+- **Input**. Image of size (66, 200, 3).
+- **Convolutional 1**. 24 filters of size 5x5x3 (since the input has 3 channels).
 The filter is applied with strides of (2, 2) instead of using MaxPooling.
 This can be done because the input image is relatively high resolution.
 The used padding was 'valid', as proposed by Nvidia.
 
--**Convolutional 2**. 36 filters of size 5x5x24. Strides of (2, 2).
--**Convolutional 3**. 48 filters of size 5x5x36. Strides of (2, 2).
--**Convolutional 4**. 64 filters of size 3x3x48. Strides of (1, 1). As can be
+- **Convolutional 2**. 36 filters of size 5x5x24. Strides of (2, 2).
+- **Convolutional 3**. 48 filters of size 5x5x36. Strides of (2, 2).
+- **Convolutional 4**. 64 filters of size 3x3x48. Strides of (1, 1). As can be
 observed, the filter size and strides are now reduced, given that the input
 images are much smaller.
--**Convolutional 5**. 64 filters of size 3x3x64. Strides of (1, 1).
+- **Convolutional 5**. 64 filters of size 3x3x64. Strides of (1, 1).
 
--**Dropout** (p = 0.5 during training) to mitigate the effects of overfitting.
--**Flatten**. The input for the next layer will have size 1152.
+- **Dropout** (p = 0.5 during training) to mitigate the effects of overfitting.
+- **Flatten**. The input for the next layer will have size 1152.
 
--**Fully Connected 1**, with 100 neurons + Dropout(0.5)
--**Fully Connected 2**, with 50 neurons + Dropout(0.5)
--**Fully Connected 3**, with 10 neurons + Dropout(0.5)
--**Fully Connected 4**, with 1 neuron, being the output.
+- **Fully Connected 1**, with 100 neurons + Dropout(0.5)
+- **Fully Connected 2**, with 50 neurons + Dropout(0.5)
+- **Fully Connected 3**, with 10 neurons + Dropout(0.5)
+- **Fully Connected 4**, with 1 neuron, being the output.
 
 All the layers, except for the output layer, have a ReLU activation function.
 In addition, all the layers are initialized with the 'normal' function,
@@ -110,7 +110,35 @@ when gathering training data.
 
 Data Collection
 ---------------
+### Environment
+Thanks to the recommendations from the Slack community and the Confluence
+forums, we performed data collection using:
 
+- The 50Hz version of the simulator.
+- A gamepad with analog sticks for steering.
+
+The main reason is that otherwise (using the 10Hz version and keyboard input)
+most of the dataset contains images associated with a input command of 0º,
+and a few images with a high steering angle, since the keyboard produces
+a binary output. A lot of work in filtering the keyboard signal would
+have to be done to smooth out the signal.
+
+### Strategy
+We recorded data in the following way, keeping a constant speed of 30 mph:
+
+- **Normal driving**, with the vehicle kept in the center of the road.
+Approximately 2 laps of driving.
+
+- **Recovery**. This was the crucial part to manage to get the car driving
+the whole lap. First, we drove toward the left or right edge of the road,
+without recording. Then we turned on recording, and used the joystick
+to steer the vehicle back on track. This was performed at different
+distances from the center of the lane. We took 2 laps of recording
+the vehicle recovering from left to center, and another 2 laps of
+recovery from right to center.
+
+It was not necessary to drive in the opposite direction, since we extend
+the dataset by flipping the image, as mentioned before.
 
 Data Generator
 --------------
@@ -136,22 +164,22 @@ Training Strategy
 -----------------
 The training process was performed using the following configuration:
 
--**Optimization parameter**: Mean Square Error (mse), since this is a regression
+- **Optimization parameter**: Mean Square Error (mse), since this is a regression
 problem.
 
--**Optimizer**: Adam, given the great performance on the Traffic Signs Lab.
+- **Optimizer**: Adam, given the great performance on the Traffic Signs Lab.
 We use a learning of 0.0001 (1/10th of the default) for a more stable
 learning.
 
--**Metrics**: none, just the loss. We observe that the `accuracy` metric
+- **Metrics**: none, just the loss. We observe that the `accuracy` metric
 was quite useless (stayed at around all the time 33%), since it's more
 relevant in classification problems. Here the best available indicator of the
 performance of the network is the train/validation loss. 
 However we realized soon that to really evaluate the performance we must
 run the model on the simulator, since the loss is not 100% reliable either.
 
--**Batch size**: 128, to fit in GPU memory.
--**Number of epochs//: XXXX
+- **Batch size**: 128, to fit in GPU memory.
+- **Number of epochs**: XXXX
 
 The function `fit_generator` was used, in order to take advantage of the
 Python generator and be able to process the complete dataset in every epoch.
