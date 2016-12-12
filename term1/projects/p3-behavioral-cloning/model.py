@@ -106,10 +106,13 @@ def define_model():
                             subsample=(1, 1)))
 
     model.add(Flatten())
-
+    model.add(Dropout(dropout_prob))
     model.add(Dense(n_fc1, init='normal', activation = 'relu'))
+    model.add(Dropout(dropout_prob))
     model.add(Dense(n_fc2, init='normal', activation = 'relu'))
+    model.add(Dropout(dropout_prob))
     model.add(Dense(n_fc3, init='normal', activation = 'relu'))
+    model.add(Dropout(dropout_prob))
     model.add(Dense(n_fc4, init='normal', name = 'output'))
 
     model.summary()
@@ -121,17 +124,22 @@ def define_model():
     return model
 
 
-def train_model(model, log_data_csv):
+def train_model(model, train_csv, val_csv):
     print('Training model...')
 
     batch_size = 128
     n_epochs = 10
-    samples_per_epoch = math.ceil(2 * len(log_data_csv)/batch_size) * batch_size
 
-    gen = image_generator(log_data_csv, batch_size)
+    n_train_samples = math.ceil(2 * len(train_csv)/batch_size) * batch_size
+    n_val_samples = math.ceil(2 * len(val_csv)/batch_size) * batch_size
 
-    model.fit_generator(image_generator(log_data_csv, batch_size),
-                        samples_per_epoch = samples_per_epoch,
+    gen_train = image_generator(train_csv, batch_size)
+    gen_val = image_generator(val_csv, batch_size)
+
+    model.fit_generator(generator = gen_train,
+                        samples_per_epoch = n_train_samples,
+                        validation_data = gen_val,
+                        nb_val_samples = n_val_samples,
                         nb_epoch = n_epochs,
                         verbose = 1)
 
@@ -151,14 +159,42 @@ def save_model(out_dir, model):
     # Save weights
     model.save_weights(os.path.join(out_dir, 'model.h5'))
 
+def evaluate_model(model, test_csv):
+    raise NotImplemented
+
+def split_training_data(csv_data, train_ratio, val_ratio):
+    assert train_ratio + val_ratio < 1.0
+
+    n_total = len(csv_data)
+    n_train = int(math.ceil(n_total * train_ratio))
+    n_val = int(math.ceil(n_total * val_ratio))
+
+    idx = np.arange(0, n_total)
+    np.random.shuffle(idx)
+
+    train_csv = csv_data.iloc[idx[0:n_train]]
+    val_csv = csv_data.iloc[idx[n_train : n_train + n_val]]
+    test_csv = csv_data.iloc[idx[n_train + n_val:]]
+
+    return train_csv, val_csv, test_csv
+
 def build_model(log_file_path):
     """ Builds and trains the network given the input data in train_dir """
     # Read CSV file with pandas
     data = pd.read_csv(log_file_path)
 
+    # Split into train, validation and test sets
+    train_csv, val_csv, test_csv = split_training_data(data, 0.8, 0.1)
+    print ('Train set: %d, validation set: %d, test set: %d' %
+            (len(train_csv), len(val_csv), len(test_csv)))
+
     # Build and train the network
     model = define_model()
-    train_model(model, data)
+    train_model(model, train_csv, val_csv)
+
+    # Evaluate model on test data
+    evaluate_model(model, test_csv)
+
     return model
 
 
