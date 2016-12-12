@@ -68,59 +68,46 @@ def define_model():
 
     # Parameters
     input_shape = preprocess_input.FINAL_IMG_SHAPE
-    conv1_filter_size = 5
-    conv2_filter_size = 5
-    conv3_filter_size = 5
-    conv4_filter_size = 3
-    conv5_filter_size = 3
 
+    weight_init='normal'
+    activation = 'relu'
     padding = 'valid'
     pool_size = (2,2)
     dropout_prob = 0.5
 
-    n_fc1 = 100
-    n_fc2 = 50
-    n_fc3 = 10
-    n_fc4 = 1
-
     # Define model
     model = Sequential()
 
-    model.add(Convolution2D(24, conv1_filter_size, conv1_filter_size,
-                            border_mode=padding, activation = 'relu',
-                            init='normal',
-                            subsample=(2, 2), input_shape=input_shape))
-    model.add(Convolution2D(36, conv2_filter_size, conv2_filter_size,
-                            border_mode=padding, activation = 'relu',
-                            init='normal',
-                            subsample=(2, 2)))
-    model.add(Convolution2D(48, conv3_filter_size, conv3_filter_size,
-                            border_mode=padding, activation = 'relu',
-                            init='normal',
-                            subsample=(2, 2)))
-    model.add(Convolution2D(64, conv4_filter_size, conv4_filter_size,
-                            border_mode=padding, activation = 'relu',
-                            init='normal',
-                            subsample=(1, 1)))
-    model.add(Convolution2D(64, conv5_filter_size, conv5_filter_size,
-                            border_mode=padding, activation = 'relu',
-                            init='normal',
-                            subsample=(1, 1)))
+    model.add(Convolution2D(24, 5, 5, input_shape = input_shape,
+                            border_mode=padding, activation = activation,
+                            init = weight_init, subsample = (2, 2)))
+    model.add(Convolution2D(36, 5, 5,
+                            border_mode=padding, activation = activation,
+                            init = weight_init, subsample = (2, 2)))
+    model.add(Convolution2D(48, 5, 5,
+                            border_mode=padding, activation = activation,
+                            init = weight_init, subsample = (2, 2)))
+    model.add(Convolution2D(64, 3, 3,
+                            border_mode=padding, activation = activation,
+                            init = weight_init, subsample = (1, 1)))
+    model.add(Convolution2D(64, 3, 3,
+                            border_mode=padding, activation = activation,
+                            init = weight_init, subsample = (1, 1)))
+    model.add(Dropout(dropout_prob))
 
     model.add(Flatten())
+    model.add(Dense(100, init = weight_init, activation = activation))
     model.add(Dropout(dropout_prob))
-    model.add(Dense(n_fc1, init='normal', activation = 'relu'))
+    model.add(Dense(50, init = weight_init, activation = activation))
     model.add(Dropout(dropout_prob))
-    model.add(Dense(n_fc2, init='normal', activation = 'relu'))
+    model.add(Dense(10, init = weight_init, activation = activation))
     model.add(Dropout(dropout_prob))
-    model.add(Dense(n_fc3, init='normal', activation = 'relu'))
-    model.add(Dropout(dropout_prob))
-    model.add(Dense(n_fc4, init='normal', name = 'output'))
+    model.add(Dense(1, init = weight_init, name = 'output'))
 
     model.summary()
 
     # Compile it
-    model.compile(loss='mse', optimizer=Adam(lr=0.0001))
+    model.compile(loss = 'mse', optimizer = Adam(lr = 0.0001))
 
     return model
 
