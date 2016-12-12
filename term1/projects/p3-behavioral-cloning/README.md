@@ -83,17 +83,80 @@ In total the network has 252219 parameters, including weights and biases.
 
 Data Preprocessing
 ------------------
+Before sending the input images to the neural network, we perform the following
+preprocessing steps:
+
+1. Image resize to have a width of 200, keeping the aspect ratio.
+2. Image crop to have a height of 66. We remove the pixels from the top of the
+   the image, since they belong to the sky, which contains no relevant information.
+3. Conversion from RGB to YUV, in order to make it more robust especially
+   to different color and illumination conditions.
+4. Normalization from [0, 255] to [-0.5, 0.5] to make the training process
+   more stable.
+
+This pipeline is implemented in a separate file, `preprocess_input.py`,
+so it can be use both by `model.py` and `drive.py`.
 
 Dataset Extension
 -----------------
+The dataset is extended in order to reduce the time for data collection,
+improving the overall collect data-train-test loop.
+
+In particular, we **flip every image horizontally**, and assign the
+opposite steering angle. This solution is very easy to implement and
+doubles the dataset size. Besides, we don't need to drive in opposite direction
+when gathering training data.
 
 
 Data Collection
 ---------------
 
 
+Data Generator
+--------------
+The amount of collected data is very large: thousands of medium-resolution
+images. During training, we realized it's impossible to read them all from
+the hard disk and keep them in RAM, since it was just too much memory.
+
+The solution was found thanks to Slack and Confluence forums: use a
+**Python generator**, which reads a batch at a time and performs preprocessing
+and dataset extension on-the-fly. The main advantage is that it can be
+applied to any input dataset, no matter how big it is.
+
+Dataset Splitting
+-----------------
+To properly train and evaluate the performance of the network, we split
+the training dataset into the following sets:
+
+-Training set: 80% of the data.
+-Validation set: 10% of the data.
+-Test set: 10% of the data.
+
 Training Strategy
 -----------------
+The training process was performed using the following configuration:
+
+-**Optimization parameter**: Mean Square Error (mse), since this is a regression
+problem.
+
+-**Optimizer**: Adam, given the great performance on the Traffic Signs Lab.
+We use a learning of 0.0001 (1/10th of the default) for a more stable
+learning.
+
+-**Metrics**: none, just the loss. We observe that the `accuracy` metric
+was quite useless (stayed at around all the time 33%), since it's more
+relevant in classification problems. Here the best available indicator of the
+performance of the network is the train/validation loss. 
+However we realized soon that to really evaluate the performance we must
+run the model on the simulator, since the loss is not 100% reliable either.
+
+-**Batch size**: 128, to fit in GPU memory.
+-**Number of epochs//: XXXX
+
+The function `fit_generator` was used, in order to take advantage of the
+Python generator and be able to process the complete dataset in every epoch.
+The train and validation datasets are always shuffled at the
+beginning of every epoch.
 
 
 Simulation Results

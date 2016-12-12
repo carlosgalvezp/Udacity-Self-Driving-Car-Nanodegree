@@ -25,7 +25,7 @@ def rgb_to_yuv(x):
 def normalize(x):
     # Normalize between -0.5 and 0.5
     return x / 255.0 - 0.5
-    
+
 def main(X):
     """ Preprocesses input data
         X is a tensor (n_img, height, width, depth) """
