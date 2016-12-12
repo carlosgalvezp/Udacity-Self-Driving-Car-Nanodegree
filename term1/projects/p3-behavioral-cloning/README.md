@@ -35,7 +35,7 @@ The approach taken in this project is similar to the one taken by Nvidia
 in their [paper](http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf).
 The following picture summarizes the model:
 
-![Network Architecture](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Network Archicture, as proposed by Nvidia.")
+![Network Architecture](res/network_arch.png "Network Archicture, as proposed by Nvidia.")
 
 It is a relatively simple model (only 9 layers) with a moderate number of
 parameters (around 250.000), so we can expect reasonable training times.
