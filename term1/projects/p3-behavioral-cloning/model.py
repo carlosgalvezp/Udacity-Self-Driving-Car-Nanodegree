@@ -118,8 +118,7 @@ def define_model():
     model.summary()
 
     # Compile it
-    model.compile(loss='mse', optimizer=Adam(lr=0.0001),
-                  metrics=['accuracy'])
+    model.compile(loss='mse', optimizer=Adam(lr=0.0001))
 
     return model
 
@@ -128,7 +127,7 @@ def train_model(model, train_csv, val_csv):
     print('Training model...')
 
     batch_size = 128
-    n_epochs = 10
+    n_epochs = 20
 
     n_train_samples = math.ceil(2 * len(train_csv)/batch_size) * batch_size
     n_val_samples = math.ceil(2 * len(val_csv)/batch_size) * batch_size
@@ -159,8 +158,17 @@ def save_model(out_dir, model):
     # Save weights
     model.save_weights(os.path.join(out_dir, 'model.h5'))
 
+
 def evaluate_model(model, test_csv):
-    raise NotImplemented
+    print('Evaluating model on test set...')
+    batch_size = 128
+    n_test_samples = math.ceil(2 * len(test_csv)/batch_size) * batch_size
+
+    gen_test = image_generator(test_csv, batch_size)
+    score = model.evaluate_generator(gen_test, n_test_samples)
+
+    print('Test loss: %.4f' % score[0])
+
 
 def split_training_data(csv_data, train_ratio, val_ratio):
     assert train_ratio + val_ratio < 1.0
