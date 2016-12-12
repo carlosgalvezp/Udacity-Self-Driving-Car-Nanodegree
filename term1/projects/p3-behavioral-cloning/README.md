@@ -33,6 +33,10 @@ Model Architecture
 ------------------
 The approach taken in this project is similar to the one taken by Nvidia
 in their [paper](http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf).
+The following picture summarizes the model:
+
+![Network Architecture](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Network Archicture, as proposed by Nvidia.")
+
 It is a relatively simple model (only 9 layers) with a moderate number of
 parameters (around 250.000), so we can expect reasonable training times.
 Clearly the desired approach is a combination of Convolutional layers
@@ -130,7 +134,9 @@ We recorded data in the following way, keeping a constant speed of 30 mph:
 Approximately 2 laps of driving.
 
 - **Recovery**. This was the crucial part to manage to get the car driving
-the whole lap. First, we drove toward the left or right edge of the road,
+the whole lap. Without it, it cannot recover from getting off-center (and
+no matter what you do, this will always happen).
+First, we drove toward the left or right edge of the road,
 without recording. Then we turned on recording, and used the joystick
 to steer the vehicle back on track. This was performed at different
 distances from the center of the lane. We took 2 laps of recording
@@ -139,6 +145,9 @@ recovery from right to center.
 
 It was not necessary to drive in the opposite direction, since we extend
 the dataset by flipping the image, as mentioned before.
+
+A total of XXXXXXX images were recorded. The extended dataset, with which
+the network was trained, has thus XXXXXXXxx images.
 
 Data Generator
 --------------
