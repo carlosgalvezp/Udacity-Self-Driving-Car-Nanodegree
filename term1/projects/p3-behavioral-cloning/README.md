@@ -65,9 +65,9 @@ images are much smaller.
 - **Dropout** (p = 0.5 during training) to mitigate the effects of overfitting.
 - **Flatten**. The input for the next layer will have size 1152.
 
-- **Fully Connected 1**, with 100 neurons + Dropout(0.5)
-- **Fully Connected 2**, with 50 neurons + Dropout(0.5)
-- **Fully Connected 3**, with 10 neurons + Dropout(0.5)
+- **Fully Connected 1**, with 100 neurons + Dropout(0.5).
+- **Fully Connected 2**, with 50 neurons + Dropout(0.5).
+- **Fully Connected 3**, with 10 neurons + Dropout(0.5).
 - **Fully Connected 4**, with 1 neuron, being the output.
 
 All the layers, except for the output layer, have a ReLU activation function.
@@ -156,9 +156,9 @@ Dataset Splitting
 To properly train and evaluate the performance of the network, we split
 the training dataset into the following sets:
 
--Training set: 80% of the data.
--Validation set: 10% of the data.
--Test set: 10% of the data.
+- Training set: 80% of the data.
+- Validation set: 10% of the data.
+- Test set: 10% of the data.
 
 Training Strategy
 -----------------
