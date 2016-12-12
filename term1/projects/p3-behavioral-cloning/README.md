@@ -9,9 +9,25 @@ network should predict the required steering angle to properly drive.
 
 Input Data
 ----------
+The input data comes from a set of forward-looking cameras installed inside the
+vehicle: one in the center, and two to the sides (left, right).
+
+The simulator only uses the center camera for predicting the steering angle,
+so we only use this one for training as well. However the results could be
+improved by using the other two cameras, as reported by other students.
+
+The images from the cameras are RGB, with resolution (160, 320)
+
+In addition, we also have access to other vehicle signals, like throttle
+and break commands, but are not relevant for the task of steering angle
+prediction from images.
 
 Output Data
 -----------
+The output data is simply the steering angle in degrees. The log files have
+normalized this value to a range between [-1, 1] to better suit the
+Neural Network framework. This corresponds to roughly [-25º, 25º].
+
 
 Model Architecture
 ------------------
@@ -19,7 +35,11 @@ The approach taken in this project is similar to the one taken by Nvidia
 in their [paper](http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf).
 It is a relatively simple model (only 9 layers) with a moderate number of
 parameters (around 250.000), so we can expect reasonable training times.
-It was also proven successful, so why not use it?
+Clearly the desired approach is a combination of Convolutional layers
+followed by Fully-Connected layers, since the input data are images.
+This time, the architecture is applied to a regression problem (predicting
+steering angle) instead of classification, so no activation function
+or softmax must be applied at the last layer, which will have only one neuron.
 
 The use of pre-trained networks like AlexNet or VGG (i.e. transfer learning)
 was not considered from the beginning, since they were training for different
@@ -29,6 +49,7 @@ is crucial. This was recommended also by many other students in Confluence.
 
 The implemented network consists of the following layers:
 
+-**Input**. Image of size (66, 200, 3).
 -**Convolutional 1**. 24 filters of size 5x5x3 (since the input has 3 channels).
 The filter is applied with strides of (2, 2) instead of using MaxPooling.
 This can be done because the input image is relatively high resolution.
@@ -42,7 +63,7 @@ images are much smaller.
 -**Convolutional 5**. 64 filters of size 3x3x64. Strides of (1, 1).
 
 -**Dropout** (p = 0.5 during training) to mitigate the effects of overfitting.
--**Flatten**.
+-**Flatten**. The input for the next layer will have size 1152.
 
 -**Fully Connected 1**, with 100 neurons + Dropout(0.5)
 -**Fully Connected 2**, with 50 neurons + Dropout(0.5)
@@ -77,3 +98,6 @@ Training Strategy
 
 Simulation Results
 ------------------
+
+Conclusion
+----------
