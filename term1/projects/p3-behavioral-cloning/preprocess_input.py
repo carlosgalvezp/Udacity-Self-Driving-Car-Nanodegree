@@ -15,16 +15,8 @@ def resize(x):
 
     return x[crop_height:, :, :]
 
-def rgb_to_gray(x):
-    return cv2.cvtColor(x, cv2.COLOR_BGR2GRAY)
-
 def rgb_to_yuv(x):
     return cv2.cvtColor(x, cv2.COLOR_BGR2YUV)
-
-
-def normalize(x):
-    # Normalize between -1.0 and 1.0
-    return (x / 127.5) - 1.0
 
 def main(X):
     """ Preprocesses input data
@@ -33,8 +25,8 @@ def main(X):
     for i in range(X.shape[0]):
         img = X[i,:]
         img = resize(img)
-        img = rgb_to_yuv(img)
-        img = normalize(img)
+        #img = rgb_to_yuv(img)
+        #img = normalize(img)
 
         X_out.append(np.reshape(img, FINAL_IMG_SHAPE))
 

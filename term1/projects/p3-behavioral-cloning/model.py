@@ -10,7 +10,7 @@ import json
 from keras.models import Sequential
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
-from keras.layers.core import Dense, Dropout, Flatten
+from keras.layers.core import Dense, Dropout, Flatten, Lambda
 from keras.optimizers import Adam
 
 import preprocess_input
@@ -62,6 +62,11 @@ def image_generator(log_file_csv, batch_size,
         yield (x, y)
 
 
+def normalize(X):
+    """ Normalizes the input between -0.5 and 0.5 """
+    return X / 255. - 0.5
+
+
 def define_model():
     """ Defines the network architecture, following Nvidia's example on:
         http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf """
@@ -76,6 +81,8 @@ def define_model():
 
     # Define model
     model = Sequential()
+
+    model.add(Lambda(normalize, input_shape=input_shape, output_shape=input_shape))
 
     model.add(Convolution2D(24, 5, 5, input_shape = input_shape,
                             border_mode=padding, activation = activation,
@@ -116,7 +123,7 @@ def train_model(model, train_csv, val_csv):
     print('Training model...')
 
     batch_size = 64
-    n_epochs = 5
+    n_epochs = 50
 
     n_train_samples = math.ceil(2 * len(train_csv)/batch_size) * batch_size
     n_val_samples = math.ceil(2 * len(val_csv)/batch_size) * batch_size
