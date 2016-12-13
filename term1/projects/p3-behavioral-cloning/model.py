@@ -115,8 +115,8 @@ def train_model(model, train_csv, val_csv):
     """ Trains model """
     print('Training model...')
 
-    batch_size = 128
-    n_epochs = 20
+    batch_size = 64
+    n_epochs = 5
 
     n_train_samples = math.ceil(2 * len(train_csv)/batch_size) * batch_size
     n_val_samples = math.ceil(2 * len(val_csv)/batch_size) * batch_size
@@ -152,13 +152,13 @@ def save_model(out_dir, model):
 def evaluate_model(model, test_csv):
     """ Evaluates the model on test data, printing out the loss """
     print('Evaluating model on test set...')
-    batch_size = 128
+    batch_size = 64
     n_test_samples = math.ceil(2 * len(test_csv)/batch_size) * batch_size
 
     gen_test = image_generator(test_csv, batch_size)
-    score = model.evaluate_generator(gen_test, n_test_samples)
+    loss = model.evaluate_generator(gen_test, n_test_samples)
 
-    print('Test loss: %.4f' % score[0])
+    print('Test loss: %.4f' % loss)
 
 
 def split_training_data(csv_data, train_ratio, val_ratio):

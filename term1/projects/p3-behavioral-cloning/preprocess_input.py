@@ -23,8 +23,8 @@ def rgb_to_yuv(x):
 
 
 def normalize(x):
-    # Normalize between -0.5 and 0.5
-    return x / 255.0 - 0.5
+    # Normalize between -1.0 and 1.0
+    return (x / 127.5) - 1.0
 
 def main(X):
     """ Preprocesses input data
