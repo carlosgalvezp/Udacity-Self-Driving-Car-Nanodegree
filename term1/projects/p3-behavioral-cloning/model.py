@@ -15,6 +15,15 @@ from keras.optimizers import Adam
 
 import preprocess_input
 
+# Number of images to process per row of CSV = 2 x (center, left, right).
+# The 2x factor corresponds to the flipping operation
+N_IMG_PER_ROW = 6
+
+# Angle offset for the left and right cameras. It's and estimation of the
+# additional steering angle (normalized [-1,1]) that we would have to steer
+# if the center camera was in the position of the left or right one
+ANGLE_OFFSET = 0.1
+
 def image_generator(log_file_csv, batch_size,
                     img_shape = preprocess_input.FINAL_IMG_SHAPE):
     """ Provides a batch of images from a log file. The main advantage
@@ -22,7 +31,7 @@ def image_generator(log_file_csv, batch_size,
         only one batch at a time, so it will fit in RAM.
         This function also generates extended data on the fly. """
     log_idx = 0
-    batch_size_half = int(batch_size/2)
+    n_rows_to_process = int(batch_size/N_IMG_PER_ROW)
 
     n_log_img = len(log_file_csv)
 
@@ -33,31 +42,46 @@ def image_generator(log_file_csv, batch_size,
     shuffle_idx = np.arange(0, n_log_img)
 
     while 1:
-        if log_idx  < batch_size_half:
+        if log_idx  < n_rows_to_process:
             # shuffle
             np.random.shuffle(shuffle_idx)
 
-        for j in range(0, batch_size_half):
+        for j in range(0, n_rows_to_process):
             log_idx  = (log_idx  + 1) % n_log_img
 
             # Compute shuffled idx
             i_shuffle = shuffle_idx[log_idx]
 
-            # Read image from log file
-            x_i = cv2.imread(log_file_csv.iloc[i_shuffle][0])
-            y_i = float(log_file_csv.iloc[i_shuffle][3])
+            # Read center, left and right images from log file
+            x_i_c = cv2.imread(log_file_csv.iloc[i_shuffle][0])
+            x_i_l = cv2.imread(log_file_csv.iloc[i_shuffle][1])
+            x_i_r = cv2.imread(log_file_csv.iloc[i_shuffle][2])
 
-            # Preprocess image
-            x_i = np.squeeze(preprocess_input.main(np.reshape(x_i, (1,) + x_i.shape)))
+            # Read steering angles. Add ANGLE_OFFSET to left/right cameras
+            y_i_c = float(log_file_csv.iloc[i_shuffle][3])
+            y_i_l = y_i_c + ANGLE_OFFSET
+            y_i_r = y_i_c - ANGLE_OFFSET
+
+            # Preprocess images
+            x_i_c = np.squeeze(preprocess_input.main(np.reshape(x_i_c, (1,) + x_i_c.shape)))
+            x_i_l = np.squeeze(preprocess_input.main(np.reshape(x_i_l, (1,) + x_i_l.shape)))
+            x_i_r = np.squeeze(preprocess_input.main(np.reshape(x_i_r, (1,) + x_i_r.shape)))
 
             # Add to batch
-            i = 2*j
-            x[i] = x_i
-            y[i] = y_i
+            i = N_IMG_PER_ROW * j
+            x[i    ] = x_i_c
+            x[i + 1] = x_i_l
+            x[i + 2] = x_i_r
+            x[i + 3] = cv2.flip(x_i_c, 1)
+            x[i + 4] = cv2.flip(x_i_l, 1)
+            x[i + 5] = cv2.flip(x_i_r, 1)
 
-            # Add a horizontally-flipped copy
-            x[i + 1] = cv2.flip(x_i, 1)
-            y[i + 1] = -y_i
+            y[i    ] =  y_i_c
+            y[i + 1] =  y_i_l
+            x[i + 2] =  y_i_r
+            y[i + 3] = -y_i_c
+            y[i + 4] = -y_i_l
+            y[i + 5] = -y_i_r
 
         yield (x, y)
 
@@ -122,11 +146,11 @@ def train_model(model, train_csv, val_csv):
     """ Trains model """
     print('Training model...')
 
-    batch_size = 64
-    n_epochs = 50
+    batch_size = 10 * N_IMG_PER_ROW
+    n_epochs = 5
 
-    n_train_samples = math.ceil(2 * len(train_csv)/batch_size) * batch_size
-    n_val_samples = math.ceil(2 * len(val_csv)/batch_size) * batch_size
+    n_train_samples = math.ceil(N_IMG_PER_ROW * len(train_csv)/batch_size) * batch_size
+    n_val_samples = math.ceil(N_IMG_PER_ROW * len(val_csv)/batch_size) * batch_size
 
     gen_train = image_generator(train_csv, batch_size)
     gen_val = image_generator(val_csv, batch_size)
@@ -159,8 +183,8 @@ def save_model(out_dir, model):
 def evaluate_model(model, test_csv):
     """ Evaluates the model on test data, printing out the loss """
     print('Evaluating model on test set...')
-    batch_size = 64
-    n_test_samples = math.ceil(2 * len(test_csv)/batch_size) * batch_size
+    batch_size = 10 * N_IMG_PER_ROW
+    n_test_samples = math.ceil(N_IMG_PER_ROW * len(test_csv)/batch_size) * batch_size
 
     gen_test = image_generator(test_csv, batch_size)
     loss = model.evaluate_generator(gen_test, n_test_samples)
@@ -189,7 +213,7 @@ def split_training_data(csv_data, train_ratio, val_ratio):
 def build_model(log_file_path):
     """ Builds and trains the network given the input data in train_dir """
     # Read CSV file with pandas
-    data = pd.read_csv(log_file_path)
+    data = pd.read_csv(log_file_path, sep=', ')
 
     # Split into train, validation and test sets
     train_csv, val_csv, test_csv = split_training_data(data, 0.8, 0.1)
