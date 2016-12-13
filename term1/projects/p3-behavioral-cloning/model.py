@@ -142,12 +142,11 @@ def define_model():
     return model
 
 
-def train_model(model, train_csv, val_csv):
+def train_model(model, n_epochs, train_csv, val_csv):
     """ Trains model """
     print('Training model...')
 
     batch_size = 10 * N_IMG_PER_ROW
-    n_epochs = 5
 
     n_train_samples = math.ceil(N_IMG_PER_ROW * len(train_csv)/batch_size) * batch_size
     n_val_samples = math.ceil(N_IMG_PER_ROW * len(val_csv)/batch_size) * batch_size
@@ -210,7 +209,7 @@ def split_training_data(csv_data, train_ratio, val_ratio):
 
     return train_csv, val_csv, test_csv
 
-def build_model(log_file_path):
+def build_model(log_file_path, n_epochs):
     """ Builds and trains the network given the input data in train_dir """
     # Read CSV file with pandas
     data = pd.read_csv(log_file_path, sep=', ')
@@ -222,7 +221,7 @@ def build_model(log_file_path):
 
     # Build and train the network
     model = define_model()
-    train_model(model, train_csv, val_csv)
+    train_model(model, n_epochs, train_csv, val_csv)
 
     # Evaluate model on test data
     evaluate_model(model, test_csv)
@@ -235,6 +234,9 @@ def parse_input():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('log_file', help='CSV file of log data')
+    parser.add_argument('-e, --n_epochs', dest='n_epochs',
+                        help='number of training epochs', metavar='',
+                        type=int, default=5)
     parser.add_argument('-o, --out_dir', dest='out_dir', metavar='',
                         default=time.strftime("%Y%m%d_%H%M%S"),
                         help='directory where the model is stored')
@@ -248,7 +250,7 @@ def main():
     args = parse_input()
 
     # Build a model
-    model = build_model(args.log_file)
+    model = build_model(args.log_file, args.n_epochs)
 
     # Save model
     save_model(args.out_dir, model)
