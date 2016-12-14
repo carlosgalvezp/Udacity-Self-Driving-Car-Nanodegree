@@ -42,9 +42,9 @@ def image_generator(log_file_csv, batch_size,
     shuffle_idx = np.arange(0, n_log_img)
 
     while 1:
-        if log_idx  < n_rows_to_process:
+        #if log_idx  < n_rows_to_process:
             # shuffle
-            np.random.shuffle(shuffle_idx)
+            #np.random.shuffle(shuffle_idx)
 
         for j in range(0, n_rows_to_process):
             log_idx  = (log_idx  + 1) % n_log_img
@@ -123,21 +123,19 @@ def define_model():
     model.add(Convolution2D(64, 3, 3,
                             border_mode=padding, activation = activation,
                             init = weight_init, subsample = (1, 1)))
-    model.add(Dropout(dropout_prob))
 
     model.add(Flatten())
+    model.add(Dropout(dropout_prob))
+
     model.add(Dense(100, init = weight_init, activation = activation))
-    model.add(Dropout(dropout_prob))
     model.add(Dense(50, init = weight_init, activation = activation))
-    model.add(Dropout(dropout_prob))
     model.add(Dense(10, init = weight_init, activation = activation))
-    model.add(Dropout(dropout_prob))
     model.add(Dense(1, init = weight_init, name = 'output'))
 
     model.summary()
 
     # Compile it
-    model.compile(loss = 'mse', optimizer = Adam(lr = 0.0001))
+    model.compile(loss = 'mse', optimizer = Adam(lr = 0.0001), metrics=['accuracy'])
 
     return model
 
@@ -146,7 +144,7 @@ def train_model(model, n_epochs, train_csv, val_csv):
     """ Trains model """
     print('Training model...')
 
-    batch_size = 10 * N_IMG_PER_ROW
+    batch_size = 20 * N_IMG_PER_ROW
 
     n_train_samples = math.ceil(N_IMG_PER_ROW * len(train_csv)/batch_size) * batch_size
     n_val_samples = math.ceil(N_IMG_PER_ROW * len(val_csv)/batch_size) * batch_size
@@ -182,13 +180,13 @@ def save_model(out_dir, model):
 def evaluate_model(model, test_csv):
     """ Evaluates the model on test data, printing out the loss """
     print('Evaluating model on test set...')
-    batch_size = 10 * N_IMG_PER_ROW
+    batch_size = 20 * N_IMG_PER_ROW
     n_test_samples = math.ceil(N_IMG_PER_ROW * len(test_csv)/batch_size) * batch_size
 
     gen_test = image_generator(test_csv, batch_size)
-    loss = model.evaluate_generator(gen_test, n_test_samples)
+    score = model.evaluate_generator(gen_test, n_test_samples)
 
-    print('Test loss: %.4f' % loss)
+    print(score)
 
 
 def split_training_data(csv_data, train_ratio, val_ratio):
