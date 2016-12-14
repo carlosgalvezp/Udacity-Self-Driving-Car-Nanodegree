@@ -7,6 +7,7 @@ import csv
 import time
 import argparse
 import json
+from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
@@ -27,7 +28,7 @@ ANGLE_OFFSET = 0.1
 # Batch size
 BATCH_SIZE = 64
 
-def image_generator(log_file_csv, batch_size,
+def image_generator(X, y, batch_size,
                     img_shape = preprocess_input.FINAL_IMG_SHAPE):
     """ Provides a batch of images from a log file. The main advantage
         of using a generator is that we do not need to read the whole log file,
@@ -36,11 +37,11 @@ def image_generator(log_file_csv, batch_size,
     log_idx = 0
     n_rows_to_process = int(batch_size/N_IMG_PER_ROW)
 
-    n_log_img = len(log_file_csv)
+    n_log_img = len(y)
 
     # Pre-allocate data
-    x = np.ndarray(shape=(batch_size, img_shape[0], img_shape[1], img_shape[2]))
-    y = np.ndarray(shape=(batch_size,))
+    x_out = np.ndarray(shape=(batch_size,) + img_shape)
+    y_out = np.ndarray(shape=(batch_size,))
 
     shuffle_idx = np.arange(0, n_log_img)
 
@@ -56,12 +57,12 @@ def image_generator(log_file_csv, batch_size,
             i_shuffle = shuffle_idx[log_idx]
 
             # Read center, left and right images from log file
-            x_i_c = cv2.imread(log_file_csv.iloc[i_shuffle][0])
-            x_i_l = cv2.imread(log_file_csv.iloc[i_shuffle][1])
-            x_i_r = cv2.imread(log_file_csv.iloc[i_shuffle][2])
+            x_i_c = cv2.imread(X[i_shuffle][0])
+            x_i_l = cv2.imread(X[i_shuffle][1])
+            x_i_r = cv2.imread(X[i_shuffle][2])
 
             # Read steering angles. Add ANGLE_OFFSET to left/right cameras
-            y_i_c = float(log_file_csv.iloc[i_shuffle][3])
+            y_i_c = float(y[i_shuffle])
             y_i_l = y_i_c + ANGLE_OFFSET
             y_i_r = y_i_c - ANGLE_OFFSET
 
@@ -72,19 +73,19 @@ def image_generator(log_file_csv, batch_size,
 
             # Add to batch
             i = N_IMG_PER_ROW * j
-            x[i    ] = x_i_c
-            x[i + 1] = x_i_l
-            x[i + 2] = x_i_r
+            x_out[i    ] = x_i_c
+            x_out[i + 1] = x_i_l
+            x_out[i + 2] = x_i_r
 
-            y[i    ] =  y_i_c
-            y[i + 1] =  y_i_l
-            x[i + 2] =  y_i_r
+            y_out[i    ] =  y_i_c
+            y_out[i + 1] =  y_i_l
+            y_out[i + 2] =  y_i_r
 
             # Add flipped version of center camera
-            x[i + 3] = cv2.flip(x_i_c, 1)
-            y[i + 3] = -y_i_c
+            x_out[i + 3] = cv2.flip(x_i_c, 1)
+            y_out[i + 3] = -y_i_c
 
-        yield (x, y)
+        yield (x_out, y_out)
 
 
 def normalize(X):
@@ -155,17 +156,17 @@ def define_model():
     return model
 
 
-def train_model(model, n_epochs, train_csv, val_csv):
+def train_model(model, n_epochs, X_train, y_train, X_val, y_val):
     """ Trains model """
     print('Training model...')
 
     batch_size = BATCH_SIZE
 
-    n_train_samples = math.ceil(N_IMG_PER_ROW * len(train_csv)/batch_size) * batch_size
-    n_val_samples = math.ceil(N_IMG_PER_ROW * len(val_csv)/batch_size) * batch_size
+    n_train_samples = math.ceil(N_IMG_PER_ROW * len(y_train)/batch_size) * batch_size
+    n_val_samples = math.ceil(N_IMG_PER_ROW * len(y_val)/batch_size) * batch_size
 
-    gen_train = image_generator(train_csv, batch_size)
-    gen_val = image_generator(val_csv, batch_size)
+    gen_train = image_generator(X_train, y_train, batch_size)
+    gen_val = image_generator(X_val, y_val, batch_size)
 
     model.fit_generator(generator = gen_train,
                         samples_per_epoch = n_train_samples,
@@ -192,37 +193,30 @@ def save_model(out_dir, model):
     model.save_weights(os.path.join(out_dir, 'model.h5'))
 
 
-def split_training_data(csv_data, train_ratio, val_ratio):
-    """ Split input log file (CSV) into train, validation and test sets,
-        according to train_ratio and val_ratio """
-    assert train_ratio + val_ratio < 1.0
-
-    n_total = len(csv_data)
-    n_train = int(math.ceil(n_total * train_ratio))
-    n_val = int(math.ceil(n_total * val_ratio))
-
-    idx = np.arange(0, n_total)
-    np.random.shuffle(idx)
-
-    train_csv = csv_data.iloc[idx[0:n_train]]
-    val_csv = csv_data.iloc[idx[n_train : n_train + n_val]]
-    test_csv = csv_data.iloc[idx[n_train + n_val:]]
-
-    return train_csv, val_csv, test_csv
-
-def build_model(log_file_path, n_epochs):
-    """ Builds and trains the network given the input data in train_dir """
+def get_training_data(log_file_path):
+    """ Reads the CSV file and splits it into training and validation sets """
     # Read CSV file with pandas
     data = pd.read_csv(log_file_path, sep=', ')
 
-    # Split into train, validation and test sets
-    train_csv, val_csv, test_csv = split_training_data(data, 0.8, 0.1)
-    print ('Train set: %d, validation set: %d, test set: %d' %
-            (len(train_csv), len(val_csv), len(test_csv)))
+    # Get image paths and steering angles
+    X = np.column_stack((np.copy(data.iloc[:, 0]), np.copy(data.iloc[:, 1]), np.copy(data.iloc[:, 2])))
+    y = np.copy(data.iloc[:, 3])
+
+    # Split into train and validation set
+    X_train, X_val, y_train, y_val = train_test_split(X, y, random_state = 192837465)
+
+    return X_train, y_train, X_val, y_val
+
+def build_model(log_file_path, n_epochs):
+    """ Builds and trains the network given the input data in train_dir """
+
+    # Get training and validation data
+    X_train, y_train, X_val, y_val = get_training_data(log_file_path)
+    print ('Train set: %d, validation set: %d' % (len(y_train), len(y_val)))
 
     # Build and train the network
     model = define_model()
-    train_model(model, n_epochs, train_csv, val_csv)
+    train_model(model, n_epochs, X_train, y_train, X_val, y_val)
 
     return model
 
