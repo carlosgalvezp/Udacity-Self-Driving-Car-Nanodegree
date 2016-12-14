@@ -192,18 +192,6 @@ def save_model(out_dir, model):
     model.save_weights(os.path.join(out_dir, 'model.h5'))
 
 
-def evaluate_model(model, test_csv):
-    """ Evaluates the model on test data, printing out the loss """
-    print('Evaluating model on test set...')
-    batch_size = BATCH_SIZE
-    n_test_samples = math.ceil(N_IMG_PER_ROW * len(test_csv)/batch_size) * batch_size
-
-    gen_test = image_generator(test_csv, batch_size)
-    score = model.evaluate_generator(gen_test, n_test_samples)
-
-    print(score)
-
-
 def split_training_data(csv_data, train_ratio, val_ratio):
     """ Split input log file (CSV) into train, validation and test sets,
         according to train_ratio and val_ratio """
@@ -235,9 +223,6 @@ def build_model(log_file_path, n_epochs):
     # Build and train the network
     model = define_model()
     train_model(model, n_epochs, train_csv, val_csv)
-
-    # Evaluate model on test data
-    evaluate_model(model, test_csv)
 
     return model
 
