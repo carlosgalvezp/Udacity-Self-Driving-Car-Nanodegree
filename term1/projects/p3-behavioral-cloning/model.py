@@ -10,19 +10,22 @@ import json
 from keras.models import Sequential
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
-from keras.layers.core import Dense, Dropout, Flatten, Lambda
+from keras.layers import Dense, Dropout, Flatten, Lambda, Activation
 from keras.optimizers import Adam
 
 import preprocess_input
 
-# Number of images to process per row of CSV = 2 x (center, left, right).
+# Number of images to process per row of CSV = 2 x center + left + right
 # The 2x factor corresponds to the flipping operation
-N_IMG_PER_ROW = 6
+N_IMG_PER_ROW = 4
 
 # Angle offset for the left and right cameras. It's and estimation of the
 # additional steering angle (normalized [-1,1]) that we would have to steer
 # if the center camera was in the position of the left or right one
 ANGLE_OFFSET = 0.1
+
+# Batch size
+BATCH_SIZE = 64
 
 def image_generator(log_file_csv, batch_size,
                     img_shape = preprocess_input.FINAL_IMG_SHAPE):
@@ -72,16 +75,14 @@ def image_generator(log_file_csv, batch_size,
             x[i    ] = x_i_c
             x[i + 1] = x_i_l
             x[i + 2] = x_i_r
-            x[i + 3] = cv2.flip(x_i_c, 1)
-            x[i + 4] = cv2.flip(x_i_l, 1)
-            x[i + 5] = cv2.flip(x_i_r, 1)
 
             y[i    ] =  y_i_c
             y[i + 1] =  y_i_l
             x[i + 2] =  y_i_r
+
+            # Add flipped version of center camera
+            x[i + 3] = cv2.flip(x_i_c, 1)
             y[i + 3] = -y_i_c
-            y[i + 4] = -y_i_l
-            y[i + 5] = -y_i_r
 
         yield (x, y)
 
@@ -98,9 +99,9 @@ def define_model():
     # Parameters
     input_shape = preprocess_input.FINAL_IMG_SHAPE
 
-    weight_init='normal'
-    activation = 'relu'
+    weight_init='glorot_uniform'
     padding = 'valid'
+    activation = 'relu'
     dropout_prob = 0.5
 
     # Define model
@@ -108,34 +109,48 @@ def define_model():
 
     model.add(Lambda(normalize, input_shape=input_shape, output_shape=input_shape))
 
-    model.add(Convolution2D(24, 5, 5, input_shape = input_shape,
-                            border_mode=padding, activation = activation,
+    model.add(Convolution2D(24, 5, 5,
+                            border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
+    model.add(Activation(activation))
     model.add(Convolution2D(36, 5, 5,
-                            border_mode=padding, activation = activation,
+                            border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
+    model.add(Activation(activation))
     model.add(Convolution2D(48, 5, 5,
-                            border_mode=padding, activation = activation,
+                            border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
+    model.add(Activation(activation))
     model.add(Convolution2D(64, 3, 3,
-                            border_mode=padding, activation = activation,
+                            border_mode=padding,
                             init = weight_init, subsample = (1, 1)))
+    model.add(Activation(activation))
     model.add(Convolution2D(64, 3, 3,
-                            border_mode=padding, activation = activation,
+                            border_mode=padding,
                             init = weight_init, subsample = (1, 1)))
 
     model.add(Flatten())
     model.add(Dropout(dropout_prob))
+    model.add(Activation(activation))
 
-    model.add(Dense(100, init = weight_init, activation = activation))
-    model.add(Dense(50, init = weight_init, activation = activation))
-    model.add(Dense(10, init = weight_init, activation = activation))
+    model.add(Dense(100, init = weight_init))
+    model.add(Dropout(dropout_prob))
+    model.add(Activation(activation))
+
+    model.add(Dense(50, init = weight_init))
+    model.add(Dropout(dropout_prob))
+    model.add(Activation(activation))
+
+    model.add(Dense(10, init = weight_init))
+    model.add(Dropout(dropout_prob))
+    model.add(Activation(activation))
+
     model.add(Dense(1, init = weight_init, name = 'output'))
 
     model.summary()
 
     # Compile it
-    model.compile(loss = 'mse', optimizer = Adam(lr = 0.0001), metrics=['accuracy'])
+    model.compile(loss = 'mse', optimizer = Adam(lr = 0.001))
 
     return model
 
@@ -144,7 +159,7 @@ def train_model(model, n_epochs, train_csv, val_csv):
     """ Trains model """
     print('Training model...')
 
-    batch_size = 20 * N_IMG_PER_ROW
+    batch_size = BATCH_SIZE
 
     n_train_samples = math.ceil(N_IMG_PER_ROW * len(train_csv)/batch_size) * batch_size
     n_val_samples = math.ceil(N_IMG_PER_ROW * len(val_csv)/batch_size) * batch_size
@@ -180,7 +195,7 @@ def save_model(out_dir, model):
 def evaluate_model(model, test_csv):
     """ Evaluates the model on test data, printing out the loss """
     print('Evaluating model on test set...')
-    batch_size = 20 * N_IMG_PER_ROW
+    batch_size = BATCH_SIZE
     n_test_samples = math.ceil(N_IMG_PER_ROW * len(test_csv)/batch_size) * batch_size
 
     gen_test = image_generator(test_csv, batch_size)
