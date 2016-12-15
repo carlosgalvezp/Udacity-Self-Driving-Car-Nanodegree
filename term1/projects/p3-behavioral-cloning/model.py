@@ -11,22 +11,40 @@ from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
-from keras.layers import Dense, Dropout, Flatten, Lambda, Activation
+from keras.layers import Dense, Dropout, Flatten, Lambda, Activation, ELU
 from keras.optimizers import Adam
 
 import preprocess_input
 
-# Number of images to process per row of CSV = 2 x center + left + right
-# The 2x factor corresponds to the flipping operation
-N_IMG_PER_ROW = 4
-
 # Angle offset for the left and right cameras. It's and estimation of the
 # additional steering angle (normalized [-1,1]) that we would have to steer
 # if the center camera was in the position of the left or right one
-ANGLE_OFFSET = 0.1
+ANGLE_OFFSET = 0.25
+
+# Angle offsets applied to center, left and right image
+ANGLE_OFFSETS = [0.0, ANGLE_OFFSET, -ANGLE_OFFSET]
 
 # Batch size
 BATCH_SIZE = 64
+
+# Additional images are generated randomly. This number controls how much
+# data is generated. len(X_train) = EXTENDED_DATA_FACTOR * len(X_train_initial)
+EXTENDED_DATA_FACTOR = 4
+
+def random_horizontal_flip(x, y):
+    flip = np.random.randint(2)
+
+    if flip:
+        x = cv2.flip(x, 1)
+        y = -y
+
+    return x, y
+
+def data_augmentation(x, y):
+    # Random flip
+    x, y = random_horizontal_flip(x, y)
+
+    return x, y
 
 def image_generator(X, y, batch_size,
                     img_shape = preprocess_input.FINAL_IMG_SHAPE):
@@ -34,58 +52,39 @@ def image_generator(X, y, batch_size,
         of using a generator is that we do not need to read the whole log file,
         only one batch at a time, so it will fit in RAM.
         This function also generates extended data on the fly. """
-    log_idx = 0
-    n_rows_to_process = int(batch_size/N_IMG_PER_ROW)
-
-    n_log_img = len(y)
-
-    # Pre-allocate data
+    # Pre-allocate batch data
     x_out = np.ndarray(shape=(batch_size,) + img_shape)
     y_out = np.ndarray(shape=(batch_size,))
 
-    shuffle_idx = np.arange(0, n_log_img)
-
+    # Supply images indefinitely
     while 1:
-        #if log_idx  < n_rows_to_process:
-            # shuffle
-            #np.random.shuffle(shuffle_idx)
+        # Fill batch
+        for i in range(0, batch_size):
+            # Get random index to an element in the dataset. Also select
+            # randomly which of the 3 images (center, left, right) to use
+            idx = np.random.randint(len(y))
+            idx_img = np.random.randint(len(ANGLE_OFFSETS))
 
-        for j in range(0, n_rows_to_process):
-            log_idx  = (log_idx  + 1) % n_log_img
+            # Read image and steering angle (with added offset)
+            x_i = cv2.imread(X[idx][idx_img])
+            y_i = y[idx] + ANGLE_OFFSETS[idx_img]
 
-            # Compute shuffled idx
-            i_shuffle = shuffle_idx[log_idx]
+            # Preprocess image
+            x_i = np.squeeze(preprocess_input.main(np.reshape(x_i, (1,) + x_i.shape)))
 
-            # Read center, left and right images from log file
-            x_i_c = cv2.imread(X[i_shuffle][0])
-            x_i_l = cv2.imread(X[i_shuffle][1])
-            x_i_r = cv2.imread(X[i_shuffle][2])
-
-            # Read steering angles. Add ANGLE_OFFSET to left/right cameras
-            y_i_c = float(y[i_shuffle])
-            y_i_l = y_i_c + ANGLE_OFFSET
-            y_i_r = y_i_c - ANGLE_OFFSET
-
-            # Preprocess images
-            x_i_c = np.squeeze(preprocess_input.main(np.reshape(x_i_c, (1,) + x_i_c.shape)))
-            x_i_l = np.squeeze(preprocess_input.main(np.reshape(x_i_l, (1,) + x_i_l.shape)))
-            x_i_r = np.squeeze(preprocess_input.main(np.reshape(x_i_r, (1,) + x_i_r.shape)))
+            # Augment data
+            x_i, y_i = data_augmentation(x_i, y_i)
 
             # Add to batch
-            i = N_IMG_PER_ROW * j
-            x_out[i    ] = x_i_c
-            x_out[i + 1] = x_i_l
-            x_out[i + 2] = x_i_r
-
-            y_out[i    ] =  y_i_c
-            y_out[i + 1] =  y_i_l
-            y_out[i + 2] =  y_i_r
-
-            # Add flipped version of center camera
-            x_out[i + 3] = cv2.flip(x_i_c, 1)
-            y_out[i + 3] = -y_i_c
+            x_out[i] = x_i
+            y_out[i] = y_i
 
         yield (x_out, y_out)
+
+
+def make_multiple(x, number):
+    """ Increases x to be the smallest multiple of number """
+    return int(math.ceil(float(x) / float(number)) * number)
 
 
 def normalize(X):
@@ -102,7 +101,6 @@ def define_model():
 
     weight_init='glorot_uniform'
     padding = 'valid'
-    activation = 'relu'
     dropout_prob = 0.5
 
     # Define model
@@ -113,45 +111,45 @@ def define_model():
     model.add(Convolution2D(24, 5, 5,
                             border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
-    model.add(Activation(activation))
+    model.add(ELU())
     model.add(Convolution2D(36, 5, 5,
                             border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
-    model.add(Activation(activation))
+    model.add(ELU())
     model.add(Convolution2D(48, 5, 5,
                             border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
-    model.add(Activation(activation))
+    model.add(ELU())
     model.add(Convolution2D(64, 3, 3,
                             border_mode=padding,
                             init = weight_init, subsample = (1, 1)))
-    model.add(Activation(activation))
+    model.add(ELU())
     model.add(Convolution2D(64, 3, 3,
                             border_mode=padding,
                             init = weight_init, subsample = (1, 1)))
 
     model.add(Flatten())
     model.add(Dropout(dropout_prob))
-    model.add(Activation(activation))
+    model.add(ELU())
 
     model.add(Dense(100, init = weight_init))
     model.add(Dropout(dropout_prob))
-    model.add(Activation(activation))
+    model.add(ELU())
 
     model.add(Dense(50, init = weight_init))
     model.add(Dropout(dropout_prob))
-    model.add(Activation(activation))
+    model.add(ELU())
 
     model.add(Dense(10, init = weight_init))
     model.add(Dropout(dropout_prob))
-    model.add(Activation(activation))
+    model.add(ELU())
 
     model.add(Dense(1, init = weight_init, name = 'output'))
 
     model.summary()
 
     # Compile it
-    model.compile(loss = 'mse', optimizer = Adam(lr = 0.001))
+    model.compile(loss = 'mse', optimizer = Adam(lr = 0.0001))
 
     return model
 
@@ -162,16 +160,16 @@ def train_model(model, n_epochs, X_train, y_train, X_val, y_val):
 
     batch_size = BATCH_SIZE
 
-    n_train_samples = math.ceil(N_IMG_PER_ROW * len(y_train)/batch_size) * batch_size
-    n_val_samples = math.ceil(N_IMG_PER_ROW * len(y_val)/batch_size) * batch_size
+    n_train_samples = EXTENDED_DATA_FACTOR * len(y_train)
+    n_val_samples = EXTENDED_DATA_FACTOR * len(y_val)
 
     gen_train = image_generator(X_train, y_train, batch_size)
     gen_val = image_generator(X_val, y_val, batch_size)
 
     model.fit_generator(generator = gen_train,
-                        samples_per_epoch = n_train_samples,
+                        samples_per_epoch = make_multiple(n_train_samples, batch_size),
                         validation_data = gen_val,
-                        nb_val_samples = n_val_samples,
+                        nb_val_samples = make_multiple(n_val_samples, batch_size),
                         nb_epoch = n_epochs,
                         verbose = 1)
 
