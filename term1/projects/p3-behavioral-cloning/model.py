@@ -17,7 +17,7 @@ from keras.optimizers import Adam
 import preprocess_input
 
 # Angle offset for the left and right cameras. It's and estimation of the
-# additional steering angle (normalized [-1,1]) that we would have to steer
+# additional steering angle (normalized to [-1,1]) that we would have to steer
 # if the center camera was in the position of the left or right one
 ANGLE_OFFSET = 0.25
 
