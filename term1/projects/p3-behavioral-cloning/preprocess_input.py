@@ -25,7 +25,7 @@ def main(X):
     for i in range(X.shape[0]):
         img = X[i,:]
         img = resize(img)
-        img = rgb_to_yuv(img)
+        #img = rgb_to_yuv(img)
 
         X_out.append(np.reshape(img, FINAL_IMG_SHAPE))
 

@@ -13,6 +13,7 @@ from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
 from keras.layers import Dense, Dropout, Flatten, Lambda, Activation, ELU
 from keras.optimizers import Adam
+from keras.callbacks import Callback
 
 import preprocess_input
 
@@ -29,7 +30,7 @@ BATCH_SIZE = 64
 
 # Additional images are generated randomly. This number controls how much
 # data is generated. len(X_train) = EXTENDED_DATA_FACTOR * len(X_train_initial)
-EXTENDED_DATA_FACTOR = 4
+EXTENDED_DATA_FACTOR = 5
 
 def random_horizontal_flip(x, y):
     flip = np.random.randint(2)
@@ -154,26 +155,6 @@ def define_model():
     return model
 
 
-def train_model(model, n_epochs, X_train, y_train, X_val, y_val):
-    """ Trains model """
-    print('Training model...')
-
-    batch_size = BATCH_SIZE
-
-    n_train_samples = EXTENDED_DATA_FACTOR * len(y_train)
-    n_val_samples = EXTENDED_DATA_FACTOR * len(y_val)
-
-    gen_train = image_generator(X_train, y_train, batch_size)
-    gen_val = image_generator(X_val, y_val, batch_size)
-
-    model.fit_generator(generator = gen_train,
-                        samples_per_epoch = make_multiple(n_train_samples, batch_size),
-                        validation_data = gen_val,
-                        nb_val_samples = make_multiple(n_val_samples, batch_size),
-                        nb_epoch = n_epochs,
-                        verbose = 1)
-
-
 def save_model(out_dir, model):
     """ Saves model (json) and weights (h5) to disk """
     print('Saving model in %s...' % out_dir)
@@ -191,6 +172,40 @@ def save_model(out_dir, model):
     model.save_weights(os.path.join(out_dir, 'model.h5'))
 
 
+class EpochSaverCallback(Callback):
+    def __init__(self, out_dir):
+        self.out_dir = out_dir
+        self.log_epochs = [1, 2, 3, 4, 5, 10, 15, 20, 25, 50, 100]
+    def on_epoch_end(self, epoch, logs={}):
+        epoch = epoch+1
+        if epoch in self.log_epochs:
+            out_dir = os.path.join(self.out_dir, 'e' + str(epoch))
+            save_model(out_dir, self.model)
+
+
+def train_model(model, save_dir, n_epochs, X_train, y_train, X_val, y_val):
+    """ Trains model """
+    print('Training model...')
+
+    batch_size = BATCH_SIZE
+
+    n_train_samples = EXTENDED_DATA_FACTOR * len(y_train)
+    n_val_samples = EXTENDED_DATA_FACTOR * len(y_val)
+
+    gen_train = image_generator(X_train, y_train, batch_size)
+    gen_val = image_generator(X_val, y_val, batch_size)
+
+    checkpoint_callback = EpochSaverCallback(save_dir)
+
+    model.fit_generator(generator = gen_train,
+                        samples_per_epoch = make_multiple(n_train_samples, batch_size),
+                        validation_data = gen_val,
+                        nb_val_samples = make_multiple(n_val_samples, batch_size),
+                        nb_epoch = n_epochs,
+                        callbacks = [checkpoint_callback],
+                        verbose = 1)
+
+
 def get_training_data(log_file_path):
     """ Reads the CSV file and splits it into training and validation sets """
     # Read CSV file with pandas
@@ -205,7 +220,7 @@ def get_training_data(log_file_path):
 
     return X_train, y_train, X_val, y_val
 
-def build_model(log_file_path, n_epochs):
+def build_model(log_file_path, n_epochs, save_dir):
     """ Builds and trains the network given the input data in train_dir """
 
     # Get training and validation data
@@ -214,7 +229,7 @@ def build_model(log_file_path, n_epochs):
 
     # Build and train the network
     model = define_model()
-    train_model(model, n_epochs, X_train, y_train, X_val, y_val)
+    train_model(model, save_dir, n_epochs, X_train, y_train, X_val, y_val)
 
     return model
 
@@ -240,7 +255,7 @@ def main():
     args = parse_input()
 
     # Build a model
-    model = build_model(args.log_file, args.n_epochs)
+    model = build_model(args.log_file, args.n_epochs, args.out_dir)
 
     # Save model
     save_model(args.out_dir, model)
