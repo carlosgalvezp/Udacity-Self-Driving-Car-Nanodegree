@@ -18,15 +18,10 @@ def resize(x):
 def rgb_to_yuv(x):
     return cv2.cvtColor(x, cv2.COLOR_BGR2YUV)
 
-def main(X):
+def main(img):
     """ Preprocesses input data
-        X is a tensor (n_img, height, width, depth) """
-    X_out = []
-    for i in range(X.shape[0]):
-        img = X[i,:]
-        img = resize(img)
-        #img = rgb_to_yuv(img)
+        img is an image of shape (height, width, depth) """
+    img = resize(img)
+    #img = rgb_to_yuv(img)
 
-        X_out.append(np.reshape(img, FINAL_IMG_SHAPE))
-
-    return np.array(X_out)
+    return img

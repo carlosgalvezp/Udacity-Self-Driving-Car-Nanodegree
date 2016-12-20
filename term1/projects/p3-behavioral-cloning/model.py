@@ -30,7 +30,7 @@ BATCH_SIZE = 64
 
 # Additional images are generated randomly. This number controls how much
 # data is generated. len(X_train) = EXTENDED_DATA_FACTOR * len(X_train_initial)
-EXTENDED_DATA_FACTOR = 10
+EXTENDED_DATA_FACTOR = 20
 
 
 def random_horizontal_flip(x, y):
@@ -68,22 +68,20 @@ def data_augmentation(x, y):
 
     return x, y
 
-def image_generator(X, y, batch_size,
-                    img_shape = preprocess_input.FINAL_IMG_SHAPE):
+def image_generator(X, y, batch_size):
     """ Provides a batch of images from a log file. The main advantage
         of using a generator is that we do not need to read the whole log file,
         only one batch at a time, so it will fit in RAM.
         This function also generates extended data on the fly. """
-    # Pre-allocate batch data
-    x_out = np.ndarray(shape=(batch_size,) + img_shape)
-    y_out = np.ndarray(shape=(batch_size,))
-
     # Supply images indefinitely
     while 1:
+        # Declare output data
+        x_out = []
+        y_out = []
+
         # Fill batch
         for i in range(0, batch_size):
-            # Get random index to an element in the dataset. Also select
-            # randomly which of the 3 images (center, left, right) to use
+            # Get random index to an element in the dataset.
             idx = np.random.randint(len(y))
 
             # Keep sampling images until we find one with high angle, with
@@ -94,6 +92,7 @@ def image_generator(X, y, batch_size,
                 while abs(y[idx]) < large_angle:
                     idx = np.random.randint(len(y))
 
+            # Randomly select which of the 3 images (center, left, right) to use
             idx_img = np.random.randint(len(ANGLE_OFFSETS))
 
             # Read image and steering angle (with added offset)
@@ -101,16 +100,16 @@ def image_generator(X, y, batch_size,
             y_i = y[idx] + ANGLE_OFFSETS[idx_img]
 
             # Preprocess image
-            x_i = np.squeeze(preprocess_input.main(np.reshape(x_i, (1,) + x_i.shape)))
+            x_i = preprocess_input.main(x_i)
 
             # Augment data
             x_i, y_i = data_augmentation(x_i, y_i)
 
             # Add to batch
-            x_out[i] = x_i
-            y_out[i] = y_i
+            x_out.append(x_i)
+            y_out.append(y_i)
 
-        yield (x_out, y_out)
+        yield (np.array(x_out), np.array(y_out))
 
 
 def make_multiple(x, number):
@@ -130,6 +129,7 @@ def define_model():
     # Parameters
     input_shape = preprocess_input.FINAL_IMG_SHAPE
 
+    activation='relu'
     weight_init='glorot_uniform'
     padding = 'valid'
     dropout_prob = 0.5
@@ -142,38 +142,38 @@ def define_model():
     model.add(Convolution2D(24, 5, 5,
                             border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
-    model.add(ELU())
+    model.add(Activation(activation))
     model.add(Convolution2D(36, 5, 5,
                             border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
-    model.add(ELU())
+    model.add(Activation(activation))
     model.add(Convolution2D(48, 5, 5,
                             border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
-    model.add(ELU())
+    model.add(Activation(activation))
     model.add(Convolution2D(64, 3, 3,
                             border_mode=padding,
                             init = weight_init, subsample = (1, 1)))
-    model.add(ELU())
+    model.add(Activation(activation))
     model.add(Convolution2D(64, 3, 3,
                             border_mode=padding,
                             init = weight_init, subsample = (1, 1)))
 
     model.add(Flatten())
     model.add(Dropout(dropout_prob))
-    model.add(ELU())
+    model.add(Activation(activation))
 
     model.add(Dense(100, init = weight_init))
     model.add(Dropout(dropout_prob))
-    model.add(ELU())
+    model.add(Activation(activation))
 
     model.add(Dense(50, init = weight_init))
     model.add(Dropout(dropout_prob))
-    model.add(ELU())
+    model.add(Activation(activation))
 
     model.add(Dense(10, init = weight_init))
     model.add(Dropout(dropout_prob))
-    model.add(ELU())
+    model.add(Activation(activation))
 
     model.add(Dense(1, init = weight_init, name = 'output'))
 
