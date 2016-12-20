@@ -85,6 +85,15 @@ def image_generator(X, y, batch_size,
             # Get random index to an element in the dataset. Also select
             # randomly which of the 3 images (center, left, right) to use
             idx = np.random.randint(len(y))
+
+            # Keep sampling images until we find one with high angle, with
+            # a certain probability
+            p_choose_large_angle_th = 0.5
+            large_angle = 0.1
+            if np.random.uniform() < p_choose_large_angle_th:
+                while abs(y[idx]) < large_angle:
+                    idx = np.random.randint(len(y))
+
             idx_img = np.random.randint(len(ANGLE_OFFSETS))
 
             # Read image and steering angle (with added offset)
