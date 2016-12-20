@@ -20,7 +20,7 @@ import preprocess_input
 # Angle offset for the left and right cameras. It's and estimation of the
 # additional steering angle (normalized to [-1,1]) that we would have to steer
 # if the center camera was in the position of the left or right one
-ANGLE_OFFSET = 0.25
+ANGLE_OFFSET = 0.2
 
 # Angle offsets applied to center, left and right image
 ANGLE_OFFSETS = [0.0, ANGLE_OFFSET, -ANGLE_OFFSET]
@@ -129,7 +129,6 @@ def define_model():
     # Parameters
     input_shape = preprocess_input.FINAL_IMG_SHAPE
 
-    activation='relu'
     weight_init='glorot_uniform'
     padding = 'valid'
     dropout_prob = 0.5
@@ -142,45 +141,45 @@ def define_model():
     model.add(Convolution2D(24, 5, 5,
                             border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
-    model.add(Activation(activation))
+    model.add(ELU())
     model.add(Convolution2D(36, 5, 5,
                             border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
-    model.add(Activation(activation))
+    model.add(ELU())
     model.add(Convolution2D(48, 5, 5,
                             border_mode=padding,
                             init = weight_init, subsample = (2, 2)))
-    model.add(Activation(activation))
+    model.add(ELU())
     model.add(Convolution2D(64, 3, 3,
                             border_mode=padding,
                             init = weight_init, subsample = (1, 1)))
-    model.add(Activation(activation))
+    model.add(ELU())
     model.add(Convolution2D(64, 3, 3,
                             border_mode=padding,
                             init = weight_init, subsample = (1, 1)))
 
     model.add(Flatten())
     model.add(Dropout(dropout_prob))
-    model.add(Activation(activation))
+    model.add(ELU())
 
     model.add(Dense(100, init = weight_init))
     model.add(Dropout(dropout_prob))
-    model.add(Activation(activation))
+    model.add(ELU())
 
     model.add(Dense(50, init = weight_init))
     model.add(Dropout(dropout_prob))
-    model.add(Activation(activation))
+    model.add(ELU())
 
     model.add(Dense(10, init = weight_init))
     model.add(Dropout(dropout_prob))
-    model.add(Activation(activation))
+    model.add(ELU())
 
     model.add(Dense(1, init = weight_init, name = 'output'))
 
     model.summary()
 
     # Compile it
-    model.compile(loss = 'mse', optimizer = Adam(lr = 0.0001))
+    model.compile(loss = 'mse', optimizer = Adam(lr = 0.001))
 
     return model
 
