@@ -30,7 +30,8 @@ BATCH_SIZE = 64
 
 # Additional images are generated randomly. This number controls how much
 # data is generated. len(X_train) = EXTENDED_DATA_FACTOR * len(X_train_initial)
-EXTENDED_DATA_FACTOR = 5
+EXTENDED_DATA_FACTOR = 10
+
 
 def random_horizontal_flip(x, y):
     flip = np.random.randint(2)
@@ -41,7 +42,27 @@ def random_horizontal_flip(x, y):
 
     return x, y
 
+def random_translation(img, steering):
+    # Maximum shift of the image, in pixels
+    trans_range = 50  # Pixels
+
+    # Compute translation and corresponding steering angle
+    tr_x = np.random.uniform(-trans_range, trans_range)
+    steering = steering + (tr_x / trans_range) * ANGLE_OFFSET
+
+    # Warp image using the computed translation
+    rows = img.shape[0]
+    cols = img.shape[1]
+
+    M = np.float32([[1,0,tr_x],[0,1,0]])
+    img = cv2.warpAffine(img,M,(cols,rows))
+
+    return img, steering
+
 def data_augmentation(x, y):
+    # Random horizontal shift
+    x, y = random_translation(x, y)
+
     # Random flip
     x, y = random_horizontal_flip(x, y)
 
