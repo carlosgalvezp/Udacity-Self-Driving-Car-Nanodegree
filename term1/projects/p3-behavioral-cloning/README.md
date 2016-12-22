@@ -12,9 +12,8 @@ Input Data
 The input data comes from a set of forward-looking cameras installed inside the
 vehicle: one in the center, and two to the sides (left, right).
 
-The simulator only uses the center camera for predicting the steering angle,
-so we only use this one for training as well. However the results could be
-improved by using the other two cameras, as reported by other students.
+The simulator only uses the center camera for predicting the steering angle.
+Nevertheless, we use all the data available for training.
 
 The images from the cameras are RGB, with resolution (160, 320)
 
@@ -46,10 +45,10 @@ steering angle) instead of classification, so no activation function
 or softmax must be applied at the last layer, which will have only one neuron.
 
 The use of pre-trained networks like AlexNet or VGG (i.e. transfer learning)
-was not considered from the beginning, since they were training for different
+was not considered from the beginning, since they were trained for different
 purposes. Re-training these networks from scratch would take a much larger
 effort, and we believe that to have a short loop between training and testing
-is crucial. This was recommended also by many other students in Confluence.
+is crucial. This was recommended also by many other students in the forums.
 
 The implemented network consists of the following layers:
 
@@ -74,12 +73,13 @@ images are much smaller.
 - **Fully Connected 3**, with 10 neurons + Dropout(0.5).
 - **Fully Connected 4**, with 1 neuron, being the output.
 
-All the layers, except for the output layer, have a ReLU activation function.
-In addition, all the layers are initialized with the 'normal' function,
-available in Keras, which by default uses a standard deviation of 0.05,
-similar to what was done in the TensorFlow labs and exercises. A truncated
-normal function would have been desirable, but could not be found in Keras.
+All the layers, except for the output layer, have a ELU activation function.
+The motivation to prefer it over ReLU is that it has a continuous derivative
+and x = 0 and does not kill negative activations. The result is a bit smoother
+steering output.
 
+In addition, all the layers are initialized with the 'glorot_uniform' function,
+default in Keras
 The main improvement over Nvidia's implementation is to add the Dropout
 layers in order to fight against overfitting.
 
