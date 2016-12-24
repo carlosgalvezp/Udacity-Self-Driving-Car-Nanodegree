@@ -14,7 +14,7 @@ from keras.layers.pooling import MaxPooling2D
 from keras.layers import Dense, Dropout, Flatten, Lambda, Activation, ELU
 from keras.optimizers import Adam
 from keras.callbacks import Callback
-
+import matplotlib.image as mpimg
 import preprocess_input
 
 # Angle offset for the left and right cameras. It's and estimation of the
@@ -96,7 +96,7 @@ def image_generator(X, y, batch_size):
             idx_img = np.random.randint(len(ANGLE_OFFSETS))
 
             # Read image and steering angle (with added offset)
-            x_i = cv2.imread(X[idx][idx_img])
+            x_i = mpimg.imread(X[idx][idx_img])
             y_i = y[idx] + ANGLE_OFFSETS[idx_img]
 
             # Preprocess image
