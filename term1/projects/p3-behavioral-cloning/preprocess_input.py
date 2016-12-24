@@ -16,7 +16,7 @@ def resize(x):
     return x[crop_height:, :, :]
 
 def rgb_to_yuv(x):
-    return cv2.cvtColor(x, cv2.COLOR_BGR2YUV)
+    return cv2.cvtColor(x, cv2.COLOR_RGB2YUV)
 
 def main(img):
     """ Preprocesses input data

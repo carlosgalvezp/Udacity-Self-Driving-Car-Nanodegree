@@ -7,10 +7,10 @@ unzip simulator-linux.zip -d simulator
 
 # Download training data
 wget https://d17h27t6h515a5.cloudfront.net/topher/2016/December/584f6edd_data/data.zip
-unzip data.zip -d data
+unzip data.zip
 
 # Clean up
-rm simulator-linux.zip data.zip
+rm -r simulator-linux.zip data.zip __MACOSX
 
 
 

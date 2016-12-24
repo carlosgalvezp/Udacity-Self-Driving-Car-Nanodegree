@@ -96,7 +96,7 @@ def image_generator(X, y, batch_size):
             idx_img = np.random.randint(len(ANGLE_OFFSETS))
 
             # Read image and steering angle (with added offset)
-            x_i = mpimg.imread(X[idx][idx_img])
+            x_i = mpimg.imread(X[idx][idx_img].strip())
             y_i = y[idx] + ANGLE_OFFSETS[idx_img]
 
             # Preprocess image
@@ -238,11 +238,11 @@ def train_model(model, save_dir, n_epochs, X_train, y_train, X_val, y_val):
 def get_training_data(log_file_path):
     """ Reads the CSV file and splits it into training and validation sets """
     # Read CSV file with pandas
-    data = pd.read_csv(log_file_path, sep=', ')
+    data = pd.read_csv(log_file_path)
 
     # Get image paths and steering angles
-    X = np.column_stack((np.copy(data.iloc[:, 0]), np.copy(data.iloc[:, 1]), np.copy(data.iloc[:, 2])))
-    y = np.copy(data.iloc[:, 3])
+    X = np.column_stack((np.copy(data['center']), np.copy(data['left']), np.copy(data['right'])))
+    y = np.copy(data['steering'])
 
     # Split into train and validation set
     X_train, X_val, y_train, y_val = train_test_split(X, y, random_state = 192837465)
