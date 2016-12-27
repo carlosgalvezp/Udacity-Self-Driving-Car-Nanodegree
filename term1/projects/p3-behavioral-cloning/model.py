@@ -7,7 +7,6 @@ import csv
 import time
 import argparse
 import json
-from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers.convolutional import Convolution2D
 from keras.layers.pooling import MaxPooling2D
@@ -27,11 +26,6 @@ ANGLE_OFFSETS = [0.0, ANGLE_OFFSET, -ANGLE_OFFSET]
 
 # Batch size
 BATCH_SIZE = 64
-
-# Additional images are generated randomly. This number controls how much
-# data is generated. len(X_train) = EXTENDED_DATA_FACTOR * len(X_train_initial)
-EXTENDED_DATA_FACTOR = 30
-
 
 def random_horizontal_flip(x, y):
     flip = np.random.randint(2)
@@ -68,12 +62,12 @@ def data_augmentation(x, y):
 
     return x, y
 
-def image_generator(X, y, batch_size):
+def train_generator(X, y, batch_size):
     """ Provides a batch of images from a log file. The main advantage
         of using a generator is that we do not need to read the whole log file,
         only one batch at a time, so it will fit in RAM.
         This function also generates extended data on the fly. """
-    # Supply images indefinitely
+    # Supply training images indefinitely
     while 1:
         # Declare output data
         x_out = []
@@ -86,7 +80,7 @@ def image_generator(X, y, batch_size):
 
             # Keep sampling images until we find one with high angle, with
             # a certain probability
-            p_choose_large_angle_th = 0.0
+            p_choose_large_angle_th = 0.1
             large_angle = 0.1
             if np.random.uniform() < p_choose_large_angle_th:
                 while abs(y[idx]) < large_angle:
@@ -110,6 +104,22 @@ def image_generator(X, y, batch_size):
             y_out.append(y_i)
 
         yield (np.array(x_out), np.array(y_out))
+
+
+def val_generator(X, y):
+    # Validation generator
+    while 1:
+        for i in range(len(y)):
+            # Read image and steering angle
+            x_out = mpimg.imread(X[i][0].strip())
+            y_out = np.array([[y[i]]])
+
+            # Preprocess image
+            x_out = preprocess_input.main(x_out)
+            x_out = x_out[None, :, :, :]
+
+            # Return the data
+            yield x_out, y_out
 
 
 def make_multiple(x, number):
@@ -204,32 +214,39 @@ def save_model(out_dir, model):
 class EpochSaverCallback(Callback):
     def __init__(self, out_dir):
         self.out_dir = out_dir
-        self.log_epochs = [1, 2, 3, 4, 5, 10, 15, 20, 25, 50, 75, 100]
+
+    def on_train_begin(self, logs={}):
+        self.losses = []
+
     def on_epoch_end(self, epoch, logs={}):
-        epoch = epoch+1
-        if epoch in self.log_epochs:
-            out_dir = os.path.join(self.out_dir, 'e' + str(epoch))
+        current_loss = logs.get('val_loss')
+
+        if not self.losses or current_loss < np.amin(self.losses):
+            out_dir = os.path.join(self.out_dir, 'e' + str(epoch+1))
             save_model(out_dir, self.model)
 
+        self.losses.append(current_loss)
 
-def train_model(model, save_dir, n_epochs, X_train, y_train, X_val, y_val):
+
+
+def train_model(model, save_dir, n_epochs, X, y):
     """ Trains model """
     print('Training model...')
 
     batch_size = BATCH_SIZE
 
-    n_train_samples = EXTENDED_DATA_FACTOR * len(y_train)
-    n_val_samples = EXTENDED_DATA_FACTOR * len(y_val)
+    n_train_samples = make_multiple(len(y), batch_size)
+    n_val_samples = len(y)
 
-    gen_train = image_generator(X_train, y_train, batch_size)
-    gen_val = image_generator(X_val, y_val, batch_size)
+    gen_train = train_generator(X, y, batch_size)
+    gen_val = val_generator(X, y)
 
     checkpoint_callback = EpochSaverCallback(save_dir)
 
     model.fit_generator(generator = gen_train,
-                        samples_per_epoch = make_multiple(n_train_samples, batch_size),
+                        samples_per_epoch = n_train_samples,
                         validation_data = gen_val,
-                        nb_val_samples = make_multiple(n_val_samples, batch_size),
+                        nb_val_samples = n_val_samples,
                         nb_epoch = n_epochs,
                         callbacks = [checkpoint_callback],
                         verbose = 1)
@@ -244,21 +261,17 @@ def get_training_data(log_file_path):
     X = np.column_stack((np.copy(data['center']), np.copy(data['left']), np.copy(data['right'])))
     y = np.copy(data['steering'])
 
-    # Split into train and validation set
-    X_train, X_val, y_train, y_val = train_test_split(X, y, random_state = 192837465)
-
-    return X_train, y_train, X_val, y_val
+    return X, y
 
 def build_model(log_file_path, n_epochs, save_dir):
     """ Builds and trains the network given the input data in train_dir """
 
     # Get training and validation data
-    X_train, y_train, X_val, y_val = get_training_data(log_file_path)
-    print ('Train set: %d, validation set: %d' % (len(y_train), len(y_val)))
+    X, y = get_training_data(log_file_path)
 
     # Build and train the network
     model = define_model()
-    train_model(model, save_dir, n_epochs, X_train, y_train, X_val, y_val)
+    train_model(model, save_dir, n_epochs, X, y)
 
     return model
 

@@ -43,8 +43,6 @@ def telemetry(sid, data):
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
     throttle = 0.2
     print(steering_angle, throttle)
-    cv2.imshow('Img', transformed_image_array[0, :, :, :])
-    cv2.waitKey(1)
     send_control(steering_angle, throttle)
 
 
