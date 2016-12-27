@@ -20,7 +20,7 @@ import preprocess_input
 # Angle offset for the left and right cameras. It's and estimation of the
 # additional steering angle (normalized to [-1,1]) that we would have to steer
 # if the center camera was in the position of the left or right one
-ANGLE_OFFSET = 0.2
+ANGLE_OFFSET = 0.1
 
 # Angle offsets applied to center, left and right image
 ANGLE_OFFSETS = [0.0, ANGLE_OFFSET, -ANGLE_OFFSET]
@@ -30,7 +30,7 @@ BATCH_SIZE = 64
 
 # Additional images are generated randomly. This number controls how much
 # data is generated. len(X_train) = EXTENDED_DATA_FACTOR * len(X_train_initial)
-EXTENDED_DATA_FACTOR = 20
+EXTENDED_DATA_FACTOR = 30
 
 
 def random_horizontal_flip(x, y):
@@ -86,7 +86,7 @@ def image_generator(X, y, batch_size):
 
             # Keep sampling images until we find one with high angle, with
             # a certain probability
-            p_choose_large_angle_th = 0.5
+            p_choose_large_angle_th = 0.0
             large_angle = 0.1
             if np.random.uniform() < p_choose_large_angle_th:
                 while abs(y[idx]) < large_angle:
@@ -131,7 +131,7 @@ def define_model():
 
     weight_init='glorot_uniform'
     padding = 'valid'
-    dropout_prob = 0.5
+    dropout_prob = 0.25
 
     # Define model
     model = Sequential()
@@ -204,7 +204,7 @@ def save_model(out_dir, model):
 class EpochSaverCallback(Callback):
     def __init__(self, out_dir):
         self.out_dir = out_dir
-        self.log_epochs = [1, 2, 3, 4, 5, 10, 15, 20, 25, 50, 100]
+        self.log_epochs = [1, 2, 3, 4, 5, 10, 15, 20, 25, 50, 75, 100]
     def on_epoch_end(self, epoch, logs={}):
         epoch = epoch+1
         if epoch in self.log_epochs:
