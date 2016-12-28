@@ -19,7 +19,7 @@ import preprocess_input
 # Angle offset for the left and right cameras. It's and estimation of the
 # additional steering angle (normalized to [-1,1]) that we would have to steer
 # if the center camera was in the position of the left or right one
-ANGLE_OFFSET = 0.1
+ANGLE_OFFSET = 0.25
 
 # Angle offsets applied to center, left and right image
 ANGLE_OFFSETS = [0.0, ANGLE_OFFSET, -ANGLE_OFFSET]
@@ -78,14 +78,6 @@ def train_generator(X, y, batch_size):
             # Get random index to an element in the dataset.
             idx = np.random.randint(len(y))
 
-            # Keep sampling images until we find one with high angle, with
-            # a certain probability
-            p_choose_large_angle_th = 0.1
-            large_angle = 0.1
-            if np.random.uniform() < p_choose_large_angle_th:
-                while abs(y[idx]) < large_angle:
-                    idx = np.random.randint(len(y))
-
             # Randomly select which of the 3 images (center, left, right) to use
             idx_img = np.random.randint(len(ANGLE_OFFSETS))
 
@@ -107,6 +99,9 @@ def train_generator(X, y, batch_size):
 
 
 def val_generator(X, y):
+    """ Provides images for validation. This generator is different
+        from the previous one in that it does **not** perform data augmentation:
+        it just reads images from disk, preprocess them and yields them """
     # Validation generator
     while 1:
         for i in range(len(y)):
@@ -235,7 +230,7 @@ def train_model(model, save_dir, n_epochs, X, y):
 
     batch_size = BATCH_SIZE
 
-    n_train_samples = make_multiple(len(y), batch_size)
+    n_train_samples = 5 * make_multiple(len(y), batch_size)
     n_val_samples = len(y)
 
     gen_train = train_generator(X, y, batch_size)
