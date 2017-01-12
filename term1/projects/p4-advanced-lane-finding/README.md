@@ -1,5 +1,6 @@
 # Advanced Lane Finding
 
+<img src="./output_images/test1.jpg" height=""/>
 ---
 
 ## General overview
@@ -39,11 +40,18 @@ to the image `img_distorted.jpg`, obtaining `img_undistorted.jpg`:
 
 ### Region of Interest
 
-### Color mask
+### Color masks
 
-### Gradient mask
+### Gradient masks
+
+### Final mask
+
+<img src="./res/final_mask.jpg" height="200"/>
 
 ## Perspective transformation
+
+<img src="./res/persp_transform_original.jpg" height="200"/>
+<img src="./res/persp_transform_warped.jpg" height="200"/>
 
 ## Line search
 
