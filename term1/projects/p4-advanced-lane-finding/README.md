@@ -1,6 +1,7 @@
 # Advanced Lane Finding
 
-<img src="./output_images/test1.jpg" height=""/>
+<img src="./output_images/test1.jpg" height="400"/>
+
 ---
 
 ## General overview
@@ -55,9 +56,15 @@ to the image `img_distorted.jpg`, obtaining `img_undistorted.jpg`:
 
 ## Line search
 
+<img src="./res/before_line_search.jpg" height="200"/>
+<img src="./res/line_search_initial_point.jpg" height="200"/>
+
 ## Line tracking
 
 ## Line fitting
+
+<img src="./res/line_fit_left.jpg" height="200"/>
+<img src="./res/line_fit_right.jpg" height="200"/>
 
 ## Road curvature estimation
 
@@ -65,11 +72,30 @@ to the image `img_distorted.jpg`, obtaining `img_undistorted.jpg`:
 
 ## Visualization
 
+<img src="./res/free_space.jpg" height="200"/>
+
+<img src="./res/main_visualization.jpg" height="200"/>
+
+
+<img src="./output_images/test1.jpg" height="400"/>
+
 ## Complete pipeline
 
 ## Results
 
 ### Test images
+
+<img src="./output_images/test1.jpg" height="400"/>
+
+<img src="./output_images/test2.jpg" height="400"/>
+
+<img src="./output_images/test3.jpg" height="400"/>
+
+<img src="./output_images/test4.jpg" height="400"/>
+
+<img src="./output_images/test5.jpg" height="400"/>
+
+<img src="./output_images/test6.jpg" height="400"/>
 
 ### Test video
 
