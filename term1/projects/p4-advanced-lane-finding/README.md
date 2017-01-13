@@ -51,22 +51,52 @@ to the image `img_distorted.jpg`, obtaining `img_undistorted.jpg`:
 
 ## Perspective transformation
 
+One of the goals of the project is to compute the road curvature and
+vehicle position within the lane. In order to do that, we must obtain
+a _birds-eye view_ of the image, which allows us to obtain real measurements,
+not affected by the perspective of the camera.
+
+This operation is called _perspective transformation_. We use the OpenCV functions
+`cv2.getPerspectiveTransform` and `cv2.warpPerspective` to this extent.
+We need to manually select 4 points in the source image that lie on the same
+plane. The chosen points can be seen in the red rectangle in
+`persp_transform_original.jpg`:
+
 <img src="./res/persp_transform_original.jpg" height="200"/>
+
+These 4 points are mapped into a real rectangle,
+with parallel lines, as shown in `persp_transform_warped.jpg`:
+
 <img src="./res/persp_transform_warped.jpg" height="200"/>
+
+As can be seen, the road lines don't appear parallel in the original image
+due to the camera perspective, but after the perspective transform they do
+appear parallel, since we chose the 4 points carefully to do so.
+
+After this, we can start searching for lines and computing the road curvature.
 
 ## Line search
 
+
+
+### Starting point
 <img src="./res/before_line_search.jpg" height="200"/>
 <img src="./res/line_search_initial_point.jpg" height="200"/>
 
-<img src="./res/sliding_window_search.jpg" height="200"/>
+### Sliding window
 
-## Line tracking
+<img src="./res/sliding_window_search_left.jpg" height="200"/>
+<img src="./res/sliding_window_search_right.jpg" height="200"/>
 
 ## Line fitting
 
 <img src="./res/line_fit_left.jpg" height="200"/>
 <img src="./res/line_fit_right.jpg" height="200"/>
+
+## Line tracking
+<img src="./res/tracking_search_left.jpg" height="200"/>
+<img src="./res/tracking_search_right.jpg" height="200"/>
+
 
 ## Road curvature estimation
 
