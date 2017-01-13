@@ -59,6 +59,8 @@ to the image `img_distorted.jpg`, obtaining `img_undistorted.jpg`:
 <img src="./res/before_line_search.jpg" height="200"/>
 <img src="./res/line_search_initial_point.jpg" height="200"/>
 
+<img src="./res/sliding_window_search.jpg" height="200"/>
+
 ## Line tracking
 
 ## Line fitting
