@@ -228,7 +228,7 @@ Yes. The process has been implemented in the following steps:
 
 We explain these 2 steps in the following sections.
 
-## Line search
+### Line search
 
 When we receive the first video frame, we have no information about the lane
 lines in the image. Therefore we must perform a search without prior assumptions.
@@ -241,7 +241,7 @@ The implemented approach is as follows:
 2. Follow the line all the way up to the top of the image, using a sliding
 window technique.
 
-### Starting point
+#### Starting point
 
 To search for the starting point of the lines, we compute the **histogram**
 over the number of pixels for each `x` position in the image. To simplify
@@ -283,7 +283,7 @@ def get_starting_x(img, visualize=False):
 It can clearly be seen that there are 2 main peaks, which correspond to the starting
 position of the lines.
 
-### Sliding window
+#### Sliding window
 
 We now know where to start searching. The next step is to place a box around
 this starting point, extract the non-zero pixels inside it, and then move it
@@ -310,7 +310,7 @@ for the line pixels.
 The final result is that each line contains a list of the `x` and `y` coordinates
 of the pixels that it contains.
 
-## Line fitting
+### Line fitting
 
 Once we have the pixels for each line, we can perform **line fitting**, where
 we simply fit a second-order polynomial to the stored `x` and `y` datapoints.
@@ -337,7 +337,7 @@ the second ones will be useful for computing the road curvature and vehicle posi
 
 Yes.
 
-## Road curvature estimation
+### Road curvature estimation
 The road curvature is first estimated for the left and right lines. We have
 used the formula provided in the lectures, implemented as follows in Python, inside
 the `Line` class:
@@ -375,7 +375,7 @@ def compute_curvature(lane, img_shape):
     return 0.5 * (lane.line_l.curvature(y_curvature) + lane.line_r.curvature(y_curvature))
 ```
 
-## Vehicle position estimation
+### Vehicle position estimation
 The vehicle offset with respect to the lane is computed by calculating
 the position (in meters) of the left and line lanes at the bottom of the image.
 
@@ -402,7 +402,7 @@ def compute_vehicle_position(lane, img_shape):
                   lane.line_l.get_x_position(img_shape[0], img_shape[1]))
 ```
 
-## Visualization
+### Visualization
 ** 6. Has the result from lane line detection been warped back to the original image space and displayed? **
 
 Yes, this is implemented in the `generate_output_img` function:
@@ -507,7 +507,7 @@ images inside. And example is shown in `output_images/test6.jpg`:
 # Pipeline (video images)
 **1. Does the pipeline established with the test images work to process the video?**
 
-Yes, please look at the output video: `output_images/project_video.mp4'.
+Yes, please look at the [output video](output_images/project_video.mp4).
 
 The lines are correctly identified and tracked along the video frames.
 
@@ -516,15 +516,60 @@ The lines are correctly identified and tracked along the video frames.
 Yes, this was done for the single image pipeline, please refer to [that section](#line-search).
 
 **3. Has some form of tracking of the position of the lane lines been implemented?**
+Yes, please see the section below.
+
+### Line tracking
 
 Once we have a first estimate of the line, we don't need to search in the whole
 image. Instead, we create specific search regions for each line, assuming
 that they will remain more or less similar from one frame to the next one.
 
 We do this by simply adding an offset to the last coefficient of the polynomial,
-which controls the `x` position of the line in the image. This offset is
-applied to the left and right of the line, as can be shown in the images
-`tracking_search_left.jpg` and `tracking_search_right.jpg`:
+which controls the `x` position of the line in the image. This is implemented in the `LineTracker`
+class:
+
+```python
+def _offset_line_x(self, line, offset):
+    # Copy line
+    line_out = Line()
+    line_out.coeffs = np.copy(line.coeffs)
+    
+    # Apply offset to the last coefficient
+    line_out.coeffs[-1] = line_out.coeffs[-1] + offset
+    
+    return line_out
+```
+
+We can therefore compute 2 new lines from the original line, which are translated in the `x`
+direction a certain amount `offset`. Then we can create a function that
+draws a binary mask between these 2 new lines, using the function `draw_free_space`
+that was mentioned before:
+
+```python
+def _create_search_mask(self, img_warped):
+    mask = np.zeros_like(img_warped)
+    
+    # Create lines to left and right of the actual line, with some offset
+    offset = 100 # pixels
+    
+    fake_lane = Lane()
+    fake_lane.line_l = self._offset_line_x(self.line, -offset)
+    fake_lane.line_r = self._offset_line_x(self.line, offset)
+    
+    # Draw as in free space
+    draw_free_space(mask, fake_lane, color = (1, 1, 1))        
+    
+    if self.visualization_name:
+        plt.figure();
+        plt.imshow(mask, cmap = 'gray')
+        plt.title(self.visualization_name)
+        save_doc_img(mask_to_rgb(mask), self.visualization_name)
+    return mask
+```
+
+The result can be observed in `tracking_search_left.jpg` and `tracking_search_right.jpg`,
+where I create binary mask that will be used to search for new line pixels in
+the video frame:
 
 <img src="./res/tracking_search_left.jpg" height="200"/>
 <img src="./res/tracking_search_right.jpg" height="200"/>
@@ -532,6 +577,8 @@ applied to the left and right of the line, as can be shown in the images
 Then we simply extract the non-zero pixels in these regions and fit the line
 polynomial as before. The process is faster and simpler since we only had to search
 in a small region of the image.
+
+### Line smoothing
 
 ---
 # Readme
@@ -545,6 +592,8 @@ Yes, you are reading it right now!
 
 ## Test images
 
+For the test images, the lanes were detected without any issue:
+
 <img src="./output_images/test1.jpg" height="400"/>
 
 <img src="./output_images/test4.jpg" height="400"/>
@@ -553,7 +602,45 @@ Yes, you are reading it right now!
 
 <img src="./output_images/test6.jpg" height="400"/>
 
+**NOTE**: I did not test the pipeline on images `test2.jpg` and `test3.jpg`
+because they were cropped and therefore the perspective transformation
+that worked with the other pictures were not working for these ones.
+Ryan Keenan confirmed this and removed them from the Git repository.
+
 ## Test video
+
+The pipeline also worked pretty well on the [project video](output_images/project_video.mp4).
+Even though the binary masks didn't filter out some of the shadows, the lane
+tracking and smoothing prevented the pipeline from outputting wild lines,
+thus providing a robust and stable result.
+
 ## Challenge videos
 
-# Conclusions
+The pipeline did not work so well on the challenge videos, mostly due
+to sharper curves. The `harder_challenge` video even had zig-zag curves
+that could not be approximated with a second-order polynomial - in this case,
+a third order polynomial would have been better. However, this comes at the risk of
+overfitting the line and sometimes getting strange polynomials.
+
+# Discussion
+
+This was indeed a very challenging project, showing us how hard traditional computer
+vision is. It was a great learning experience after the Deep Learning projects,
+showing us the two main approaches to solving computer vision problems in industry.
+
+The hardest part was selecting and tuning the different color and gradient masks
+in order to make a robust algorithm. This was mostly a trial-and-error process,
+that could be a bit frustrating.
+
+I am satisfied with the results on the test images, although I cannot really
+say that it would be robust enough in any kind of scenario, especially in relation
+to different weather conditions. After all, we only tested on well-illuminated
+images. Most likely a more robust method should be implemented, but I really
+doubt it could cope with the vast variety of situations that can occur.
+
+For this reason, I believe that Deep Learning would have been a much better
+approach for this problem (and any CV problem in general). This requires
+however a lot of **labelled** data which might not be easily accessible.
+There must therefore be a tradeoff between development effort, robustness
+and access to labelled data.
+
