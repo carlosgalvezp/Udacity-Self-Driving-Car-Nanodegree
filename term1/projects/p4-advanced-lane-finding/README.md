@@ -403,7 +403,7 @@ def compute_vehicle_position(lane, img_shape):
 ```
 
 ### Visualization
-** 6. Has the result from lane line detection been warped back to the original image space and displayed? **
+**6. Has the result from lane line detection been warped back to the original image space and displayed?**
 
 Yes, this is implemented in the `generate_output_img` function:
 
@@ -516,6 +516,7 @@ The lines are correctly identified and tracked along the video frames.
 Yes, this was done for the single image pipeline, please refer to [that section](#line-search).
 
 **3. Has some form of tracking of the position of the lane lines been implemented?**
+
 Yes, please see the section below.
 
 ### Line tracking
@@ -582,7 +583,8 @@ in a small region of the image.
 
 ---
 # Readme
-** Has a Readme file been included that describes in detail the steps taken to construct the pipeline, techniques used, areas where improvements could be made?**
+
+**Has a Readme file been included that describes in detail the steps taken to construct the pipeline, techniques used, areas where improvements could be made?**
 
 Yes, you are reading it right now!
 
