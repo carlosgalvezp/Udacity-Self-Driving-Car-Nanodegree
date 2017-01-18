@@ -190,10 +190,6 @@ in a small region of the image.
 
 <img src="./output_images/test1.jpg" height="400"/>
 
-<img src="./output_images/test2.jpg" height="400"/>
-
-<img src="./output_images/test3.jpg" height="400"/>
-
 <img src="./output_images/test4.jpg" height="400"/>
 
 <img src="./output_images/test5.jpg" height="400"/>
