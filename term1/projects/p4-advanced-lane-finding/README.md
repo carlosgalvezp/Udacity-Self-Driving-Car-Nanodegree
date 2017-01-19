@@ -39,7 +39,7 @@ The first step is to extract the pixel coordinates of the corners of the
 squares of the checkerboard, using the OpenCV function `cv2.findChessboardCorners`,
 as shown in `checkerboard_corners.jpg`:
 
-<img src="./res/checkerboard_corners.jpg" height="300"/>
+<img src="./output_images/checkerboard_corners.jpg" height="300"/>
 
 The 2D points obtained in this process are called `img_pts` in the code.
 The procedure is applied to multiple images taken from different perspectives,
@@ -62,7 +62,7 @@ Once we have obtained the distortion coefficients, we can undistort any image
 using the OpenCV function `cv2.undistort`. As an example, we apply it to `camera_cal/calibration1.jpg`,
 obtaining `undistort_test.jpg`:
 
-<img src="./res/undistort_test.jpg" height="200"/>
+<img src="./output_images/undistort_test.jpg" height="200"/>
 
 ---
 
@@ -72,7 +72,7 @@ obtaining `undistort_test.jpg`:
 We apply this to a test image, for example `test6.jpg`, again using the `cv2.undistort` function.
 The difference between the original and undistorted image is also shown:
 
-<img src="./res/undistort_example.jpg" height="600"/>
+<img src="./output_images/undistort_example.jpg" height="600"/>
 
 It can be seen that the main differences (non-zero pixels) are on the borders
 of the image, where the image has more distortion. Apart from that, the changes
@@ -110,9 +110,9 @@ def saturation_mask(img, thresh=(100,255)):
     return s_mask
 ```
 
-The result can be observed in `res/saturation_mask.jpg`:
+The result can be observed in `output_images/saturation_mask.jpg`:
 
-<img src="./res/saturation_mask.jpg" height="200"/>
+<img src="./output_images/saturation_mask.jpg" height="200"/>
 
 ### Gradient mask
 
@@ -132,9 +132,9 @@ for example when having shadows across the road.
  extract the lane lines.
 
 Therefore the chosen solution is to *only use the Sobel X mask*. An example
-of this mask is shown in `res/sobel_x.jpg`:
+of this mask is shown in `output_images/sobel_x.jpg`:
 
-<img src="./res/sobel_x.jpg" height="200"/>
+<img src="./output_images/sobel_x.jpg" height="200"/>
 
 
 ### Final mask
@@ -155,9 +155,9 @@ def combined_mask(img):
     return mask
 ```
 
-The result is shown in `res/final_mask.jpg`:
+The result is shown in `output_images/final_mask.jpg`:
 
-<img src="./res/final_mask.jpg" height="200"/>
+<img src="./output_images/final_mask.jpg" height="200"/>
 
 **3. Has a perspective transform been applied to rectify the image?**
 
@@ -175,12 +175,12 @@ compared to the other test images, which will make the process easier.
 The chosen points can be seen in the red rectangle in
 `persp_transform_original.jpg`:
 
-<img src="./res/persp_transform_original.jpg" height="200"/>
+<img src="./output_images/persp_transform_original.jpg" height="200"/>
 
 These 4 points are mapped into a real rectangle,
 with parallel lines, as shown in `persp_transform_warped.jpg`:
 
-<img src="./res/persp_transform_warped.jpg" height="200"/>
+<img src="./output_images/persp_transform_warped.jpg" height="200"/>
 
 As can be seen, the road lines don't appear parallel in the original image
 due to the camera perspective, but after the perspective transform they do
@@ -252,12 +252,12 @@ The image we start with is shown in the figure `before_line_search.jpg`. It can
 be seen it's a binary image (since it went through the mask) and it's warped
 to be a birds-eye view.
 
-<img src="./res/before_line_search.jpg" height="200"/>
+<img src="./output_images/before_line_search.jpg" height="200"/>
 
 The histogram over non-zero pixels values is shown in
 `line_search_initial_point.jpg`:
 
-<img src="./res/line_search_initial_point.jpg" height="400"/>
+<img src="./output_images/line_search_initial_point.jpg" height="400"/>
 
 This is performed with the following code:
 
@@ -269,7 +269,7 @@ def get_starting_x(img, visualize=False):
     if visualize:
         plt.plot(histogram);
         plt.autoscale(enable=True, axis='x', tight=True);
-        plt.savefig('./res/line_search_initial_point.jpg')
+        plt.savefig('./output_images/line_search_initial_point.jpg')
         
     # Get left and right peaks. Assuming that left and right
     # lines will be on the left or right half of the image
@@ -304,8 +304,8 @@ An example is shown for both the left and right images, respectively, in
 squares represent the different positions of the sliding windows while searching
 for the line pixels.
 
-<img src="./res/sliding_window_search_left.jpg" height="200"/>
-<img src="./res/sliding_window_search_right.jpg" height="200"/>
+<img src="./output_images/sliding_window_search_left.jpg" height="200"/>
+<img src="./output_images/sliding_window_search_right.jpg" height="200"/>
 
 The final result is that each line contains a list of the `x` and `y` coordinates
 of the pixels that it contains.
@@ -325,8 +325,8 @@ the corresponding `x` value for every `y` in the image. We use the function
 `cv2.line` to plot the lines, as seen in pictures `line_fit_left.jpg` and
 `line_fit_right.jpg`:
 
-<img src="./res/line_fit_left.jpg" height="200"/>
-<img src="./res/line_fit_right.jpg" height="200"/>
+<img src="./output_images/line_fit_left.jpg" height="200"/>
+<img src="./output_images/line_fit_right.jpg" height="200"/>
 
 **NOTE**: we perform fitting both in pixel coordinates and in meters, to
 obtain the coefficients `self.coeffs` and `self.coeffs_m`, inside the `Line`
@@ -477,9 +477,9 @@ def draw_free_space(img, lane, color = (0, 255, 0)):
     return img
 ```
 
-An exmaple is shown in `res/free_space.jpg`:
+An exmaple is shown in `output_images/free_space.jpg`:
 
-<img src="./res/free_space.jpg" height="200"/>
+<img src="./output_images/free_space.jpg" height="200"/>
 
 
 * Unwarp the previous two images back to the original perspective. This is
@@ -491,9 +491,9 @@ function `cv2.addWeighted`.
 
 * Display the road curvature and vehicle position using the `cv2.putText` function.
 
-An example result is shown in `res/main_visualization`:
+An example result is shown in `output_images/main_visualization`:
 
-<img src="./res/main_visualization.jpg" height="200"/>
+<img src="./output_images/main_visualization.jpg" height="200"/>
 
 In addition, a debug visualizer has been created that includes the previous
 image as well as the relevant intermediate images in the pipeline. This
@@ -572,8 +572,8 @@ The result can be observed in `tracking_search_left.jpg` and `tracking_search_ri
 where I create binary mask that will be used to search for new line pixels in
 the video frame:
 
-<img src="./res/tracking_search_left.jpg" height="200"/>
-<img src="./res/tracking_search_right.jpg" height="200"/>
+<img src="./output_images/tracking_search_left.jpg" height="200"/>
+<img src="./output_images/tracking_search_right.jpg" height="200"/>
 
 Then we simply extract the non-zero pixels in these regions and fit the line
 polynomial as before. The process is faster and simpler since we only had to search
