@@ -68,9 +68,39 @@ with multiple horizontal and vertical lines all around the image, mostly for the
 for the `non-vehicle` class seem more unstructured, which will allow us to effectively
 classify vehicles in images.
 
+The output of the HOG features is a 5292-dimensional vector, which we then
+use as input to the classifier.
+
 <mark>Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).</mark>
 
-TODO
+We decided to use an SVM (Support Vector Machine) as a classifier for this project,
+given it's powerfulness with non-linearly separable datasets and easy to use API
+from the `sklearn` kit.
+
+Before using the classifier, we perform **feature normalization** on the HOG
+features that we extracted previously. This is implemented in the function
+`normalize_features`, `cell #14`. To this extent, we used the `StandardScaler`
+object , part of the `sklearn.preprocessing` package, as suggested by Udacity.
+According to the documentation, the normalization consists on removing the mean
+and scaling to unit variance, which is desirable to make the training procedure
+more stable.
+
+Next, we **splitted** the data into training and validation sets, with a ratio
+of 0.2 for the validation data, using the function `train_test_split`, in
+`cell #15`. This function already takes care of shuffling the data as well.
+
+The classifier is implemented and trained in `cell #16-17`. The API
+is very simple to use: simply the `fit` function will train the classifier
+given the training data. We started with the `LinearSVC` classifier, and obtained
+98.6% validation accuracy. Then we moved into the non-linear `SVC`, with default
+`rbf` kernel, which made it more powerful obtaining 99.1% validation accuracy.
+
+Finally, we verify the classifier on some test image using the function
+`classify_img`, in `cell 21`. The result can be observed in `svm_test.jpg`:
+
+<img src="./output_images/svm_test.jpg" height="400"/>
+
+It can be observed that the classifier is able to correctly classify the images.
 
 ---
 ### Sliding Window Search
