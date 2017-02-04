@@ -36,7 +36,7 @@ respectively. One example of these images can be seen in `vehicle_non_vehicle.jp
 
 <img src="./output_images/vehicle_non_vehicle.jpg" height="400"/>
 
-Next, we performed some **preprocessing** step, consisting on color space conversion from
+Next, we performed a **preprocessing** step, consisting on color space conversion from
 RGB to YCrCb, given the better results shown in the literature with the latter color space.
 This operation is performed in `cell #10`, using the function `cv2.cvtColor`.
 
@@ -106,17 +106,97 @@ It can be observed that the classifier is able to correctly classify the images.
 ### Sliding Window Search
 <mark>Describe how (and identify where in your code) you implemented a sliding window search. How did you decide what scales to search and how much to overlap windows?</mark>
 
-TODO
+In order to detect vehicles in the complete image, we implement a sliding window
+approach. First, we implement a `SearchWindow` class, (see `cell #30`), that
+helps us extract the contents of an image, the corresponding HOG features as
+well as determining whether there's a vehicle or not.
 
-<mark>Show some examples of test images to demonstrate how your pipeline is working. What did you do to try to minimize false positives and reliably detect cars?</mark>
+Second, we implement a function that takes an image and returns a list of
+windows in which we should search for objects: function `get_search_windows`,
+in `cell #33`, with the following properties:
 
-TODO
+ - Window size: 64x64, to match the HOG implementation and training data.
+ - Overlap: 0.75.
+ - Region of interest: bottom half of the image, so we don't search above
+ the horizon.
+
+
+**Scaling**. In order to search on different scales, we use the same function
+`get_search_windows`, but we **resize the image first**. In particular, we
+search at scales 1.0, 0.75 and 0.5, which is equivalent to window sizes
+of size 64x64, 96x96 and 128x128, respectively. We also tried windows
+of size 256x256 but turned out to be too big and returned quite many false positives.
+
+**Motivation for parameters**
+
+The choice of overlapping and number of scales was always a trade-off between
+number of windows and accuracy. The larger number of windows, the more computational
+time. However a small overlapping, like 0.5, would case windows to never have a vehicle
+somewhat centered, so the number of false negatives would increase.
+
+The final choice is essentially the result of trial and error, using reasonable
+values to obtain approximately 2000 search windows.
+
+<mark>Show some examples of test images to demonstrate how your pipeline is working. How did you optimize the performance of your classifier?</mark>
+
+The complete pipeline is applied to the given test images, `test1.jpg` through
+`test6.jpg`, as can be seen in the folder `output_images`, shown below:
+
+<img src="./output_images/test1.jpg" height="400"/>
+<img src="./output_images/test2.jpg" height="400"/>
+<img src="./output_images/test3.jpg" height="400"/>
+<img src="./output_images/test4.jpg" height="400"/>
+<img src="./output_images/test5.jpg" height="400"/>
+<img src="./output_images/test6.jpg" height="400"/>
+
+
+It can be seen that the vehicles are detected reliably with many windows at different
+scales, which will provide good results in the video afterwards. In addition,
+we observe that the number of false positives is minimum, only one in the image
+`test2.jpg`, which contains no cars. There are no more false positives in the
+rest of test images.
+
+**Optimizing the performance of the classifier** was a really tough work. The following
+was considered during the process of tuning the classifier:
+
+ - **Choice of the feature vector**. This is very related to the question regarding
+ the parameters of the HOG classifier. We noticed that having a smaller feature vector
+ improved both the robustness of the classifier and also the computational speed.
+ For this reason, the feature vector is 972-dimensional instead of 5292-dimensional
+ (16 pixels per cell vs 8 pixels per cell).
+
+ - **Thresholding on the decision function**. This method was very useful when we first
+ tried the `LinearSVM` classifier. Instead of using the `predict` function of the classifier,
+ we used the `decision_function` function, which provides the signed distance
+ to the hyperplane for each prediction. Then we would do classification ourselves
+ by imposing some threshold on the score returned by this function. However, we noticed that:
+
+   1. The scores vary quite a lot, so it's really hard to know in which region we should
+   tune the threshold, and if it would be valid for other test images. We consider creating
+   a ROC curve to find the optimal threshold, but had to give up on it given
+   the tight time constraints for this project.
+
+   2. We could reduce the number of false positives by increasing the threshold; however it
+   also reduced the number of true positives. Sometimes we would end up still having
+   false positives while all the true positives were removed.
+
+
+ For this reason, we quickly discarded the `LinearSVM` option, despite it's computational
+ efficiency.
+
+ - **Use data augmentation**. We implemented data augmentation in `cell #9`, by applying
+ random shifts to the images. This improved the cross-validation accuracy and mostly
+ helped detecting vehicles more reliably, while removing some of the false positives
+ we used to have.
 
 ---
 ### Video Implementation
 <mark>Provide a link to your final video output. Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)</mark>
 
-TODO
+The video output can be found [here](./output_images/project_video.mp4).
+
+It can be observed that vehicles are reliably detected throughout the entire video,
+with very few and with low duration false positives.
 
 <mark>Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.</mark>
 
@@ -126,4 +206,30 @@ TODO
 ### Discussion
 <mark>Briefly discuss any problems / issues you faced in your implementation of this project. Where will your pipeline likely fail? What could you do to make it more robust?</mark>
 
-TODO
+This project was one of the toughest CV ones in this course, mainly due to the following
+issues:
+
+ - **Computational time**, main limiting factor in this project. It was very hard
+ to trade off frame rate and accuracy. This mainly due to the **sliding window**
+ approach: we have to search in too many images, which raises the computational
+ time. A much better approach for this project would have been Deep Learning,
+ with networks like YOLO (You Only Look Once) or SSD (Single Shot Detector).
+
+ - **Parameter tuning**. As all traditional Computer Vision approaches, there were
+ just too many paramters to tune: HOG parameters, number of search windows, overlap,
+ number of scales, heatmap update and cooldown, etc.
+
+ - **Time constraints**. We only had 2 weeks to work on this project, which in my
+ opinion was way too little time. I would have liked to have more time to try out
+ Deep Learning approaches to this problem.
+
+
+Regarding the pipeline, we can see some points where it could be improved:
+
+ - **Framerate**. This pipeline can obviously not run in real time, so it's a bit
+ weak point that should be improved. In my opinion, sliding window approaches
+ cannot be applied to real-time systems because they just take too much time,
+ no matter which classifier is used. As said before, a YOLO or SSD network
+ would provide a much better performance.
+
+
