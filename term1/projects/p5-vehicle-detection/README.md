@@ -55,23 +55,21 @@ We used the following HOG parameters:
  - Cells per block: 2
  - Number of orientation bins: 9
 
-The motivation for choosing these parameters was mostly trial and error to get the
-best trade-off between computational complexity and accuracy. We tried values
-within the range that was suggeted in the documentation for the `hog` function
+The **motivation** for choosing these parameters was mostly trial and error to get the
+best trade-off between computational complexity and accuracy. We first performed
+quick tests on the sandbox in the lecture `32. Search and Classify`.
+We tried values within the range that was suggested in the documentation for the `hog` function
 as well as the Udacity webpage.
 
 We found that `pixels_per_cell = 16` did a pretty good job at removing false positives,
-and made the feature vector much smaller, improving the frame rate.
+and made the feature vector much smaller (from 5292 to 972), improving the frame rate.
 However some true positives were removed too, so we decided to switch back to 8 pixels
 per cells. Another reason for choosing 8 over 16 is that for a 64x64 image
 we would only get 4 blocks, which makes it very likely that vehicle is not detected
 if it's not well centered in the image.
 
-A little bit of experimentation with `cells_per_block` and `number_of_bins` was
-also performed, but we didn't find signficant differences in performance. Therefore
-we used the default values shown in the lectures and documentation, which seemed
-to perform just fine.
-
+A little bit of experimentation with `cells_per_block` (range 1-4) and
+`number_of_bins` (range 6-12) was also performed, but we didn't find signficant differences in performance. Therefore we used the default values shown in the lectures and documentation, which seemed to perform just fine.
 
 An example result of computing HOG features to an image of class `vehicle` is shown
 in `hog_img_vehicle.jpg`:
@@ -93,13 +91,22 @@ use as input to the classifier.
 
 <mark>Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).</mark>
 
-We decided to use an SVM (Support Vector Machine) as a classifier for this project,
-given it's powerfulness with non-linearly separable datasets and easy to use API
+Besides HOG features, we also computed spatilly binned and color histogram features,
+as can be observed in functions `color_hist_features` (`cell #17`) and `bin_spatial`,
+(`cell #18`). Again, some tuning of parameters was performed on the sandbox provided
+by Udacity. We use 32 bins per channel for the histograms, and a we resize
+the image to 16x16 in the spatial binning, to obtain a small feature vector.
+
+We combine these features into a single 1D vector, of final size 6156, as seen
+in function `combine_features`, `cell #19`.
+
+To create the classifier, we opted for a Linear SVM (Support Vector Machine),
+given it's tradeoff between powerfulness and computatinal cost, and easy-to-use API
 from the `sklearn` kit.
 
 Before using the classifier, we perform **feature normalization** on the HOG
 features that we extracted previously. This is implemented in the function
-`normalize_features`, `cell #15`. To this extent, we used the `StandardScaler`
+`normalize_features`, `cell #22`. To this extent, we used the `StandardScaler`
 object , part of the `sklearn.preprocessing` package, as suggested by Udacity.
 According to the documentation, the normalization consists on removing the mean
 and scaling to unit variance, which is desirable to make the training procedure
@@ -109,18 +116,18 @@ In other words, we `fit` the normalizer only once.
 
 Next, we **splitted** the data into training and validation sets, with a ratio
 of 0.2 for the validation data, using the function `train_test_split`, in
-`cell #16`. This function already takes care of **shuffling** the data as well.
+`cell #23`. This function already takes care of **shuffling** the data as well.
 
-The classifier is implemented and trained in `cell #17-21`. The API
+The classifier is implemented and trained in `cell #25-28`. The API
 is very simple to use: simply the `fit` function will train the classifier
 given the training data. We started with the `LinearSVC` classifier, and obtained
-95.4% validation accuracy. Then we moved into the non-linear `SVC`, with default
-`rbf` kernel, which made it more powerful obtaining 99.1% validation accuracy. However
+99.381% validation accuracy. Then we moved into the non-linear `SVC`, with default
+`rbf` kernel, which made it more powerful obtaining 99.7% validation accuracy. However
 it turned out to be extremely slow (around 10 seconds per frame) so we decided
 to use the `LinearSVC` plus some extra techniques to remove false positives.
 
 Finally, we verify the classifier on some test image using the function
-`classify_img`, in `cell 24`. The result can be observed in `svm_test.jpg`:
+`classify_img`, in `cell #31`. The result can be observed in `svm_test.jpg`:
 
 <img src="./output_images/svm_test.jpg" height="400"/>
 
@@ -132,43 +139,44 @@ as `vehicle` and `non-vehicle`.
 <mark>Describe how (and identify where in your code) you implemented a sliding window search. How did you decide what scales to search and how much to overlap windows?</mark>
 
 In order to detect vehicles in the complete image, we implement a sliding window
-approach. First, we implement a `SearchWindow` class, (see `cell #26`), that
-helps us extract the contents of an image, as
-well as determining whether there's a vehicle or not. It also allows us
+approach. First, we implement a `SearchWindow` class, (see `cell #13`), that
+helps us extract the contents of an image It also allows us
 to **obtain the HOG features** from the pre-computed features on the whole
 image, see function `SearchWindow::get_hog_features`. This is accomplished
-by extracted the HOG features as an array instead of a vector. Thanks to this,
-we only need to compute the HOG features once per image and scale, which
+by extracting the HOG features as an array instead of a vector. Thanks to this,
+we **only need to compute the HOG features once per image and scale**, which
 improves the frame rate.
 
 Second, we implement a function that takes an image and returns a list of
 windows in which we should search for vehicles: function `get_search_windows`,
 in `cell #33`, with the following properties:
 
- - Window size: 64x64, to match the HOG implementation and training data.
- - Overlap: 0.75. We tried a smaller overlap of 0.5, but the performance decreased
+ - **Window size**: 64x64, to match the HOG implementation and training data.
+ - **Overlap**: 0.75. We tried a smaller overlap of 0.5, but the performance decreased
  quite dramatically, with a lot of false negatives.
- - Region of interest: bottom half of the image, so we don't search above
+ - **Region of interest**: bottom half of the image, so we don't search above
  the horizon.
 
 An example of the search windows of size 64x64 can be seen in `search_boxes.jpg`:
 
 <img src="./output_images/search_boxes.jpg" height="400"/>
 
-**Multi-scale search**. In order to search on different scales, we use the same function
+**Multi-scale search**
+
+In order to search on different scales, we use the same function
 `get_search_windows`, but we **resize the image first**. In particular, we
 search at scales 1.0, 0.75 and 0.5, which is equivalent to window sizes
 of size 64x64, 96x96 and 128x128, respectively. We also tried windows
 of size 256x256 but turned out to be too big and returned quite many false positives.
 This scaling operation is done later on in the `SingleImagePipeline`, see
-`cell #34`.
+`cell #39`, with the function `cv2.resize`.
 
 **Motivation for parameters**
 
 The choice of overlapping and number of scales was always a trade-off between
-number of windows and accuracy. The larger number of windows, the more computational
-time. However a small overlapping, like 0.5, would case windows to never have a vehicle
-somewhat centered, so the number of false negatives would increase.
+number of windows (and therefore computational cost) and accuracy. 
+The larger number of windows, the more computationaltime. However a small overlapping,
+like 0.5, would cause windows to never have a vehicle somewhat centered, so the number of false negatives would increase.
 
 The final choice is essentially the result of trial and error, using reasonable
 values to obtain approximately 2000 search windows over the 3 different scales.
@@ -186,11 +194,11 @@ The complete pipeline is applied to the given test images, `test1.jpg` through
 <img src="./output_images/test6.jpg" height="400"/> test6.jpg
 
 
-It can be seen that the vehicles are detected reliably with many windows at different
-scales, which will provide good results in the video afterwards. We observe
-a few false positives in `test2.jpg` and `test5.jpg`, which we remove later on
-in the video pipeline. There are no more false positives in the
-rest of test images.
+It can be seen that all the vehicles are detected reliably with many windows at different
+scales, which will provide good results in the video afterwards. We observe **only
+one false positive**, in `test5.jpg`, probably due to the presence of shadows. We
+will filter it out when performing video processing. It's also important to notice
+that no vehicles are detected at all in `test2.jpg`, as it's supposed to be.
 
 **Optimizing the performance of the classifier**
 
@@ -200,7 +208,10 @@ To optimize the performance of the classifier was a really tough trial and error
  the parameters of the HOG classifier. We noticed that having a bigger feature vector
  improved the robustness of the classifier, at the cost of lower the computational speed.
  For this reason, the feature vector is 5292-dimensional instead of 972-dimensional
- (8 pixels per cell vs 16 pixels per cell).
+ (8 pixels per cell vs 16 pixels per cell). In addition, we also observed that
+ **the performance increased dramatically by adding spatial and histogram features**
+ to the HOG vector (which we tried alone initially). The computational cost didn't increase
+ much, but a lot of false positives were removed.
 
  - **Tuning of the `C` parameter the SVM classifier**. This parameters decides how
  misclassification is penalized. A large value would make the classifier very strict and
@@ -218,7 +229,7 @@ To optimize the performance of the classifier was a really tough trial and error
  ```python
  def predict(x):
     v = classifier_.decision_function(x)
-    v_threshold = 0.3
+    v_threshold = 0.1
     
     if v > v_threshold:
         return get_vehicle_label()
@@ -226,7 +237,7 @@ To optimize the performance of the classifier was a really tough trial and error
         return get_non_vehicle_label()
 ```
    We managed to remove some additional false positives by increasing the value
-   `v_threshold` to 0.3.
+   `v_threshold` to 0.1.
 
 
  - **Use data augmentation**. We implemented data augmentation in `cell #9`, by applying
@@ -246,27 +257,28 @@ reason is the filtering done to remove false positives.
 
 <mark>Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.</mark>
 
-In order to combien overlapping bounding boxes and remove false positives, we
+In order to combine overlapping bounding boxes and remove false positives, we
 implemented a solution based on a **heatmap**.
 
 A heatmap is basically a 2D array of the same size of the image.
 For each window with a positive detection, we increase the value of the pixels
 in the heatmap corresponding to that window. This is done in the function
-`add_heat`, see `cell #33`. An example can be seen in the following pictures,
-`test5_heatmap.jpg` and `test6_heatmap.jpg`.
+`add_heat`, see `cell #38`. An example can be seen in the following pictures,
+`test4_heatmap.jpg` and `test4_heatmap.jpg`.
 
-<img src="./output_images/test6_heatmap.jpg" height="600"/> test6_heatmap.jpg
+<img src="./output_images/test4_heatmap.jpg" height="600"/> test4_heatmap.jpg
 
-In `test6_heatmap.jpg`, we observe how overlapping boxes get combined into
+In `test4_heatmap.jpg`, we observe how overlapping boxes get combined into
 two distintive blobs.
 
 <img src="./output_images/test5_heatmap.jpg" height="600"/> test5_heatmap.jpg
 
-In the `test5_heatmap.jpg`, we notice how the false positives are insignificant
-compared to the main car detections, so we can filter them out later.
+In the `test5_heatmap.jpg`, we notice how the false positive is insignificant
+compared to the main car detections, so we can filter them out later by thresholding
+the heatmap.
 
 In the `VideoPipeline` class, we store an **array of heatmaps**, in order to
-perform a **moving average**. This can be observed in `cell #37`:
+perform a **moving average**. This can be observed in `cell #42`:
 
 ```python
 # Detect vehicles in single image
@@ -280,7 +292,7 @@ heatmap_avg = np.mean(self.heatmaps, axis = 2).astype(np.uint8)
 This makes smooths out the bounding boxes.
 
 Last, we compute the final bounding box from the averaged heatmap using
-the function `extract_boxes_from_heatmap`, see `cell #33`. This function
+the function `extract_boxes_from_heatmap`, see `cell #38`. This function
 has two steps:
 
  1. Use the function `cv2.findContours` to find the pixels that belong
@@ -293,10 +305,14 @@ vehicle, with all (or at least most of them) the false positives removed.
 
 ---
 ### Discussion
-<mark>Briefly discuss any problems / issues you faced in your implementation of this project. Where will your pipeline likely fail? What could you do to make it more robust?</mark>
+<mark>Briefly discuss any problems / issues you faced in your implementation of
+this project. Where will your pipeline likely fail?
+What could you do to make it more robust?</mark>
 
-This project was one of the toughest CV ones in this course, mainly due to the following
-issues:
+This project was really challenging. We followed a traditional Computer Vision
+approach, which was great from a learning experience in order to better
+appreciate more modern approaches, like Deep Learning. The following factors
+made the project harder than the previous CV projects:
 
  - **Computational time**, main limiting factor in this project. It was very hard
  to trade off frame rate and accuracy. This mainly due to the **sliding window**
@@ -315,11 +331,11 @@ issues:
 
 Regarding the pipeline, we can see some points where it could be improved:
 
- - **Framerate**. This pipeline can obviously not run in real time, so it's a bit
- weak point that should be improved. In my opinion, sliding window approaches
+ - **Framerate**. This pipeline can obviously not run in real time (around 2.6 sec/frame),
+ so it's a bit weak point that should be improved. In my opinion, sliding window approaches
  cannot be applied to real-time systems because they just take too much time,
  no matter which classifier is used. As said before, a YOLO or SSD network
- would provide a much better performance.
+ would provide a much better performance from a computational point of view.
 
  - **Vehicle tracking**. The vehicle tracking would be smoother if more advanced
  techniques such as the Kalman Filter were used.
@@ -327,7 +343,8 @@ Regarding the pipeline, we can see some points where it could be improved:
  - **Smaller scales**. The classifier is not very good at detecting vehicles at far
  distances. Therefore it would be desirable to use a smaller scale (maybe a 32x32)
  window. This would however increase the computation time quite dramatically,
- given the high number of additional search windows to test.
+ given the high number of additional search windows to test. It should then be
+ applied only to a very limited region of the image, around the horizon.
 
  - **Front vehicle tracking**. We observe in the video that oncoming vehicles
  in the adjacent lane are not detected at all. This is due to the fact that the
