@@ -3,34 +3,21 @@
 #include <vector>
 #include "Eigen/Dense"
 
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
-using namespace std;
-
 class Tools
 {
 public:
-    /**
-    * Constructor.
-    */
-    Tools();
+    /// \brief computes the Root Mean Squared Error (RMSE) between estimate and
+    ///        ground truth
+    /// \param estimations estimates
+    /// \param ground_truth ground truth
+    /// \return the computed RMSE
+    static Eigen::VectorXd calculateRMSE(const std::vector<Eigen::VectorXd>& estimations,
+                                         const std::vector<Eigen::VectorXd>& ground_truth);
 
-    /**
-    * Destructor.
-    */
-    virtual ~Tools();
-
-    /**
-    * A helper method to calculate RMSE.
-    */
-    VectorXd CalculateRMSE(const vector<VectorXd>& estimations,
-                           const vector<VectorXd>& ground_truth);
-
-    /**
-    * A helper method to calculate Jacobians.
-    */
-    MatrixXd CalculateJacobian(const VectorXd& x_state);
-
+    /// \brief Computes the Jacobian matrix given the current state
+    /// \param x_state current state
+    /// \return Jacobian matrix associated with the given state
+    static Eigen::MatrixXd CalculateJacobian(const Eigen::VectorXd& x_state);
 };
 
 #endif /* TOOLS_H_ */

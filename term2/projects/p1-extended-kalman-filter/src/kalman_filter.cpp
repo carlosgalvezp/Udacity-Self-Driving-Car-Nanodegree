@@ -23,7 +23,7 @@ void KalmanFilter::Predict()
     */
 }
 
-void KalmanFilter::Update(const VectorXd& z)
+void KalmanFilter::Update(const VectorXd& /*z*/)
 {
     /**
     TODO:
@@ -31,7 +31,7 @@ void KalmanFilter::Update(const VectorXd& z)
     */
 }
 
-void KalmanFilter::UpdateEKF(const VectorXd& z)
+void KalmanFilter::UpdateEKF(const VectorXd& /*z*/)
 {
     /**
     TODO:
