@@ -81,7 +81,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage& measurement_pack)
        * Update the process noise covariance matrix.
      */
 
-    ekf_.Predict();
+    ekf_.predict();
 
     /*****************************************************************************
      *  Update
