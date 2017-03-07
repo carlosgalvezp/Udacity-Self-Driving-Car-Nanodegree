@@ -36,10 +36,15 @@ void KalmanFilter::update(const Eigen::VectorXd& z)
     P_ = (I_ - K * H_) * P_;
 }
 
-void KalmanFilter::updateEKF(const Eigen::VectorXd& /*z*/)
+void KalmanFilter::updateEKF(const Eigen::VectorXd& z)
 {
-    /**
-    TODO:
-      * update the state by using Extended Kalman Filter equations
-    */
+    Eigen::VectorXd y = z - Hj_ * x_;
+
+    Eigen::MatrixXd Ht = Hj_.transpose();
+
+    Eigen::MatrixXd S = H_ * P_ * Ht * R_;
+    Eigen::MatrixXd K = P_ * Ht * S.inverse();
+
+    x_ = x_ + K * y;
+    P_ = (I_ - K * Hj_) * P_;
 }
