@@ -14,3 +14,6 @@ include_directories(include)
 include_directories(3rdparty)
 
 add_executable(ExtendedKF ${sources})
+
+add_subdirectory(3rdparty/googletest-release-1.8.0)
+add_subdirectory(tests)
