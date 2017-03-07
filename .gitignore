@@ -12,3 +12,7 @@
 *__pycache__
 *.npy
 *.pyc
+
+build
+
+CMakeLists.txt.user
