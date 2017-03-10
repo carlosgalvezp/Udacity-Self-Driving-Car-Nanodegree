@@ -30,15 +30,8 @@ public:
 
     MatrixXd I_;
 
-    /**
-     * Constructor
-     */
     KalmanFilter();
-
-    /**
-     * Destructor
-     */
-    virtual ~KalmanFilter();
+    ~KalmanFilter();
 
     /**
      * Init Initializes Kalman filter
@@ -70,8 +63,6 @@ public:
      * @param z The measurement at k+1
      */
     void updateEKF(const VectorXd& z);
-
-
 };
 
 #endif /* KALMAN_FILTER_H_ */

@@ -8,8 +8,12 @@ include_directories(include)
 include_directories(3rdparty)
 
 set(sources
-    src/FusionEKF.cpp
+    src/fusion_ekf.cpp
     src/kalman_filter.cpp
+    src/measurement_model.cpp
+    src/measurement_model_lidar.cpp
+    src/measurement_model_radar.cpp
+    src/motion_model.cpp
     src/tools.cpp)
 
 add_library(ekf_lib ${sources})
