@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     }
 
     // Create a Fusion EKF instance
-    FusionEKF fusionEKF;
+    FusionEKF fusionEKF = FusionEKF();
 
     // used to compute the RMSE later
     std::vector<Eigen::VectorXd> estimations;

@@ -5,6 +5,12 @@
 #include "motion_model.h"
 #include "measurement_model.h"
 
+// Initial state
+static const double x0_ = 1.0E-3;  // To avoid dividing by zero
+
+// Initial uncertainty
+static const double p0_ = 1.0E6;
+
 class KalmanFilter
 {
 public:
@@ -41,8 +47,7 @@ private:
     // Identity matrix
     Eigen::MatrixXd I_;
 
-    // Initial uncertainty
-    const double p0_ = 1.0E6;
+
 };
 
 #endif /* KALMAN_FILTER_H_ */

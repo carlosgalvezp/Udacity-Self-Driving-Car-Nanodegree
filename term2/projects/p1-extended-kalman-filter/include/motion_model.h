@@ -3,6 +3,12 @@
 
 #include <Eigen/Dense>
 
+
+// Process noise
+// TODO: tweak. Should be variance, not std
+static const double sigma_ax_ = 10.0;  // [m]
+static const double sigma_ay_ = 10.0;  // [m]
+
 class MotionModel
 {
 public:
@@ -17,10 +23,6 @@ public:
 private:
     const std::size_t state_dimension_;
 
-    // Process noise
-    // TODO: tweak. Should be variance, not std
-    const double sigma_ax_ = 10.0;  // [m]
-    const double sigma_ay_ = 10.0;  // [m]
 };
 
 #endif // MOTION_MODEL_H

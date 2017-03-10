@@ -1,7 +1,7 @@
 #include "kalman_filter.h"
 
 KalmanFilter::KalmanFilter(const std::size_t state_dimension):
-    x_(Eigen::VectorXd::Zero(state_dimension)),
+    x_(Eigen::VectorXd::Constant(state_dimension, x0_)),
     P_(Eigen::MatrixXd::Constant(state_dimension, state_dimension, p0_)),
     I_(Eigen::MatrixXd::Identity(state_dimension, state_dimension))
 {
