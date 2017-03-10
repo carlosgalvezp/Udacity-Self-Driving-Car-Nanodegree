@@ -8,14 +8,9 @@
 #include "ground_truth_package.h"
 #include "measurement_package.h"
 
-using namespace std;
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
-using std::vector;
-
 void check_arguments(int argc, char *argv[])
 {
-    string usage_instructions = "Usage instructions: ";
+    std::string usage_instructions = "Usage instructions: ";
     usage_instructions += argv[0];
     usage_instructions += " path/to/input.txt output.txt";
 
@@ -24,11 +19,11 @@ void check_arguments(int argc, char *argv[])
     // make sure the user has provided input and output files
     if (argc == 1)
     {
-        cerr << usage_instructions << endl;
+        std::cerr << usage_instructions << std::endl;
     }
     else if (argc == 2)
     {
-        cerr << "Please include an output file.\n" << usage_instructions << endl;
+        std::cerr << "Please include an output file.\n" << usage_instructions << std::endl;
     }
     else if (argc == 3)
     {
@@ -36,7 +31,7 @@ void check_arguments(int argc, char *argv[])
     }
     else if (argc > 3)
     {
-        cerr << "Too many arguments.\n" << usage_instructions << endl;
+        std::cerr << "Too many arguments.\n" << usage_instructions << std::endl;
     }
 
     if (!has_valid_args)
@@ -45,18 +40,18 @@ void check_arguments(int argc, char *argv[])
     }
 }
 
-void check_files(ifstream& in_file, string& in_name,
-                 ofstream& out_file, string& out_name)
+void check_files(std::ifstream& in_file, std::string& in_name,
+                 std::ofstream& out_file, std::string& out_name)
 {
     if (!in_file.is_open())
     {
-        cerr << "Cannot open input file: " << in_name << endl;
+        std::cerr << "Cannot open input file: " << in_name << std::endl;
         exit(EXIT_FAILURE);
     }
 
     if (!out_file.is_open())
     {
-        cerr << "Cannot open output file: " << out_name << endl;
+        std::cerr << "Cannot open output file: " << out_name << std::endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -66,28 +61,28 @@ int main(int argc, char *argv[])
 
     check_arguments(argc, argv);
 
-    string in_file_name_ = argv[1];
-    ifstream in_file_(in_file_name_.c_str(), ifstream::in);
+    std::string in_file_name_ = argv[1];
+    std::ifstream in_file_(in_file_name_.c_str(), std::ifstream::in);
 
-    string out_file_name_ = argv[2];
-    ofstream out_file_(out_file_name_.c_str(), ofstream::out);
+    std::string out_file_name_ = argv[2];
+    std::ofstream out_file_(out_file_name_.c_str(), std::ofstream::out);
 
     check_files(in_file_, in_file_name_, out_file_, out_file_name_);
 
-    vector<MeasurementPackage> measurement_pack_list;
-    vector<GroundTruthPackage> gt_pack_list;
+    std::vector<MeasurementPackage> measurement_pack_list;
+    std::vector<GroundTruthPackage> gt_pack_list;
 
-    string line;
+    std::string line;
 
     // prep the measurement packages (each line represents a measurement at a
     // timestamp)
     while (getline(in_file_, line))
     {
 
-        string sensor_type;
+        std::string sensor_type;
         MeasurementPackage meas_package;
         GroundTruthPackage gt_package;
-        istringstream iss(line);
+        std::istringstream iss(line);
         long timestamp;
 
         // reads first element from the current line
@@ -99,7 +94,7 @@ int main(int argc, char *argv[])
 
             // read measurements at this timestamp
             meas_package.sensor_type_ = MeasurementPackage::LASER;
-            meas_package.raw_measurements_ = VectorXd(2);
+            meas_package.raw_measurements_ = Eigen::VectorXd(2);
             float x;
             float y;
             iss >> x;
@@ -115,7 +110,7 @@ int main(int argc, char *argv[])
 
             // read measurements at this timestamp
             meas_package.sensor_type_ = MeasurementPackage::RADAR;
-            meas_package.raw_measurements_ = VectorXd(3);
+            meas_package.raw_measurements_ = Eigen::VectorXd(3);
             float ro;
             float theta;
             float ro_dot;
@@ -137,7 +132,7 @@ int main(int argc, char *argv[])
         iss >> y_gt;
         iss >> vx_gt;
         iss >> vy_gt;
-        gt_package.gt_values_ = VectorXd(4);
+        gt_package.gt_values_ = Eigen::VectorXd(4);
         gt_package.gt_values_ << x_gt, y_gt, vx_gt, vy_gt;
         gt_pack_list.push_back(gt_package);
     }
@@ -146,8 +141,8 @@ int main(int argc, char *argv[])
     FusionEKF fusionEKF;
 
     // used to compute the RMSE later
-    vector<VectorXd> estimations;
-    vector<VectorXd> ground_truth;
+    std::vector<Eigen::VectorXd> estimations;
+    std::vector<Eigen::VectorXd> ground_truth;
 
     //Call the EKF-based fusion
     size_t N = measurement_pack_list.size();
@@ -191,8 +186,8 @@ int main(int argc, char *argv[])
     }
 
     // compute the accuracy (RMSE)
-    cout << "Accuracy - RMSE:" << endl << Tools::calculateRMSE(estimations,
-            ground_truth) << endl;
+    std::cout << "Accuracy - RMSE:" << std::endl << Tools::calculateRMSE(estimations,
+            ground_truth) << std::endl;
 
     // close files
     if (out_file_.is_open())

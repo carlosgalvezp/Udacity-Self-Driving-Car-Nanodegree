@@ -6,6 +6,8 @@
 #include <string>
 #include <fstream>
 #include "kalman_filter.h"
+#include "motion_model.h"
+#include "measurement_model.h"
 #include "tools.h"
 
 class FusionEKF
@@ -42,6 +44,8 @@ private:
     Eigen::MatrixXd R_radar_;
     Eigen::MatrixXd H_laser_;
     Eigen::MatrixXd Hj_;
+
+    MotionModel motion_model_;
 };
 
 #endif /* FusionEKF_H_ */

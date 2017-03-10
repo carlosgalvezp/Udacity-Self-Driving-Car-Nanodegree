@@ -17,7 +17,7 @@ void KalmanFilter::init(Eigen::VectorXd& x_in, Eigen::MatrixXd& P_in,
     I_ = Eigen::MatrixXd::Identity(x_.cols(), x_.cols());
 }
 
-void KalmanFilter::predict()
+void KalmanFilter::predict(const MotionModel& /*motion_model*/, const double /*delta_t*/)
 {
     x_ = F_ * x_;
     P_ = F_ * P_ * F_.transpose() + Q_;

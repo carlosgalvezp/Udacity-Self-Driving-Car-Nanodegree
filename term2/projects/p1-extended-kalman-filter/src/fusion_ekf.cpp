@@ -3,11 +3,6 @@
 #include "Eigen/Dense"
 #include <iostream>
 
-using namespace std;
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
-using std::vector;
-
 /*
  * Constructor.
  */
@@ -18,10 +13,10 @@ FusionEKF::FusionEKF()
     previous_timestamp_ = 0;
 
     // initializing matrices
-    R_laser_ = MatrixXd(2, 2);
-    R_radar_ = MatrixXd(3, 3);
-    H_laser_ = MatrixXd(2, 4);
-    Hj_ = MatrixXd(3, 4);
+    R_laser_ = Eigen::MatrixXd(2, 2);
+    R_radar_ = Eigen::MatrixXd(3, 3);
+    H_laser_ = Eigen::MatrixXd(2, 4);
+    Hj_ = Eigen::MatrixXd(3, 4);
 
     /**
     TODO:
@@ -48,8 +43,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage& measurement_pack)
           * Remember: you'll need to convert radar from polar to cartesian coordinates.
         */
         // first measurement
-        cout << "EKF: " << endl;
-        ekf_.x_ = VectorXd(4);
+        std::cout << "EKF: " << std::endl;
+        ekf_.x_ = Eigen::VectorXd(4);
         ekf_.x_ << 1, 1, 1, 1;
 
         if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
@@ -81,7 +76,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage& measurement_pack)
        * Update the process noise covariance matrix.
      */
 
-    ekf_.predict();
+    const double delta_t = 0.;
+    ekf_.predict(motion_model_, delta_t);
 
     /*****************************************************************************
      *  Update
@@ -103,6 +99,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage& measurement_pack)
     }
 
     // print the output
-    cout << "x_ = " << ekf_.x_ << endl;
-    cout << "P_ = " << ekf_.P_ << endl;
+    std::cout << "x_ = " << ekf_.x_ << std::endl;
+    std::cout << "P_ = " << ekf_.P_ << std::endl;
 }
