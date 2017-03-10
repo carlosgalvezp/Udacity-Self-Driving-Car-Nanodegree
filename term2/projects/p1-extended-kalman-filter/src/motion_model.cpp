@@ -5,6 +5,14 @@ MotionModel::MotionModel(std::size_t state_dimension):
 {
 }
 
+Eigen::VectorXd MotionModel::predict(const Eigen::VectorXd& state,
+                                     const double delta_t) const
+{
+    const Eigen::MatrixXd F = getTransitionMatrix(delta_t);
+    return F * state;
+}
+
+
 Eigen::MatrixXd MotionModel::getTransitionMatrix(const double delta_t) const
 {
     Eigen::MatrixXd F(state_dimension_, state_dimension_);

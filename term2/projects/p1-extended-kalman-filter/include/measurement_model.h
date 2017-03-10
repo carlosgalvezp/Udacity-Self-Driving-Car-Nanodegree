@@ -6,16 +6,16 @@
 class MeasurementModel
 {
 public:
-    MeasurementModel();
+    MeasurementModel(const std::size_t state_dimension);
     virtual ~MeasurementModel();
 
-    const Eigen::MatrixXd& getMeasurementMatrix() const { return H_; }
-    const Eigen::MatrixXd& getMeasurementNoise() const { return R_; }
+    virtual Eigen::VectorXd predictMeasurement(const Eigen::VectorXd& state) const = 0;
 
-    Eigen::MatrixXd R_;
-    Eigen::MatrixXd H_;
-private:
+    virtual Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& state) const = 0;
+    virtual Eigen::MatrixXd getMeasurementNoise() const = 0;
 
+protected:
+    const std::size_t n_states_;
 };
 
 #endif // MEASUREMENTMODEL_H

@@ -8,6 +8,9 @@ class MotionModel
 public:
     MotionModel(std::size_t state_dimension);
 
+    Eigen::VectorXd predict(const Eigen::VectorXd& state,
+                            const double delta_t) const;
+
     Eigen::MatrixXd getTransitionMatrix(const double delta_t) const;
     Eigen::MatrixXd getProcessNoise(const double delta_t) const;
 

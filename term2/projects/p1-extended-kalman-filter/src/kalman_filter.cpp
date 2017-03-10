@@ -12,17 +12,18 @@ void KalmanFilter::predict(const MotionModel& motion_model, const double delta_t
     const Eigen::MatrixXd F = motion_model.getTransitionMatrix(delta_t);
     const Eigen::MatrixXd Q = motion_model.getProcessNoise(delta_t);
 
-    x_ = F * x_;
+    x_ = motion_model.predict(x_, delta_t);
     P_ = F * P_ * F.transpose() + Q;
 }
 
 void KalmanFilter::update(const MeasurementModel& sensor_model,
                           const Eigen::VectorXd& z)
 {
-    const Eigen::MatrixXd& H = sensor_model.getMeasurementMatrix();
+    const Eigen::MatrixXd& H = sensor_model.getMeasurementMatrix(x_);
     const Eigen::MatrixXd& R = sensor_model.getMeasurementNoise();
 
-    const Eigen::VectorXd y = z - H * x_;
+    const Eigen::VectorXd z_hat = sensor_model.predictMeasurement(x_);
+    const Eigen::VectorXd y = z - z_hat;
 
     const Eigen::MatrixXd Ht = H.transpose();
 
