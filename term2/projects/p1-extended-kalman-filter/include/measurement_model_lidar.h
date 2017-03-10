@@ -6,8 +6,10 @@
 class MeasurementModelLidar : public MeasurementModel
 {
 public:
-    MeasurementModelLidar();
+    MeasurementModelLidar(std::size_t state_dimension);
     virtual ~MeasurementModelLidar();
+
+    const std::size_t n_observed_states = 2U;
 };
 
 #endif // MEASUREMENT_MODEL_LIDAR_H

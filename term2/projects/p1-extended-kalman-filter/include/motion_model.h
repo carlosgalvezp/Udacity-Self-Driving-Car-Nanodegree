@@ -6,7 +6,7 @@
 class MotionModel
 {
 public:
-    MotionModel();
+    MotionModel(std::size_t state_dimension);
 
     const Eigen::MatrixXd& getTransitionMatrix() const { return F_; }
     const Eigen::MatrixXd& getProcessNoise() const { return Q_; }

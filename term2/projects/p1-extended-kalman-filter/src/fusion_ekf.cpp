@@ -3,21 +3,14 @@
 #include "Eigen/Dense"
 #include <iostream>
 
-/*
- * Constructor.
- */
 FusionEKF::FusionEKF():
     is_initialized_(false),
     previous_timestamp_(0ULL),
-    ekf_(),
-    motion_model_(),
-    meas_model_lidar_(),
-    meas_model_radar_()
+    ekf_(state_dimension),
+    motion_model_(state_dimension),
+    meas_model_lidar_(state_dimension),
+    meas_model_radar_(state_dimension)
 {
-    /**
-    TODO:
-      * Finish initializing the FusionEKF.
-    */
 }
 
 void FusionEKF::processMeasurement(const MeasurementPackage& measurement_pack)

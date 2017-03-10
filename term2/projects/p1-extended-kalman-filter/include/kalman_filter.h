@@ -8,7 +8,7 @@
 class KalmanFilter
 {
 public:
-    KalmanFilter();
+    KalmanFilter(const std::size_t state_dimension);
 
     /// \brief Predicts the state and the state covariance using
     ///        the process model
@@ -40,6 +40,9 @@ private:
 
     // Identity matrix
     Eigen::MatrixXd I_;
+
+    // Initial uncertainty
+    const double p0_ = 1.0E6;
 };
 
 #endif /* KALMAN_FILTER_H_ */

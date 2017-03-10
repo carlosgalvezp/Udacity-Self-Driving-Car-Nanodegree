@@ -22,8 +22,9 @@ public:
     /// \param measurement_pack incoming measurement
     void processMeasurement(const MeasurementPackage& measurement_pack);
 
+    /// \brief returns the current state
+    /// \return the current state
     const Eigen::VectorXd& getState() const { return ekf_.getState(); }
-    const Eigen::MatrixXd& getCovariance() const { return ekf_.getCovariance(); }
 
 private:
     // Flag indicating whether the tracking toolbox was initialized or not
@@ -41,6 +42,9 @@ private:
     // Measurement models for lidar and radar
     MeasurementModelLidar meas_model_lidar_;
     MeasurementModelRadar meas_model_radar_;
+
+    // Dimension of the state
+    static const std::size_t state_dimension = 4U;
 };
 
 #endif /* FUSION_EKF_H_ */

@@ -6,8 +6,10 @@
 class MeasurementModelRadar : public MeasurementModel
 {
 public:
-    MeasurementModelRadar();
+    MeasurementModelRadar(std::size_t state_dimension);
     virtual ~MeasurementModelRadar();
+
+    const std::size_t n_observed_states = 3U;
 };
 
 #endif // MEASUREMENT_MODEL_RADAR_H

@@ -1,10 +1,10 @@
 #include "measurement_model_lidar.h"
 
-MeasurementModelLidar::MeasurementModelLidar():
+MeasurementModelLidar::MeasurementModelLidar(std::size_t state_dimension):
     MeasurementModel()
 {
-    R_ = Eigen::MatrixXd(2, 2);
-    H_ = Eigen::MatrixXd(2, 4);
+    R_ = Eigen::MatrixXd(n_observed_states, n_observed_states);
+    H_ = Eigen::MatrixXd(n_observed_states, state_dimension);
 }
 
 MeasurementModelLidar::~MeasurementModelLidar()
