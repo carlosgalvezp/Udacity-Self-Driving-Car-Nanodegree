@@ -8,12 +8,14 @@ class MotionModel
 public:
     MotionModel(std::size_t state_dimension);
 
-    const Eigen::MatrixXd& getTransitionMatrix() const { return F_; }
-    const Eigen::MatrixXd& getProcessNoise() const { return Q_; }
+    Eigen::MatrixXd getTransitionMatrix(const double delta_t) const;
+    Eigen::MatrixXd getProcessNoise(const double delta_t) const;
 
 private:
-    Eigen::MatrixXd F_;
-    Eigen::MatrixXd Q_;
+    const std::size_t state_dimension_;
+
+    const double sigma_ax_ = 10.0;
+    const double sigma_ay_ = 10.0;
 };
 
 #endif // MOTION_MODEL_H

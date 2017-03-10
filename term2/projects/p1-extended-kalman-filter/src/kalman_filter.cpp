@@ -7,10 +7,10 @@ KalmanFilter::KalmanFilter(const std::size_t state_dimension):
 {
 }
 
-void KalmanFilter::predict(const MotionModel& motion_model, const double /*delta_t*/)
+void KalmanFilter::predict(const MotionModel& motion_model, const double delta_t)
 {
-    const Eigen::MatrixXd& F = motion_model.getTransitionMatrix();
-    const Eigen::MatrixXd& Q = motion_model.getProcessNoise();
+    const Eigen::MatrixXd F = motion_model.getTransitionMatrix(delta_t);
+    const Eigen::MatrixXd Q = motion_model.getProcessNoise(delta_t);
 
     x_ = F * x_;
     P_ = F * P_ * F.transpose() + Q;
