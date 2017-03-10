@@ -151,13 +151,14 @@ int main(int argc, char *argv[])
     {
         // start filtering from the second frame (the speed is unknown in the first
         // frame)
-        fusionEKF.ProcessMeasurement(measurement_pack_list[k]);
+        fusionEKF.processMeasurement(measurement_pack_list[k]);
 
         // output the estimation
-        out_file_ << fusionEKF.ekf_.x_(0) << "\t";
-        out_file_ << fusionEKF.ekf_.x_(1) << "\t";
-        out_file_ << fusionEKF.ekf_.x_(2) << "\t";
-        out_file_ << fusionEKF.ekf_.x_(3) << "\t";
+        const Eigen::VectorXd& x = fusionEKF.getState();
+        out_file_ << x(0) << "\t";
+        out_file_ << x(1) << "\t";
+        out_file_ << x(2) << "\t";
+        out_file_ << x(3) << "\t";
 
         // output the measurements
         if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER)
@@ -181,7 +182,7 @@ int main(int argc, char *argv[])
         out_file_ << gt_pack_list[k].gt_values_(2) << "\t";
         out_file_ << gt_pack_list[k].gt_values_(3) << "\n";
 
-        estimations.push_back(fusionEKF.ekf_.x_);
+        estimations.push_back(fusionEKF.getState());
         ground_truth.push_back(gt_pack_list[k].gt_values_);
     }
 

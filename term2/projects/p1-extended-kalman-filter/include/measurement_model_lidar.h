@@ -1,10 +1,13 @@
 #ifndef MEASUREMENT_MODEL_LIDAR_H
 #define MEASUREMENT_MODEL_LIDAR_H
 
-class LidarMeasurementModel
+#include "measurement_model.h"
+
+class MeasurementModelLidar : public MeasurementModel
 {
 public:
-    LidarMeasurementModel();
+    MeasurementModelLidar();
+    virtual ~MeasurementModelLidar();
 };
 
 #endif // MEASUREMENT_MODEL_LIDAR_H

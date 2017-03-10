@@ -1,10 +1,13 @@
 #ifndef MEASUREMENT_MODEL_RADAR_H
 #define MEASUREMENT_MODEL_RADAR_H
 
-class RadarMeasurementModel
+#include "measurement_model.h"
+
+class MeasurementModelRadar : public MeasurementModel
 {
 public:
-    RadarMeasurementModel();
+    MeasurementModelRadar();
+    virtual ~MeasurementModelRadar();
 };
 
 #endif // MEASUREMENT_MODEL_RADAR_H

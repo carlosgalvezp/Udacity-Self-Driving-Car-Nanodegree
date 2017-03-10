@@ -3,3 +3,8 @@
 MeasurementModel::MeasurementModel()
 {
 }
+
+MeasurementModel::~MeasurementModel()
+{
+}
+

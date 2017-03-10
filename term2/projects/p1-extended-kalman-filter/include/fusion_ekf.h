@@ -1,51 +1,45 @@
-#ifndef FusionEKF_H_
-#define FusionEKF_H_
+#ifndef FUSION_EKF_H_
+#define FUSION_EKF_H_
 
-#include "measurement_package.h"
 #include <vector>
 #include <string>
 #include <fstream>
+#include <cstdint>
 #include "kalman_filter.h"
+#include "measurement_package.h"
 #include "motion_model.h"
-#include "measurement_model.h"
+#include "measurement_model_lidar.h"
+#include "measurement_model_radar.h"
 #include "tools.h"
 
 class FusionEKF
 {
 public:
-    /**
-    * Constructor.
-    */
     FusionEKF();
 
-    /**
-    * Destructor.
-    */
-    virtual ~FusionEKF();
+    /// \brief Runs one iteration of the Extended Kalman Filter given a
+    ///        measurement
+    /// \param measurement_pack incoming measurement
+    void processMeasurement(const MeasurementPackage& measurement_pack);
 
-    /**
-    * Run the whole flow of the Kalman Filter from here.
-    */
-    void ProcessMeasurement(const MeasurementPackage& measurement_pack);
-
-    /**
-    * Kalman Filter update and prediction math lives in here.
-    */
-    KalmanFilter ekf_;
+    const Eigen::VectorXd& getState() const { return ekf_.x_; }
 
 private:
-    // check whether the tracking toolbox was initiallized or not (first measurement)
+    // Flag indicating whether the tracking toolbox was initialized or not
     bool is_initialized_;
 
-    // previous timestamp
-    long previous_timestamp_;
+    // Previous timestamp
+    uint64_t previous_timestamp_;
 
-    Eigen::MatrixXd R_laser_;
-    Eigen::MatrixXd R_radar_;
-    Eigen::MatrixXd H_laser_;
-    Eigen::MatrixXd Hj_;
+    // Kalman Filter
+    KalmanFilter ekf_;
 
+    // Motion model (constant acceleration)
     MotionModel motion_model_;
+
+    // Measurement models for lidar and radar
+    MeasurementModelLidar meas_model_lidar_;
+    MeasurementModelRadar meas_model_radar_;
 };
 
-#endif /* FusionEKF_H_ */
+#endif /* FUSION_EKF_H_ */

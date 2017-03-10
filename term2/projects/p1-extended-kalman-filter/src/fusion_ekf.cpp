@@ -6,30 +6,21 @@
 /*
  * Constructor.
  */
-FusionEKF::FusionEKF()
+FusionEKF::FusionEKF():
+    is_initialized_(false),
+    previous_timestamp_(0ULL),
+    ekf_(),
+    motion_model_(),
+    meas_model_lidar_(),
+    meas_model_radar_()
 {
-    is_initialized_ = false;
-
-    previous_timestamp_ = 0;
-
-    // initializing matrices
-    R_laser_ = Eigen::MatrixXd(2, 2);
-    R_radar_ = Eigen::MatrixXd(3, 3);
-    H_laser_ = Eigen::MatrixXd(2, 4);
-    Hj_ = Eigen::MatrixXd(3, 4);
-
     /**
     TODO:
       * Finish initializing the FusionEKF.
     */
 }
 
-/**
-* Destructor.
-*/
-FusionEKF::~FusionEKF() {}
-
-void FusionEKF::ProcessMeasurement(const MeasurementPackage& measurement_pack)
+void FusionEKF::processMeasurement(const MeasurementPackage& measurement_pack)
 {
     /*****************************************************************************
      *  Initialization
