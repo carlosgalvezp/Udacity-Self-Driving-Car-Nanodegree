@@ -23,40 +23,6 @@ FusionEKF::FusionEKF():
 void FusionEKF::processMeasurement(const MeasurementPackage& measurement_pack)
 {
     /*****************************************************************************
-     *  Initialization
-     ****************************************************************************/
-    if (!is_initialized_)
-    {
-        /**
-        TODO:
-          * Initialize the state ekf_.x_ with the first measurement.
-          * Create the covariance matrix.
-          * Remember: you'll need to convert radar from polar to cartesian coordinates.
-        */
-        // first measurement
-        std::cout << "EKF: " << std::endl;
-        ekf_.x_ = Eigen::VectorXd(4);
-        ekf_.x_ << 1, 1, 1, 1;
-
-        if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
-        {
-            /**
-            Convert radar from polar to cartesian coordinates and initialize state.
-            */
-        }
-        else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER)
-        {
-            /**
-            Initialize state.
-            */
-        }
-
-        // done initializing, no need to predict or update
-        is_initialized_ = true;
-        return;
-    }
-
-    /*****************************************************************************
      *  Prediction
      ****************************************************************************/
 
@@ -90,6 +56,6 @@ void FusionEKF::processMeasurement(const MeasurementPackage& measurement_pack)
     }
 
     // print the output
-    std::cout << "x_ = " << ekf_.x_ << std::endl;
-    std::cout << "P_ = " << ekf_.P_ << std::endl;
+    std::cout << "x_ = " << ekf_.getState() << std::endl;
+    std::cout << "P_ = " << ekf_.getCovariance() << std::endl;
 }

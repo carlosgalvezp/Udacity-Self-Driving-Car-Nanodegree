@@ -22,7 +22,8 @@ public:
     /// \param measurement_pack incoming measurement
     void processMeasurement(const MeasurementPackage& measurement_pack);
 
-    const Eigen::VectorXd& getState() const { return ekf_.x_; }
+    const Eigen::VectorXd& getState() const { return ekf_.getState(); }
+    const Eigen::MatrixXd& getCovariance() const { return ekf_.getCovariance(); }
 
 private:
     // Flag indicating whether the tracking toolbox was initialized or not
