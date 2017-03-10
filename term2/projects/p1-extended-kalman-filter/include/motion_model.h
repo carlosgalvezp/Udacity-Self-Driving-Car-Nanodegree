@@ -17,8 +17,10 @@ public:
 private:
     const std::size_t state_dimension_;
 
-    const double sigma_ax_ = 10.0;
-    const double sigma_ay_ = 10.0;
+    // Process noise
+    // TODO: tweak. Should be variance, not std
+    const double sigma_ax_ = 10.0;  // [m]
+    const double sigma_ay_ = 10.0;  // [m]
 };
 
 #endif // MOTION_MODEL_H

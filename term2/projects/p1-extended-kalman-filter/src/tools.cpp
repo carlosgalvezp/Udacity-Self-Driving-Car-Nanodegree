@@ -16,10 +16,3 @@ Eigen::VectorXd Tools::calculateRMSE(const std::vector<Eigen::VectorXd>& estimat
 
     return output.cwiseSqrt();
 }
-
-Eigen::MatrixXd Tools::CalculateJacobian(const Eigen::VectorXd& /*x_state*/)
-{
-    Eigen::MatrixXd x;
-    // TODO
-    return x;
-}

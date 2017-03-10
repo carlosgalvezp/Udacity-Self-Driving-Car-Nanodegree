@@ -5,7 +5,7 @@
 
 FusionEKF::FusionEKF():
     is_initialized_(false),
-    previous_timestamp_(0ULL),
+    previous_timestamp_(0),
     ekf_(state_dimension),
     motion_model_(state_dimension),
     meas_model_lidar_(state_dimension),
@@ -15,37 +15,24 @@ FusionEKF::FusionEKF():
 
 void FusionEKF::processMeasurement(const MeasurementPackage& measurement_pack)
 {
-    /*****************************************************************************
-     *  Prediction
-     ****************************************************************************/
+    // Prediction
+    const long new_timestamp = measurement_pack.timestamp_;
+    const double delta_t = static_cast<double>(new_timestamp - previous_timestamp_) * 1.0E-6;
 
-    /**
-     TODO:
-       * Update the state transition matrix F according to the new elapsed time.
-        - Time is measured in seconds.
-       * Update the process noise covariance matrix.
-     */
-
-    const double delta_t = 0.;
     ekf_.predict(motion_model_, delta_t);
 
-    /*****************************************************************************
-     *  Update
-     ****************************************************************************/
+    previous_timestamp_ = new_timestamp;
 
-    /**
-     TODO:
-       * Use the sensor type to perform the update step.
-       * Update the state and covariance matrices.
-     */
-
+    // Update
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
     {
         // Radar updates
+        ekf_.update(meas_model_radar_, measurement_pack.raw_measurements_);
     }
     else
     {
         // Laser updates
+        ekf_.update(meas_model_lidar_, measurement_pack.raw_measurements_);
     }
 
     // print the output

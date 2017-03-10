@@ -17,8 +17,10 @@ public:
 private:
     const std::size_t n_observed_states = 2U;
 
-    const double sigma_px_ = 0.2;
-    const double sigma_py_ = 0.2;
+    // Measurement noise
+    // TODO: tweak. should be variance, not std
+    const double sigma_px_ = 0.2;  // [m]
+    const double sigma_py_ = 0.2;  // [m]
 };
 
 #endif // MEASUREMENT_MODEL_LIDAR_H

@@ -31,7 +31,7 @@ private:
     bool is_initialized_;
 
     // Previous timestamp
-    uint64_t previous_timestamp_;
+    long previous_timestamp_;
 
     // Kalman Filter
     KalmanFilter ekf_;

@@ -17,6 +17,7 @@ public:
 private:
     const std::size_t n_observed_states_ = 3U;
 
+    // TODO: tweak. should be variance, not std
     const double sigma_range_      = 0.2;                       // [m]
     const double sigma_bearing_    = (10.0 * M_PI / 180.0);     // [rad]
     const double sigma_range_rate_ = 1.0;                       // [m/s]
