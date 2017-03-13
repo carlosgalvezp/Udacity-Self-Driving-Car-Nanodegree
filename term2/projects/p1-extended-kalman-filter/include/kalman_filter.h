@@ -9,12 +9,14 @@
 static const double x0_ = 1.0E-3;  // To avoid dividing by zero
 
 // Initial uncertainty
-static const double p0_ = 1.0E6;
+static const double p0_ = 1.0E3;
 
 class KalmanFilter
 {
 public:
     KalmanFilter(const std::size_t state_dimension);
+
+    void setState(const Eigen::VectorXd& x) { x_ = x; }
 
     /// \brief Predicts the state and the state covariance using
     ///        the process model

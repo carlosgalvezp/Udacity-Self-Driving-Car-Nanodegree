@@ -44,7 +44,7 @@ private:
     MeasurementModelRadar meas_model_radar_;
 
     // Dimension of the state
-    static const std::size_t state_dimension = 4U;
+    static const std::size_t state_dimension_ = 4U;
 };
 
 #endif /* FUSION_EKF_H_ */
