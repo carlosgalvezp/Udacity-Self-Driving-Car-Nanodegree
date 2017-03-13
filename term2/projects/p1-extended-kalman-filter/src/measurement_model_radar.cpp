@@ -28,7 +28,7 @@ Eigen::VectorXd MeasurementModelRadar::predictMeasurement(const Eigen::VectorXd&
     return z_hat;
 }
 
-Eigen::MatrixXd MeasurementModelRadar::getMeasurementMatrix(const Eigen::VectorXd &state) const
+Eigen::MatrixXd MeasurementModelRadar::getH(const Eigen::VectorXd &state) const
 {
     const double px = state(0);
     const double py = state(1);
@@ -48,7 +48,7 @@ Eigen::MatrixXd MeasurementModelRadar::getMeasurementMatrix(const Eigen::VectorX
     return H;
 }
 
-Eigen::MatrixXd MeasurementModelRadar::getMeasurementNoise() const
+Eigen::MatrixXd MeasurementModelRadar::getR() const
 {
     Eigen::MatrixXd R(n_observed_states_, n_observed_states_);
 

@@ -11,11 +11,11 @@ MeasurementModelLidar::~MeasurementModelLidar()
 
 Eigen::VectorXd MeasurementModelLidar::predictMeasurement(const Eigen::VectorXd& state) const
 {
-    const Eigen::MatrixXd& H = getMeasurementMatrix(state);
+    const Eigen::MatrixXd& H = getH(state);
     return H * state;
 }
 
-Eigen::MatrixXd MeasurementModelLidar::getMeasurementMatrix(const Eigen::VectorXd &state) const
+Eigen::MatrixXd MeasurementModelLidar::getH(const Eigen::VectorXd &state) const
 {
     (void) state;  // Not required for this sensor model
 
@@ -27,7 +27,7 @@ Eigen::MatrixXd MeasurementModelLidar::getMeasurementMatrix(const Eigen::VectorX
     return H;
 }
 
-Eigen::MatrixXd MeasurementModelLidar::getMeasurementNoise() const
+Eigen::MatrixXd MeasurementModelLidar::getR() const
 {
     Eigen::MatrixXd R(n_observed_states, n_observed_states);
 

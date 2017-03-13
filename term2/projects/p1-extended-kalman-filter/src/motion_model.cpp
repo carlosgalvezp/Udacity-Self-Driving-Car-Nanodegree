@@ -8,12 +8,12 @@ MotionModel::MotionModel(std::size_t state_dimension):
 Eigen::VectorXd MotionModel::predict(const Eigen::VectorXd& state,
                                      const double delta_t) const
 {
-    const Eigen::MatrixXd F = getTransitionMatrix(delta_t);
+    const Eigen::MatrixXd F = getF(delta_t);
     return F * state;
 }
 
 
-Eigen::MatrixXd MotionModel::getTransitionMatrix(const double delta_t) const
+Eigen::MatrixXd MotionModel::getF(const double delta_t) const
 {
     Eigen::MatrixXd F(state_dimension_, state_dimension_);
 
@@ -25,7 +25,7 @@ Eigen::MatrixXd MotionModel::getTransitionMatrix(const double delta_t) const
     return F;
 }
 
-Eigen::MatrixXd MotionModel::getProcessNoise(const double delta_t) const
+Eigen::MatrixXd MotionModel::getQ(const double delta_t) const
 {
     Eigen::MatrixXd Q(state_dimension_, state_dimension_);
 

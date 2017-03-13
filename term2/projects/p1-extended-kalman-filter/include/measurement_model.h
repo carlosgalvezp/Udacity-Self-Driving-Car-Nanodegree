@@ -11,8 +11,8 @@ public:
 
     virtual Eigen::VectorXd predictMeasurement(const Eigen::VectorXd& state) const = 0;
 
-    virtual Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd& state) const = 0;
-    virtual Eigen::MatrixXd getMeasurementNoise() const = 0;
+    virtual Eigen::MatrixXd getH(const Eigen::VectorXd& state) const = 0;
+    virtual Eigen::MatrixXd getR() const = 0;
 
 protected:
     const std::size_t n_states_;

@@ -5,8 +5,8 @@
 
 // Measurement noise
 // TODO: tweak. should be variance, not std
-static const double sigma_px_ = 0.01;  // [m]
-static const double sigma_py_ = 0.01;  // [m]
+static const double sigma_px_ = 0.00225;  // [m]
+static const double sigma_py_ = 0.00225;  // [m]
 
 class MeasurementModelLidar : public MeasurementModel
 {
@@ -16,8 +16,8 @@ public:
 
     virtual Eigen::VectorXd predictMeasurement(const Eigen::VectorXd& state) const;
 
-    virtual Eigen::MatrixXd getMeasurementMatrix(const Eigen::VectorXd &state) const;
-    virtual Eigen::MatrixXd getMeasurementNoise() const;
+    virtual Eigen::MatrixXd getH(const Eigen::VectorXd &state) const;
+    virtual Eigen::MatrixXd getR() const;
 
 private:
     const std::size_t n_observed_states = 2U;
