@@ -20,7 +20,7 @@ Eigen::MatrixXd MotionModel::getF(const double delta_t) const
     F << 1.0,   0.0,    delta_t,    0.0,
          0.0,   1.0,    0.0,        delta_t,
          0.0,   0.0,    1.0,        0.0,
-         0.0,   0.0,    0.0,        0.0;
+         0.0,   0.0,    0.0,        1.0;
 
     return F;
 }

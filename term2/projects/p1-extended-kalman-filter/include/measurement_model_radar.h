@@ -4,9 +4,9 @@
 #include "measurement_model.h"
 
 // TODO: tweak. should be variance, not std
-static const double sigma_range_      = 0.09;   //0.2;                       // [m]
-static const double sigma_bearing_    = 0.0009; //(10.0 * M_PI / 180.0);     // [rad]
-static const double sigma_range_rate_ = 0.09;   // 1.0;                       // [m/s]
+static const double sigma_range_      = 0.09;   // [m]^2
+static const double sigma_bearing_    = 0.0009; // [rad]^2
+static const double sigma_range_rate_ = 0.09;   // [m/s]^2
 
 class MeasurementModelRadar : public MeasurementModel
 {

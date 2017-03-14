@@ -6,8 +6,8 @@
 
 // Process noise
 // TODO: tweak. Should be variance, not std
-static const double sigma_ax_ = 1000.0;  // [m]
-static const double sigma_ay_ = 1000.0;  // [m]
+static const double sigma_ax_ = 9.0;  // [m/s^2]^2
+static const double sigma_ay_ = 9.0;  // [m/s^2]^2
 
 class MotionModel
 {

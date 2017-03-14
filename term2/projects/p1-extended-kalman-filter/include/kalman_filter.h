@@ -14,7 +14,7 @@ static const double p0_ = 1.0E3;
 class KalmanFilter
 {
 public:
-    KalmanFilter(const std::size_t state_dimension);
+    KalmanFilter(const std::size_t n_states);
 
     void setState(const Eigen::VectorXd& x) { x_ = x; }
 

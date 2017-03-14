@@ -17,6 +17,10 @@ class FusionEKF
 public:
     FusionEKF();
 
+    /// \brief Initializes the filter with the first measurement
+    /// \param measurement_pack
+    void initialize(const MeasurementPackage& measurement_pack);
+
     /// \brief Runs one iteration of the Extended Kalman Filter given a
     ///        measurement
     /// \param measurement_pack incoming measurement
@@ -44,7 +48,7 @@ private:
     MeasurementModelRadar meas_model_radar_;
 
     // Dimension of the state
-    static const std::size_t state_dimension_ = 4U;
+    static const std::size_t n_states_ = 4U;
 };
 
 #endif /* FUSION_EKF_H_ */
