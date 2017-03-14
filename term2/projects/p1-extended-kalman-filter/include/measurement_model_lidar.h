@@ -5,8 +5,8 @@
 
 // Measurement noise
 // TODO: tweak. should be variance, not std
-static const double sigma_px_ = 0.0225;  // [m]^2
-static const double sigma_py_ = 0.0225;  // [m]^2
+static const double noise_px_ = 0.0225;  // [m]^2
+static const double noise_py_ = 0.0225;  // [m]^2
 
 class MeasurementModelLidar : public MeasurementModel
 {

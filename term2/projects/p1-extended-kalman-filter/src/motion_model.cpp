@@ -33,10 +33,10 @@ Eigen::MatrixXd MotionModel::getQ(const double delta_t) const
     const double dt3_2 = dt2 * delta_t / 2.0;
     const double dt4_4 = dt3_2 * delta_t / 2.0;
 
-    Q << dt4_4 * sigma_ax_, 0.0,               dt3_2 * sigma_ax_, 0.0,
-         0.0,               dt4_4 * sigma_ay_, 0.0,               dt3_2 * sigma_ay_,
-         dt3_2 * sigma_ax_, 0.0,               dt2 * sigma_ax_,   0.0,
-         0.0,               dt3_2 * sigma_ay_, 0.0,               dt2 * sigma_ay_;
+    Q << dt4_4 * noise_ax_, 0.0,               dt3_2 * noise_ax_, 0.0,
+         0.0,               dt4_4 * noise_ay_, 0.0,               dt3_2 * noise_ay_,
+         dt3_2 * noise_ax_, 0.0,               dt2 * noise_ax_,   0.0,
+         0.0,               dt3_2 * noise_ay_, 0.0,               dt2 * noise_ay_;
 
     return Q;
 }

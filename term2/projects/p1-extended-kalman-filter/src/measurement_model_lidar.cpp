@@ -31,8 +31,8 @@ Eigen::MatrixXd MeasurementModelLidar::getR() const
 {
     Eigen::MatrixXd R(n_observed_states, n_observed_states);
 
-    R << sigma_px_, 0.0,
-         0.0,      sigma_py_;
+    R << noise_px_, 0.0,
+         0.0,      noise_py_;
 
     return R;
 }

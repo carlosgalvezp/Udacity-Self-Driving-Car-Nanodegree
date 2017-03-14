@@ -2,7 +2,7 @@ project(ExtendedKF)
 
 cmake_minimum_required (VERSION 3.5)
 
-add_definitions(-std=c++0x -Wall -Wextra -Werror)
+add_definitions(-std=c++0x -Wall -Wextra -Werror -O2)
 
 include_directories(include)
 include_directories(3rdparty)

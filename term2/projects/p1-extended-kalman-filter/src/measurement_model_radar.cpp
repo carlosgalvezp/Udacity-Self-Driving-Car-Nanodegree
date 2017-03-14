@@ -52,9 +52,9 @@ Eigen::MatrixXd MeasurementModelRadar::getR() const
 {
     Eigen::MatrixXd R(n_observed_states_, n_observed_states_);
 
-    R << sigma_range_, 0.0,            0.0,
-         0.0,          sigma_bearing_, 0.0,
-         0.0,          0.0,            sigma_range_rate_;
+    R << noise_range_, 0.0,            0.0,
+         0.0,          noise_bearing_, 0.0,
+         0.0,          0.0,            noise_range_rate_;
 
     return R;
 }
