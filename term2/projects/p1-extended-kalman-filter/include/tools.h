@@ -14,10 +14,10 @@ public:
     static Eigen::VectorXd calculateRMSE(const std::vector<Eigen::VectorXd>& estimations,
                                          const std::vector<Eigen::VectorXd>& ground_truth);
 
-    /// \brief Computes the Jacobian matrix given the current state
-    /// \param x_state current state
-    /// \return Jacobian matrix associated with the given state
-    static Eigen::MatrixXd CalculateJacobian(const Eigen::VectorXd& x_state);
+    /// \brief Returns true if x is not zero, up to some predefined threshold
+    /// \param x input
+    /// \return true if x is greater than a small threshold
+    static bool isNotZero(const double x);
 };
 
 #endif /* TOOLS_H_ */

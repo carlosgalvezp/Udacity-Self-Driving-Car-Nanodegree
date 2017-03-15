@@ -1,4 +1,5 @@
 #include "measurement_model_radar.h"
+#include "tools.h"
 #include <cmath>
 
 MeasurementModelRadar::MeasurementModelRadar(const std::size_t state_dimension):
@@ -12,7 +13,7 @@ MeasurementModelRadar::~MeasurementModelRadar()
 
 Eigen::VectorXd MeasurementModelRadar::predictMeasurement(const Eigen::VectorXd& state) const
 {
-    Eigen::VectorXd z_hat(n_observed_states_);
+    Eigen::VectorXd z_hat = Eigen::VectorXd::Zero(n_observed_states_);
 
     const double px = state(0);
     const double py = state(1);
@@ -21,9 +22,12 @@ Eigen::VectorXd MeasurementModelRadar::predictMeasurement(const Eigen::VectorXd&
 
     const double sqrt_sum = std::sqrt(px*px + py*py);
 
-    z_hat << sqrt_sum,
-             std::atan2(py, px),
-             (px * vx + py * vy) / sqrt_sum;
+    if (Tools::isNotZero(sqrt_sum))
+    {
+        z_hat << sqrt_sum,
+                 std::atan2(py, px),
+                 (px * vx + py * vy) / sqrt_sum;
+    }
 
     return z_hat;
 }
@@ -39,11 +43,14 @@ Eigen::MatrixXd MeasurementModelRadar::getH(const Eigen::VectorXd &state) const
     const double sqrt_sum = std::sqrt(sum_sq);
     const double sum_3_2 = sum_sq * sqrt_sum;
 
-    Eigen::MatrixXd H(n_observed_states_, n_states_);
+    Eigen::MatrixXd H = Eigen::MatrixXd::Zero(n_observed_states_, n_states_);
 
-    H << px / sqrt_sum,                  py / sqrt_sum,                  0.0,           0.0,
-        -py / sum_sq,                    px / sum_sq,                    0.0,           0.0,
-         py * (vx*py - vy*px) / sum_3_2, px * (vy*px - vx*py) / sum_3_2, px / sqrt_sum, py / sqrt_sum;
+    if (Tools::isNotZero(sum_sq))
+    {
+        H << px / sqrt_sum,                  py / sqrt_sum,                  0.0,           0.0,
+            -py / sum_sq,                    px / sum_sq,                    0.0,           0.0,
+             py * (vx*py - vy*px) / sum_3_2, px * (vy*px - vx*py) / sum_3_2, px / sqrt_sum, py / sqrt_sum;
+    }
 
     return H;
 }

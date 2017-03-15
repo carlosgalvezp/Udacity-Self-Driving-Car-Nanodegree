@@ -1,4 +1,6 @@
 #include "tools.h"
+#include "constants.h"
+#include <cmath>
 
 Eigen::VectorXd Tools::calculateRMSE(const std::vector<Eigen::VectorXd>& estimations,
                                      const std::vector<Eigen::VectorXd>& ground_truth)
@@ -15,4 +17,9 @@ Eigen::VectorXd Tools::calculateRMSE(const std::vector<Eigen::VectorXd>& estimat
     output /= estimations.size();
 
     return output.cwiseSqrt();
+}
+
+bool Tools::isNotZero(const double x)
+{
+    return std::fabs(x) > kZeroThreshold;
 }

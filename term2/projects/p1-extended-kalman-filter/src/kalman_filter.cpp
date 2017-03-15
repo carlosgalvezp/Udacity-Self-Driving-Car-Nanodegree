@@ -1,4 +1,5 @@
 #include "kalman_filter.h"
+#include "tools.h"
 
 KalmanFilter::KalmanFilter(const std::size_t n_states):
     x_(Eigen::VectorXd::Constant(n_states, x0_)),
@@ -30,8 +31,12 @@ void KalmanFilter::update(const MeasurementModel& sensor_model,
     const Eigen::MatrixXd Ht = H.transpose();
 
     const Eigen::MatrixXd S = H * P_ * Ht + R;
-    const Eigen::MatrixXd K = P_ * Ht * S.inverse();
 
-    x_ = x_ + K * y;
-    P_ = (I_ - K * H) * P_;
+    if(Tools::isNotZero(S.determinant()))
+    {
+        const Eigen::MatrixXd K = P_ * Ht * S.inverse();
+
+        x_ = x_ + K * y;
+        P_ = (I_ - K * H) * P_;
+    }
 }
