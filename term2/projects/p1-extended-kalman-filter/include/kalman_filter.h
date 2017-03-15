@@ -5,11 +5,9 @@
 #include "motion_model.h"
 #include "measurement_model.h"
 
-/// Initial state
-static const double x0_ = 1.0E-3;
-
-/// Initial uncertainty
-static const double p0_ = 1.0E3;
+/// Initial uncertainties
+static const double p0p_ = 1.0;     // Position
+static const double p0v_ = 1.0E3;   // Velocity
 
 class KalmanFilter
 {

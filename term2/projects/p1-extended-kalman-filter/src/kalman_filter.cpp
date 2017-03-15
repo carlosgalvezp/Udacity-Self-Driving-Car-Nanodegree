@@ -2,10 +2,14 @@
 #include "tools.h"
 
 KalmanFilter::KalmanFilter(const std::size_t n_states):
-    x_(Eigen::VectorXd::Constant(n_states, x0_)),
-    P_(Eigen::MatrixXd::Constant(n_states, n_states, p0_)),
+    x_(Eigen::VectorXd::Zero(n_states)),
+    P_(Eigen::MatrixXd::Zero(n_states, n_states)),
     I_(Eigen::MatrixXd::Identity(n_states, n_states))
 {
+    P_ << p0p_, 0.0,   0.0,  0.0,
+          0.0,  p0p_,  0.0,  0.0,
+          0.0,  0.0,   p0v_, 0.0,
+          0.0,  0.0,   0.0,  p0v_;
 }
 
 void KalmanFilter::predict(const MotionModel& motion_model,
@@ -25,11 +29,9 @@ void KalmanFilter::update(const MeasurementModel& sensor_model,
     const Eigen::MatrixXd R = sensor_model.getR();
 
     const Eigen::VectorXd z_hat = sensor_model.predictMeasurement(x_);
-
     const Eigen::VectorXd y = z - z_hat;
 
     const Eigen::MatrixXd Ht = H.transpose();
-
     const Eigen::MatrixXd S = H * P_ * Ht + R;
 
     if(Tools::isNotZero(S.determinant()))
