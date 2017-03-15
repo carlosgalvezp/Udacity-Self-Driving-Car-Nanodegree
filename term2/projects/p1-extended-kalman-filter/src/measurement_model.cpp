@@ -1,7 +1,7 @@
 #include "measurement_model.h"
 
-MeasurementModel::MeasurementModel(const std::size_t state_dimension):
-    n_states_(state_dimension)
+MeasurementModel::MeasurementModel(const std::size_t n_states):
+    n_states_(n_states)
 {
 }
 

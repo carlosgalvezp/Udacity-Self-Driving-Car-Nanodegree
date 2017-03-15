@@ -5,10 +5,10 @@
 #include "motion_model.h"
 #include "measurement_model.h"
 
-// Initial state
-static const double x0_ = 1.0E-3;  // To avoid dividing by zero
+/// Initial state
+static const double x0_ = 1.0E-3;
 
-// Initial uncertainty
+/// Initial uncertainty
 static const double p0_ = 1.0E3;
 
 class KalmanFilter
@@ -16,6 +16,8 @@ class KalmanFilter
 public:
     KalmanFilter(const std::size_t n_states);
 
+    /// \brief sets the state to the given value
+    /// \param x new state
     void setState(const Eigen::VectorXd& x) { x_ = x; }
 
     /// \brief Predicts the state and the state covariance using
@@ -48,8 +50,6 @@ private:
 
     // Identity matrix
     Eigen::MatrixXd I_;
-
-
 };
 
 #endif /* KALMAN_FILTER_H_ */

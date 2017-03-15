@@ -1,7 +1,7 @@
 #include "measurement_model_lidar.h"
 
-MeasurementModelLidar::MeasurementModelLidar(std::size_t state_dimension):
-    MeasurementModel(state_dimension)
+MeasurementModelLidar::MeasurementModelLidar(std::size_t n_states):
+    MeasurementModel(n_states)
 {
 }
 

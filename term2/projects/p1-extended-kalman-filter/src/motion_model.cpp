@@ -1,7 +1,7 @@
 #include "motion_model.h"
 
-MotionModel::MotionModel(std::size_t state_dimension):
-    state_dimension_(state_dimension)
+MotionModel::MotionModel(std::size_t n_states):
+    n_states_(n_states)
 {
 }
 
@@ -15,7 +15,7 @@ Eigen::VectorXd MotionModel::predict(const Eigen::VectorXd& state,
 
 Eigen::MatrixXd MotionModel::getF(const double delta_t) const
 {
-    Eigen::MatrixXd F(state_dimension_, state_dimension_);
+    Eigen::MatrixXd F(n_states_, n_states_);
 
     F << 1.0,   0.0,    delta_t,    0.0,
          0.0,   1.0,    0.0,        delta_t,
@@ -27,7 +27,7 @@ Eigen::MatrixXd MotionModel::getF(const double delta_t) const
 
 Eigen::MatrixXd MotionModel::getQ(const double delta_t) const
 {
-    Eigen::MatrixXd Q(state_dimension_, state_dimension_);
+    Eigen::MatrixXd Q(n_states_, n_states_);
 
     const double dt2   = delta_t * delta_t;
     const double dt3_2 = dt2 * delta_t / 2.0;

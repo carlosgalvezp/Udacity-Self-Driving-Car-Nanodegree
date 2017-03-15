@@ -34,12 +34,12 @@ void FusionEKF::initialize(const MeasurementPackage& measurement_pack)
         py = measurement_pack.raw_measurements_[1];
     }
 
-    if (Tools::isNotZero(px) && Tools::isNotZero(py))
-    {
-        Eigen::VectorXd x0(n_states_);
-        x0 << px, py, 0.0, 0.0;
-        ekf_.setState(x0);
+    Eigen::VectorXd x0(n_states_);
+    x0 << px, py, 0.0, 0.0;
 
+    if (Tools::isNotZero(x0.norm()))
+    {
+        ekf_.setState(x0);
         previous_timestamp_ = measurement_pack.timestamp_;
         is_initialized_ = true;
     }

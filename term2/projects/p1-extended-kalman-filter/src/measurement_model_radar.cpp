@@ -2,8 +2,8 @@
 #include "tools.h"
 #include <cmath>
 
-MeasurementModelRadar::MeasurementModelRadar(const std::size_t state_dimension):
-    MeasurementModel(state_dimension)
+MeasurementModelRadar::MeasurementModelRadar(const std::size_t n_states):
+    MeasurementModel(n_states)
 {
 }
 
