@@ -2,6 +2,8 @@ project(ExtendedKF)
 
 cmake_minimum_required (VERSION 3.5)
 
+option(build_tests "Build the tests." OFF)
+
 add_definitions(-std=c++0x -Wall -Wextra -Werror -O2)
 
 include_directories(include)
@@ -21,5 +23,7 @@ add_library(ekf_lib ${sources})
 add_executable(ExtendedKF src/main.cpp)
 target_link_libraries(ExtendedKF ekf_lib)
 
-add_subdirectory(3rdparty/googletest-release-1.8.0)
-add_subdirectory(tests)
+if(build_tests)
+    add_subdirectory(3rdparty/googletest-release-1.8.0)
+    add_subdirectory(tests)
+endif()
