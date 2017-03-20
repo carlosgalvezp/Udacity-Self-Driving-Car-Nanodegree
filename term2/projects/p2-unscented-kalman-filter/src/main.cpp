@@ -2,7 +2,7 @@
 #include <iostream>
 #include "Eigen/Dense"
 #include <vector>
-#include "ukf.h"
+#include "fusion_ukf.h"
 #include "measurement_package.h"
 #include <fstream>
 #include <sstream>
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     }
 
     // Create a UKF instance
-    UKF ukf;
+    FusionUKF fusion_ukf = FusionUKF();
 
     size_t number_of_measurements = measurement_pack_list.size();
 
@@ -135,14 +135,15 @@ int main(int argc, char *argv[])
     for (size_t k = 0; k < number_of_measurements; ++k)
     {
         // Call the UKF-based fusion
-        ukf.ProcessMeasurement(measurement_pack_list[k]);
+        fusion_ukf.processMeasurement(measurement_pack_list[k]);
 
         // output the estimation
-        out_file_ << ukf.x_(0) << "\t"; // pos1 - est
-        out_file_ << ukf.x_(1) << "\t"; // pos2 - est
-        out_file_ << ukf.x_(2) << "\t"; // vel_abs -est
-        out_file_ << ukf.x_(3) << "\t"; // yaw_angle -est
-        out_file_ << ukf.x_(4) << "\t"; // yaw_rate -est
+        const Eigen::VectorXd& x = fusion_ukf.getState();
+        out_file_ << x(0) << "\t"; // pos1 - est
+        out_file_ << x(1) << "\t"; // pos2 - est
+        out_file_ << x(2) << "\t"; // vel_abs -est
+        out_file_ << x(3) << "\t"; // yaw_angle -est
+        out_file_ << x(4) << "\t"; // yaw_rate -est
 
         // output the measurements
         if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER)

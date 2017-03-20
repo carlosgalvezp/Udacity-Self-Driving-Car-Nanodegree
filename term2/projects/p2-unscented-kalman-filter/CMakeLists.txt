@@ -10,7 +10,8 @@ include_directories(include)
 include_directories(3rdparty)
 
 set(sources
-   src/ukf.cpp)
+    src/fusion_ukf.cpp
+    src/ukf.cpp)
 
 add_library(ukf_lib ${sources})
 
