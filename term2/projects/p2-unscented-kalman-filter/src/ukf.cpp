@@ -48,8 +48,6 @@ UKF::UKF()
     */
 }
 
-UKF::~UKF() {}
-
 /**
  * @param {MeasurementPackage} meas_package The latest measurement data of
  * either radar or laser.

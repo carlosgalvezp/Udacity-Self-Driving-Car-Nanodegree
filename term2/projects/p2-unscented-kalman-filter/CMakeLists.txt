@@ -11,6 +11,9 @@ include_directories(3rdparty)
 
 set(sources
     src/fusion_ukf.cpp
+    src/measurement_model.cpp
+    src/measurement_model_lidar.cpp
+    src/measurement_model_radar.cpp
     src/ukf.cpp)
 
 add_library(ukf_lib ${sources})
