@@ -28,15 +28,14 @@ void KalmanFilter::update(const MeasurementModel& sensor_model,
     const Eigen::MatrixXd H = sensor_model.getH(x_);
     const Eigen::MatrixXd R = sensor_model.getR();
 
-    const Eigen::VectorXd z_hat = sensor_model.predictMeasurement(x_);
-    const Eigen::VectorXd y = z - z_hat;
-
     const Eigen::MatrixXd Ht = H.transpose();
     const Eigen::MatrixXd S = H * P_ * Ht + R;
 
     if(Tools::isNotZero(S.determinant()))
     {
         const Eigen::MatrixXd K = P_ * Ht * S.inverse();
+        const Eigen::VectorXd z_hat = sensor_model.predictMeasurement(x_);
+        const Eigen::VectorXd y = sensor_model.computeResidual(z, z_hat);
 
         x_ = x_ + K * y;
         P_ = (I_ - K * H) * P_;

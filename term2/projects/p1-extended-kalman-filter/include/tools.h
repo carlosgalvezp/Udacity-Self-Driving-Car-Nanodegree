@@ -6,7 +6,7 @@
 class Tools
 {
 public:
-    /// \brief computes the Root Mean Squared Error (RMSE) between estimate and
+    /// \brief Computes the Root Mean Squared Error (RMSE) between estimate and
     ///        ground truth
     /// \param estimations estimates
     /// \param ground_truth ground truth
@@ -18,6 +18,11 @@ public:
     /// \param x input
     /// \return true if x is greater than a small threshold
     static bool isNotZero(const double x);
+
+    /// \brief Normalizes an angle to the range [-pi, pi)
+    /// \param x angle to normalize
+    /// \return the normalized angle
+    static double normalizeAngle(const double x);
 };
 
 #endif /* TOOLS_H_ */

@@ -14,7 +14,7 @@ class KalmanFilter
 public:
     KalmanFilter(const std::size_t n_states);
 
-    /// \brief sets the state to the given value
+    /// \brief Sets the state to the given value
     /// \param x new state
     void setState(const Eigen::VectorXd& x) { x_ = x; }
 

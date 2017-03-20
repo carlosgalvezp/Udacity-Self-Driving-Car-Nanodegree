@@ -15,6 +15,12 @@ Eigen::VectorXd MeasurementModelLidar::predictMeasurement(const Eigen::VectorXd&
     return H * state;
 }
 
+Eigen::VectorXd MeasurementModelLidar::computeResidual(const Eigen::VectorXd &z,
+                                                       const Eigen::VectorXd &z_hat) const
+{
+    return z - z_hat;
+}
+
 Eigen::MatrixXd MeasurementModelLidar::getH(const Eigen::VectorXd &state) const
 {
     (void) state;  // Not required for this sensor model

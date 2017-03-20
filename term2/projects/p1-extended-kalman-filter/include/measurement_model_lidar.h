@@ -15,17 +15,24 @@ public:
     MeasurementModelLidar(std::size_t n_states);
     virtual ~MeasurementModelLidar();
 
-    /// \brief predictMeasurement computes z_hat = h(x')
+    /// \brief Computes z_hat = h(x')
     /// \param state predicted state, x'
     /// \return the predicted measurement, z_hat
     virtual Eigen::VectorXd predictMeasurement(const Eigen::VectorXd& state) const;
 
-    /// \brief getH computes and returns the H matrix
+    /// \brief Computes the residual, y = z - z_hat
+    /// \param z sensor measurement
+    /// \param z_hat predicted measurement
+    /// \return the residual, y
+    virtual Eigen::VectorXd computeResidual(const Eigen::VectorXd& z,
+                                            const Eigen::VectorXd& z_hat) const;
+
+    /// \brief Computes and returns the measurement matrix, H
     /// \param state predicted state, x'
     /// \return the H matrix
     virtual Eigen::MatrixXd getH(const Eigen::VectorXd &state) const;
 
-    /// \brief getR computes and returns the R matrix
+    /// \brief computes and returns the measurement noise matrix, R
     /// \return the R matrix
     virtual Eigen::MatrixXd getR() const;
 

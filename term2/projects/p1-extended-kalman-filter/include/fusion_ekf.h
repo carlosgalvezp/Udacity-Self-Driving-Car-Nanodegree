@@ -26,7 +26,7 @@ public:
     /// \param measurement_pack incoming measurement
     void processMeasurement(const MeasurementPackage& measurement_pack);
 
-    /// \brief returns the current state
+    /// \brief Returns the current state
     /// \return the current state
     const Eigen::VectorXd& getState() const { return ekf_.getState(); }
 

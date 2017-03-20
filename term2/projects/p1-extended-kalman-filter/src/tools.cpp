@@ -23,3 +23,14 @@ bool Tools::isNotZero(const double x)
 {
     return std::fabs(x) > kZeroThreshold;
 }
+
+double Tools::normalizeAngle(const double x)
+{
+    double x_mod = std::fmod(x + kPi, k2Pi);
+    if (x_mod < 0.0)
+    {
+        x_mod += k2Pi;
+    }
+
+    return x_mod - kPi;
+}

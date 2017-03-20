@@ -32,6 +32,15 @@ Eigen::VectorXd MeasurementModelRadar::predictMeasurement(const Eigen::VectorXd&
     return z_hat;
 }
 
+Eigen::VectorXd MeasurementModelRadar::computeResidual(const Eigen::VectorXd &z,
+                                                       const Eigen::VectorXd &z_hat) const
+{
+    Eigen::VectorXd y = z - z_hat;
+    y(1) = Tools::normalizeAngle(y(1));
+
+    return y;
+}
+
 Eigen::MatrixXd MeasurementModelRadar::getH(const Eigen::VectorXd &state) const
 {
     const double px = state(0);
