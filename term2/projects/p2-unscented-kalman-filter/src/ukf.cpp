@@ -12,10 +12,10 @@ UKF::UKF() {
   use_radar_ = true;
 
   // initial state vector
-  x_ = VectorXd(5);
+  x_ = Eigen::VectorXd(5);
 
   // initial covariance matrix
-  P_ = MatrixXd(5, 5);
+  P_ = Eigen::MatrixXd(5, 5);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 30;
@@ -53,7 +53,7 @@ UKF::~UKF() {}
  * @param {MeasurementPackage} meas_package The latest measurement data of
  * either radar or laser.
  */
-void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
+void UKF::ProcessMeasurement(MeasurementPackage /*meas_package*/) {
   /**
   TODO:
 
@@ -67,7 +67,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
  * @param {double} delta_t the change in time (in seconds) between the last
  * measurement and this one.
  */
-void UKF::Prediction(double delta_t) {
+void UKF::Prediction(double /*delta_t*/) {
   /**
   TODO:
 
@@ -80,7 +80,7 @@ void UKF::Prediction(double delta_t) {
  * Updates the state and the state covariance matrix using a laser measurement.
  * @param {MeasurementPackage} meas_package
  */
-void UKF::UpdateLidar(MeasurementPackage meas_package) {
+void UKF::UpdateLidar(MeasurementPackage /*meas_package*/) {
   /**
   TODO:
 
@@ -95,7 +95,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
  * Updates the state and the state covariance matrix using a radar measurement.
  * @param {MeasurementPackage} meas_package
  */
-void UKF::UpdateRadar(MeasurementPackage meas_package) {
+void UKF::UpdateRadar(MeasurementPackage /*meas_package*/) {
   /**
   TODO:
 
