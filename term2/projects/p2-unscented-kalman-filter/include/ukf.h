@@ -7,6 +7,8 @@
 class UKF
 {
 public:
+    const Eigen::VectorXd& getState() const { return x_; }
+
 
     ///* initially set to false, set to true in first call of ProcessMeasurement
     bool is_initialized_;
@@ -17,8 +19,7 @@ public:
     ///* if this is false, radar measurements will be ignored (except for init)
     bool use_radar_;
 
-    ///* state vector: [pos1 pos2 vel_abs yaw_angle yaw_rate] in SI units and rad
-    Eigen::VectorXd x_;
+
 
     ///* state covariance matrix
     Eigen::MatrixXd P_;
@@ -76,7 +77,7 @@ public:
     /**
      * Destructor
      */
-    virtual ~UKF();
+    ~UKF();
 
     /**
      * ProcessMeasurement
@@ -102,6 +103,10 @@ public:
      * @param meas_package The measurement at k+1
      */
     void UpdateRadar(MeasurementPackage meas_package);
+
+private:
+    /// State vector: [pos_x pos_y velocity yaw_angle yaw_rate] in SI units and rad
+    Eigen::VectorXd x_;
 };
 
 #endif /* UKF_H */
