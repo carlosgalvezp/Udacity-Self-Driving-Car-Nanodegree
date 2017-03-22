@@ -3,6 +3,11 @@
 MeasurementModelLidar::MeasurementModelLidar(std::size_t n_states):
     MeasurementModel(n_states)
 {
+    // Laser measurement noise standard deviation position1 in m
+    std_laspx_ = 0.15;
+
+    // Laser measurement noise standard deviation position2 in m
+    std_laspy_ = 0.15;
 }
 
 MeasurementModelLidar::~MeasurementModelLidar()

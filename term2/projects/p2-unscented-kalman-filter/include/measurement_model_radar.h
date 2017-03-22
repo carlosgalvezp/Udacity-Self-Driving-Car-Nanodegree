@@ -34,6 +34,15 @@ public:
 
 private:
     const std::size_t n_observed_states_ = 3U;
+
+    ///* Radar measurement noise standard deviation radius in m
+    double std_radr_;
+
+    ///* Radar measurement noise standard deviation angle in rad
+    double std_radphi_;
+
+    ///* Radar measurement noise standard deviation radius change in m/s
+    double std_radrd_ ;
 };
 
 #endif // MEASUREMENT_MODEL_RADAR_H

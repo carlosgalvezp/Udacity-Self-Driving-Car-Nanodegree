@@ -38,6 +38,13 @@ public:
 
 private:
     const std::size_t n_observed_states = 2U;
+
+    ///* Laser measurement noise standard deviation position1 in m
+    double std_laspx_;
+
+    ///* Laser measurement noise standard deviation position2 in m
+    double std_laspy_;
+
 };
 
 #endif // MEASUREMENT_MODEL_LIDAR_H

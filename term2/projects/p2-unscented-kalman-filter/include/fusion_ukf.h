@@ -7,6 +7,8 @@
 #include "measurement_model_lidar.h"
 #include "measurement_model_radar.h"
 
+static const std::size_t kNumberOfStates = 5U;
+
 class FusionUKF
 {
 public:

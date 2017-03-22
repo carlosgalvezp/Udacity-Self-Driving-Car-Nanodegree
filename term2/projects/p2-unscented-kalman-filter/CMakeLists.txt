@@ -14,6 +14,8 @@ set(sources
     src/measurement_model.cpp
     src/measurement_model_lidar.cpp
     src/measurement_model_radar.cpp
+    src/motion_model.cpp
+    src/tools.cpp
     src/ukf.cpp)
 
 add_library(ukf_lib ${sources})
