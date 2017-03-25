@@ -1,48 +1,46 @@
 #include "motion_model.h"
+#include <cmath>
+#include "tools.h"
 
-MotionModel::MotionModel(std::size_t n_states):
-    n_states_(n_states)
+MotionModel::MotionModel():
+    Q_(Eigen::MatrixXd::Zero(kNoiseVectorSize, kNoiseVectorSize))
 {
-    // Process noise standard deviation longitudinal acceleration in m/s^2
-    std_a_ = 30;
-
-    // Process noise standard deviation yaw acceleration in rad/s^2
-    std_yawdd_ = 30;
+    Q_(0,0) = std_a_ * std_a_;
+    Q_(1,1) = std_yawdd_ * std_yawdd_;
 }
 
-Eigen::VectorXd MotionModel::predict(const Eigen::VectorXd& state,
+Eigen::VectorXd MotionModel::predict(const Eigen::VectorXd& x,
                                      const double delta_t) const
 {
-    const Eigen::MatrixXd F = getF(delta_t);
-    return F * state;
+    const double v        = x[2];
+    const double yaw      = x[3];
+    const double yaw_d    = x[4];
+    const double nu_a     = x[5];
+    const double nu_yawdd = x[6];
+
+
+    const double dt2 = delta_t * delta_t;
+
+    Eigen::VectorXd x_pred = Eigen::VectorXd::Zero(x.rows());
+
+    if (Tools::isNotZero(yaw_d))
+    {
+        x_pred[0] = x[0] + (v/yaw_d)*(std::sin(yaw + yaw_d * delta_t) - std::sin(yaw))
+                         + 0.5 * dt2 * std::cos(yaw) * nu_a;
+        x_pred[1] = x[1] + (v/yaw_d)*(-std::cos(yaw + yaw_d * delta_t) + std::cos(yaw))
+                         + 0.5 * dt2 * std::sin(yaw) * nu_a;
+        x_pred[2] = x[2] + delta_t * nu_a;
+        x_pred[3] = x[3] + yaw_d * delta_t + 0.5 * dt2 * nu_yawdd;
+        x_pred[4] = x[4] + delta_t * nu_yawdd;
+    }
+    else
+    {
+        x_pred[0] = x[0] + v*std::cos(yaw)*delta_t + 0.5 * dt2 * std::cos(yaw) * nu_a;
+        x_pred[1] = x[1] + v*std::sin(yaw)*delta_t + 0.5 * dt2 * std::sin(yaw) * nu_a;
+        x_pred[2] = x[2] + delta_t * nu_a;
+        x_pred[3] = x[3] + 0.5 * dt2 * nu_yawdd;
+        x_pred[4] = x[4] + delta_t * nu_yawdd;
+    }
+
+    return x_pred;
 }
-
-
-Eigen::MatrixXd MotionModel::getF(const double delta_t) const
-{
-    Eigen::MatrixXd F(n_states_, n_states_);
-
-    F << 1.0,   0.0,    delta_t,    0.0,
-         0.0,   1.0,    0.0,        delta_t,
-         0.0,   0.0,    1.0,        0.0,
-         0.0,   0.0,    0.0,        1.0;
-
-    return F;
-}
-
-Eigen::MatrixXd MotionModel::getQ(const double delta_t) const
-{
-    Eigen::MatrixXd Q(n_states_, n_states_);
-
-    const double dt2   = delta_t * delta_t;
-    const double dt3_2 = dt2 * delta_t / 2.0;
-    const double dt4_4 = dt3_2 * delta_t / 2.0;
-
-    Q << dt4_4 * noise_ax_, 0.0,               dt3_2 * noise_ax_, 0.0,
-         0.0,               dt4_4 * noise_ay_, 0.0,               dt3_2 * noise_ay_,
-         dt3_2 * noise_ax_, 0.0,               dt2 * noise_ax_,   0.0,
-         0.0,               dt3_2 * noise_ay_, 0.0,               dt2 * noise_ay_;
-
-    return Q;
-}
-

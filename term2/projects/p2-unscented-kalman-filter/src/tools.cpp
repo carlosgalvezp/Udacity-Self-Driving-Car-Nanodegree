@@ -34,3 +34,8 @@ double Tools::normalizeAngle(const double x)
 
     return x_mod - kPi;
 }
+
+Eigen::MatrixXd Tools::sqrt(const Eigen::MatrixXd& x)
+{
+    return x.llt().matrixL();
+}

@@ -14,11 +14,10 @@ public:
 
     const Eigen::VectorXd& getState() const { return x_; }
 
-    void generateSigmaPoints();
+    void generateSigmaPoints(const Eigen::VectorXd &x, const Eigen::MatrixXd &P, std::vector<Eigen::VectorXd> &x_sig);
     void predict(const MotionModel& motion_model, const double delta_t);
     void update(const MeasurementModel& sensor_model, const Eigen::VectorXd& z);
 private:
-
     /// Dimension of the state vector
     const std::size_t n_states_;
 

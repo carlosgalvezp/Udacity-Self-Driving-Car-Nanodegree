@@ -3,7 +3,7 @@
 
 FusionUKF::FusionUKF():
     ukf_(kNumberOfStates),
-    motion_model_(kNumberOfStates),
+    motion_model_(),
     sensor_model_lidar_(kNumberOfStates),
     sensor_model_radar_(kNumberOfStates)
 {
@@ -28,9 +28,6 @@ void FusionUKF::processMeasurement(const MeasurementPackage& meas_package)
         initialize(meas_package);
         return;
     }
-
-    // Sigma point generation
-    ukf_.generateSigmaPoints();
 
     // Predict
     const std::size_t new_timestamp = meas_package.timestamp_;

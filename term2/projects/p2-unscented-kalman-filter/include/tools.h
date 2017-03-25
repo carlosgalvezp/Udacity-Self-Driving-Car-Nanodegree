@@ -23,6 +23,11 @@ public:
     /// \param x angle to normalize
     /// \return the normalized angle
     static double normalizeAngle(const double x);
+
+    /// \brief Computes the square root of a matrix
+    /// \param x the input matrix
+    /// \return the square root of x, A, such that x = A' * A
+    static Eigen::MatrixXd sqrt(const Eigen::MatrixXd& x);
 };
 
 #endif /* TOOLS_H_ */

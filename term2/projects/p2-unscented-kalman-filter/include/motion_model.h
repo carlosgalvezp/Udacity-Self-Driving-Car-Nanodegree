@@ -3,44 +3,39 @@
 
 #include <Eigen/Dense>
 
+/// Process noise standard deviation longitudinal acceleration
+static const double std_a_     = 3.0;   // [m/s^2]^2
 
-// Process noise
-static const double noise_ax_ = 9.0;  // [m/s^2]^2
-static const double noise_ay_ = 9.0;  // [m/s^2]^2
+// Process noise standard deviation rotational acceleration
+static const double std_yawdd_ = 0.03;  // [rad/s^2]^2
+
+/// Number of independent noise sources in the motion model
+static const std::size_t kNoiseVectorSize = 2U;
+
+/// Size of the augmented vector
+static const std::size_t kAugmentedStateSize = 7U;
 
 class MotionModel
 {
 public:    
     /// \brief Constructor
-    /// \param n_states dimension of the state vector
-    MotionModel(std::size_t n_states);
+    MotionModel();
 
     /// \brief Computes x' = f(x)
     /// \param state current state, x
     /// \param delta_t time difference w.r.t the previous prediction step
     /// \return the predicted state, x'
-    Eigen::VectorXd predict(const Eigen::VectorXd& state,
+    Eigen::VectorXd predict(const Eigen::VectorXd& x,
                             const double delta_t) const;
 
-    /// \brief Computes and returns the process model matrix, F
-    /// \param delta_t time difference w.r.t the previous prediction step
-    /// \return the F matrix
-    Eigen::MatrixXd getF(const double delta_t) const;
-
-    /// \brief Computes and returns the process noise matrix, Q
-    /// \param delta_t time difference w.r.t the previous prediction step
+    /// \brief Returns the process noise matrix, Q
     /// \return the Q matrix
-    Eigen::MatrixXd getQ(const double delta_t) const;
+    const Eigen::MatrixXd& getQ() const { return Q_; }
+
+    std::size_t getAugmentedSize() const { return kAugmentedStateSize; }
 
 private:
-    const std::size_t n_states_;
-
-    ///* Process noise standard deviation longitudinal acceleration in m/s^2
-    double std_a_;
-
-    ///* Process noise standard deviation yaw acceleration in rad/s^2
-    double std_yawdd_;
-
+    Eigen::MatrixXd Q_;
 };
 
 #endif // MOTION_MODEL_H
