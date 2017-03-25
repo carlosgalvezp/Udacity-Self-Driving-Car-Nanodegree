@@ -18,7 +18,6 @@ Eigen::VectorXd MotionModel::predict(const Eigen::VectorXd& x,
     const double nu_a     = x[5];
     const double nu_yawdd = x[6];
 
-
     const double dt2 = delta_t * delta_t;
 
     Eigen::VectorXd x_pred = Eigen::VectorXd::Zero(x.rows());

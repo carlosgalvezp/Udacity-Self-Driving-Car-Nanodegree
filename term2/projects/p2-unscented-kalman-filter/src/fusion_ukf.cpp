@@ -2,7 +2,7 @@
 #include "constants.h"
 
 FusionUKF::FusionUKF():
-    ukf_(kNumberOfStates),
+    ukf_(kNumberOfStates, motion_model_),
     motion_model_(),
     sensor_model_lidar_(kNumberOfStates),
     sensor_model_radar_(kNumberOfStates)

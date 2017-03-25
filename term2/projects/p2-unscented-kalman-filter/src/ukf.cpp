@@ -5,20 +5,29 @@
 /**
  * Initializes Unscented Kalman filter
  */
-UKF::UKF(const std::size_t n_states)
+UKF::UKF(const std::size_t n_states, const MotionModel &motion_model)
     : n_states_(n_states),
+      n_augmented_(motion_model_.getAugmentedSize()),
       x_(Eigen::VectorXd::Zero(n_states)),
       P_(Eigen::MatrixXd::Constant(n_states, n_states, 1.0)),
+      motion_model_(motion_model),
       x_sig_pred_(),
-      weights_()
+      weights_(computeNumberOfSigmaPoints(n_augmented_))
 {
-    /**
-    TODO:
+    // Precompute weights
+    // TODO: make this nicer
+    const double lambda = static_cast<double>(3U - n_augmented_);
+    weights_[0] = lambda / (lambda + n_augmented_);
 
-    Complete the initialization. See ukf.h for other member properties.
+    for(std::size_t i = 1U; i < weights_.size(); ++i)
+    {
+        weights_[i] = 0.5 / (lambda + n_augmented_);
+    }
+}
 
-    Hint: one or more values initialized above might be wildly off...
-    */
+std::size_t UKF::computeNumberOfSigmaPoints(const std::size_t n_states) const
+{
+    return 2U * n_states + 1U;
 }
 
 void UKF::generateSigmaPoints(const Eigen::VectorXd& x,
@@ -26,7 +35,7 @@ void UKF::generateSigmaPoints(const Eigen::VectorXd& x,
                               std::vector<Eigen::VectorXd>& x_sig)
 {
     const std::size_t n_states = x.rows();
-    const std::size_t n_sigma_pts = 2U * n_states + 1U;
+    const std::size_t n_sigma_pts = computeNumberOfSigmaPoints(n_states);
     const std::size_t lambda = 3U - n_states;
 
     const Eigen::MatrixXd P_sqrt = Tools::sqrt(P);
@@ -68,16 +77,22 @@ void UKF::predict(const MotionModel& motion_model, const double delta_t)
         x_sig_pred_[i] = motion_model.predict(x_sig_pred_[i], delta_t);
     }
 
-    // Compute weights
+    // Compute predicted mean
+    x_.fill(0.0);
+    for (std::size_t i = 0U; i < weights_.size(); ++i)
+    {
+        x_ += weights_[i] * x_sig_pred_[i];
+    }
 
-    // Compute predicted mean and covariance matrix
+    // Compute predicted covariance
+    P_.fill(0.0);
+    for (std::size_t i = 0U; i < weights_.size(); ++i)
+    {
+        const Eigen::VectorXd x_diff = x_sig_pred_[i] - x_;
+        Tools::normalizeAngle(x_diff[3]);
 
-    /**
-    TODO:
-
-    Complete this function! Estimate the object's location. Modify the state
-    vector, x_. Predict sigma points, the state, and the state covariance matrix.
-    */
+        P_ += weights_[i] * x_diff * x_diff.transpose();
+    }
 }
 
 void UKF::update(const MeasurementModel& sensor_model, const Eigen::VectorXd& z)
