@@ -1,7 +1,9 @@
 #include "fusion_ukf.h"
+#include "constants.h"
 
 FusionUKF::FusionUKF():
     ukf_(kNumberOfStates),
+    motion_model_(kNumberOfStates),
     sensor_model_lidar_(kNumberOfStates),
     sensor_model_radar_(kNumberOfStates)
 {
@@ -13,6 +15,35 @@ FusionUKF::FusionUKF():
 
 }
 
-void FusionUKF::processMeasurement(const MeasurementPackage& /*measurement*/)
+void FusionUKF::initialize(const MeasurementPackage& meas_package)
 {
+    (void) meas_package;
+}
+
+void FusionUKF::processMeasurement(const MeasurementPackage& meas_package)
+{
+    // Initialize
+    if (!initialized_)
+    {
+        initialize(meas_package);
+        return;
+    }
+
+    // Sigma point generation
+    ukf_.generateSigmaPoints();
+
+    // Predict
+    const std::size_t new_timestamp = meas_package.timestamp_;
+    const double delta_t = (new_timestamp - current_timestamp_) * kMicroSecToSec;
+    ukf_.predict(motion_model_, delta_t);
+
+    // Update
+    if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_)
+    {
+        ukf_.update(sensor_model_lidar_, meas_package.raw_measurements_);
+    }
+    else if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_)
+    {
+        ukf_.update(sensor_model_radar_, meas_package.raw_measurements_);
+    }
 }
