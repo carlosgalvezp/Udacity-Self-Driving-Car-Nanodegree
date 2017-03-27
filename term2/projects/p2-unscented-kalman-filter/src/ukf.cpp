@@ -97,7 +97,54 @@ void UKF::predict(const MotionModel& motion_model, const double delta_t)
 
 void UKF::update(const MeasurementModel& sensor_model, const Eigen::VectorXd& z)
 {
-    (void) sensor_model;
-    (void) z;
+    const std::size_t n_observed = z.rows();
+
+    // Predict the measurement for each sigma point
+    std::vector<Eigen::VectorXd> z_sig_pred(x_sig_pred_.size());
+
+    for(std::size_t i = 0U; i < z_sig_pred.size(); ++i)
+    {
+        z_sig_pred[i] = sensor_model.predictMeasurement(x_sig_pred_[i]);
+    }
+
+    // Compute mean
+    Eigen::VectorXd z_mean = Eigen::VectorXd::Zero(n_observed);
+    for(std::size_t i = 0U; i < z_sig_pred.size(); ++i)
+    {
+        z_mean += weights_[i] * z_sig_pred[i];
+    }
+
+    // Compute covariance and cross-correlation
+    Eigen::MatrixXd S = Eigen::MatrixXd::Zero(n_observed, n_observed);
+    Eigen::MatrixXd T = Eigen::MatrixXd::Zero(n_states_, n_observed);
+    for(std::size_t i = 0U; i < z_sig_pred.size(); ++i)
+    {
+        Eigen::VectorXd z_diff = z_sig_pred[i] - z_mean;
+        z_diff[1] = Tools::normalizeAngle(z_diff[1]);
+
+        S += weights_[i] * z_diff * z_diff.transpose();
+
+        Eigen::VectorXd x_diff = x_sig_pred_[i] - x_;
+        x_diff[3] = Tools::normalizeAngle(x_diff[3]);
+
+        T += weights_[i] * x_diff * z_diff.transpose();
+    }
+    S += sensor_model.getR();
+
+    // Perform update step
+    if (Tools::isNotZero(S.determinant()))
+    {
+        Eigen::MatrixXd K = T * S.inverse();
+
+        Eigen::VectorXd z_diff = z - z_mean;
+        z_diff[1] = Tools::normalizeAngle(z_diff[1]);
+
+        x_ = x_ + K * z_diff;
+        P_ = P_ - K * S * K.transpose();
+
+        // Compute NIS
+        double epsilon = z_diff.transpose() * S.inverse() * z_diff;
+        (void) epsilon; // TODO
+    }
 }
 
