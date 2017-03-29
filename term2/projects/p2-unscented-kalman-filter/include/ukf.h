@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <vector>
 
+#include "state_vector.h"
 #include "measurement_package.h"
 #include "motion_model.h"
 #include "measurement_model.h"
@@ -25,6 +26,8 @@ private:
 
     /// Dimension of the augmented state vector
     const std::size_t n_augmented_;
+
+    StateVector x_new_;
 
     /// State vector: [pos_x pos_y velocity yaw_angle yaw_rate] in SI units and rad
     Eigen::VectorXd x_;
