@@ -18,6 +18,9 @@ public:
     void processMeasurement(const MeasurementPackage& meas_package);
     const Eigen::VectorXd& getState() const { return ukf_.getState(); }
 
+    double NIS_laser_;
+    double NIS_radar_;
+
 private:
     void initialize(const MeasurementPackage& measurement);
 
