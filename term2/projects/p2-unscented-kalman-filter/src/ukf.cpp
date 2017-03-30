@@ -24,28 +24,6 @@ UKF::UKF(const std::size_t n_states, const MotionModel &motion_model)
     {
         weights_[i] = 0.5 / (lambda + n_augmented_);
     }
-
-    const Eigen::Matrix<double, 5, 1> c;
-
-    // Copy constructor
-    StateVector b(c);
-    StateVector b2 = c;
-    (void) b2;
-
-    // Assignment
-    StateVector d;
-    d = c;
-    StateVector e;
-    e = c + b;
-
-    // Copy assigment
-    Eigen::Matrix<double, 5, 1> g = d + e;
-    StateVector f = d + e;
-    (void)g;
-    (void)f;
-
-    StateVector j = d - e;
-    (void)j;
 }
 
 std::size_t UKF::computeNumberOfSigmaPoints(const std::size_t n_states) const

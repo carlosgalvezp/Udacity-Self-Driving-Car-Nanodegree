@@ -23,7 +23,7 @@ public:
     double NIS_radar_;
 
 private:
-    void initialize(const MeasurementPackage& measurement);
+    void initialize(const MeasurementPackage& measurement_pack);
 
     /// Unscented Kalman Filter
     UKF ukf_;
@@ -33,9 +33,9 @@ private:
     MeasurementModelLidar sensor_model_lidar_;
     MeasurementModelRadar sensor_model_radar_;
 
-    std::size_t current_timestamp_;
+    std::size_t previous_timestamp_;
 
-    bool initialized_;
+    bool is_initialized_;
 
     ///* if this is false, laser measurements will be ignored (except for init)
     bool use_laser_;
