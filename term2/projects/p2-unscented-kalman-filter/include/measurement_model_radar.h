@@ -20,13 +20,8 @@ public:
     /// \return the predicted measurement, z_hat
     virtual Eigen::VectorXd predictMeasurement(const Eigen::VectorXd& state) const;
 
-    virtual Eigen::VectorXd computeResidual(const Eigen::VectorXd& z,
-                                            const Eigen::VectorXd& z_hat) const;
-
-    /// \brief Computes and returns the measurement matrix, H
-    /// \param state predicted state, x'
-    /// \return the H matrix
-    virtual Eigen::MatrixXd getH(const Eigen::VectorXd &state) const;
+    virtual Eigen::VectorXd computeDifference(const Eigen::VectorXd& z_a,
+                                              const Eigen::VectorXd& z_b) const;
 
     /// \brief Computes and returns the measurement noise matrix, R
     /// \return the R matrix

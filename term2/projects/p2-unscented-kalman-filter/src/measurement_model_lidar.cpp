@@ -16,31 +16,20 @@ MeasurementModelLidar::~MeasurementModelLidar()
 
 Eigen::VectorXd MeasurementModelLidar::predictMeasurement(const Eigen::VectorXd& state) const
 {
-    const Eigen::MatrixXd& H = getH(state);
-    return H * state;
+    Eigen::VectorXd z_out(n_observed_states_);
+    z_out << state[0], state[1];
+    return z_out;
 }
 
-Eigen::VectorXd MeasurementModelLidar::computeResidual(const Eigen::VectorXd &z,
-                                                       const Eigen::VectorXd &z_hat) const
+Eigen::VectorXd MeasurementModelLidar::computeDifference(const Eigen::VectorXd &z_a,
+                                                       const Eigen::VectorXd &z_b) const
 {
-    return z - z_hat;
-}
-
-Eigen::MatrixXd MeasurementModelLidar::getH(const Eigen::VectorXd &state) const
-{
-    (void) state;  // Not required for this sensor model
-
-    Eigen::MatrixXd H(n_observed_states, n_states_);
-
-    H << 1.0, 0.0, 0.0, 0.0,
-         0.0, 1.0, 0.0, 0.0;
-
-    return H;
+    return z_a - z_b;
 }
 
 Eigen::MatrixXd MeasurementModelLidar::getR() const
 {
-    Eigen::MatrixXd R(n_observed_states, n_observed_states);
+    Eigen::MatrixXd R(n_observed_states_, n_observed_states_);
 
     R << noise_px_, 0.0,
          0.0,      noise_py_;

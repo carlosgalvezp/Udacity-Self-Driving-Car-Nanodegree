@@ -16,17 +16,8 @@ public:
     /// \return the predicted measurement, z_hat
     virtual Eigen::VectorXd predictMeasurement(const Eigen::VectorXd& state) const = 0;
 
-    /// \brief Computes the residual, y = z - z_hat
-    /// \param z sensor measurement
-    /// \param z_hat predicted measurement
-    /// \return the residual, y
-    virtual Eigen::VectorXd computeResidual(const Eigen::VectorXd& z,
-                                            const Eigen::VectorXd& z_hat) const  = 0;
-
-    /// \brief Computes and returns the measurement matrix, H
-    /// \param state predicted state, x'
-    /// \return the H matrix
-    virtual Eigen::MatrixXd getH(const Eigen::VectorXd& state) const = 0;
+    virtual Eigen::VectorXd computeDifference(const Eigen::VectorXd& z_a,
+                                              const Eigen::VectorXd& z_b) const  = 0;
 
     /// \brief computes and returns the measurement noise matrix, R
     /// \return the R matrix

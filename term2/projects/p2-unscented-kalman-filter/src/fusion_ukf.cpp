@@ -66,10 +66,10 @@ void FusionUKF::processMeasurement(const MeasurementPackage& meas_package)
     // Update
     if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_)
     {
-        ukf_.update(sensor_model_lidar_, meas_package.raw_measurements_);
+        NIS_lidar_ = ukf_.update(sensor_model_lidar_, meas_package.raw_measurements_);
     }
     else if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_)
     {
-        ukf_.update(sensor_model_radar_, meas_package.raw_measurements_);
+        NIS_radar_ = ukf_.update(sensor_model_radar_, meas_package.raw_measurements_);
     }
 }

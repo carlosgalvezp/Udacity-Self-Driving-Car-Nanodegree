@@ -40,36 +40,13 @@ Eigen::VectorXd MeasurementModelRadar::predictMeasurement(const Eigen::VectorXd&
     return z_hat;
 }
 
-Eigen::VectorXd MeasurementModelRadar::computeResidual(const Eigen::VectorXd &z,
-                                                       const Eigen::VectorXd &z_hat) const
+Eigen::VectorXd MeasurementModelRadar::computeDifference(const Eigen::VectorXd &z_a,
+                                                         const Eigen::VectorXd &z_b) const
 {
-    Eigen::VectorXd y = z - z_hat;
+    Eigen::VectorXd y = z_a - z_b;
     y(1) = Tools::normalizeAngle(y(1));
 
     return y;
-}
-
-Eigen::MatrixXd MeasurementModelRadar::getH(const Eigen::VectorXd &state) const
-{
-    const double px = state(0);
-    const double py = state(1);
-    const double vx = state(2);
-    const double vy = state(3);
-
-    const double sum_sq = px*px + py*py;
-    const double sqrt_sum = std::sqrt(sum_sq);
-    const double sum_3_2 = sum_sq * sqrt_sum;
-
-    Eigen::MatrixXd H = Eigen::MatrixXd::Zero(n_observed_states_, n_states_);
-
-    if (Tools::isNotZero(sum_sq))
-    {
-        H << px / sqrt_sum,                  py / sqrt_sum,                  0.0,           0.0,
-            -py / sum_sq,                    px / sum_sq,                    0.0,           0.0,
-             py * (vx*py - vy*px) / sum_3_2, px * (vy*px - vx*py) / sum_3_2, px / sqrt_sum, py / sqrt_sum;
-    }
-
-    return H;
 }
 
 Eigen::MatrixXd MeasurementModelRadar::getR() const

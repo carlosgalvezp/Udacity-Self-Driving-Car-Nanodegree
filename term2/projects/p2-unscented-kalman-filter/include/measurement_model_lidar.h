@@ -24,20 +24,15 @@ public:
     /// \param z sensor measurement
     /// \param z_hat predicted measurement
     /// \return the residual, y
-    virtual Eigen::VectorXd computeResidual(const Eigen::VectorXd& z,
-                                            const Eigen::VectorXd& z_hat) const;
-
-    /// \brief Computes and returns the measurement matrix, H
-    /// \param state predicted state, x'
-    /// \return the H matrix
-    virtual Eigen::MatrixXd getH(const Eigen::VectorXd &state) const;
+    virtual Eigen::VectorXd computeDifference(const Eigen::VectorXd& z_a,
+                                              const Eigen::VectorXd& z_b) const;
 
     /// \brief computes and returns the measurement noise matrix, R
     /// \return the R matrix
     virtual Eigen::MatrixXd getR() const;
 
 private:
-    const std::size_t n_observed_states = 2U;
+    const std::size_t n_observed_states_ = 2U;
 
     ///* Laser measurement noise standard deviation position1 in m
     double std_laspx_;

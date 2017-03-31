@@ -189,9 +189,9 @@ int main(int argc, char* argv[]) {
     // output the NIS values
     
     if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
-      out_file_ << ukf.NIS_laser_ << "\n";
+      out_file_ << ukf.getNISLidar() << "\n";
     } else if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::RADAR) {
-      out_file_ << ukf.NIS_radar_ << "\n";
+      out_file_ << ukf.getNISRadar() << "\n";
     }
 
 

@@ -17,10 +17,8 @@ public:
 
     void processMeasurement(const MeasurementPackage& meas_package);
     const Eigen::VectorXd& getState() const { return ukf_.getState(); }
-
-    // TODO move somewhere else
-    double NIS_laser_;
-    double NIS_radar_;
+    double getNISLidar() const { return NIS_lidar_; }
+    double getNISRadar() const { return NIS_radar_; }
 
 private:
     void initialize(const MeasurementPackage& measurement_pack);
@@ -43,6 +41,8 @@ private:
     ///* if this is false, radar measurements will be ignored (except for init)
     bool use_radar_;
 
+    double NIS_lidar_;
+    double NIS_radar_;
 };
 
 #endif // FUSION_UKF_H
