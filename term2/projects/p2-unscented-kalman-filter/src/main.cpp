@@ -163,6 +163,8 @@ int main(int argc, char* argv[]) {
     out_file_ << x(3) << "\t"; // yaw_angle -est
     out_file_ << x(4) << "\t"; // yaw_rate -est
 
+    std::cout << "x: " << std::endl << ukf.getState() << std::endl;
+
     // output the measurements
     if (measurement_pack_list[k].sensor_type_ == MeasurementPackage::LASER) {
       // output the estimation

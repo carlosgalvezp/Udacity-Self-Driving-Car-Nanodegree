@@ -9,10 +9,10 @@ MeasurementModelRadar::MeasurementModelRadar(const std::size_t n_states):
     std_radr_ = 0.3;
 
     // Radar measurement noise standard deviation angle in rad
-    std_radphi_ = 0.03;
+    std_radphi_ = 0.0175;
 
     // Radar measurement noise standard deviation radius change in m/s
-    std_radrd_ = 0.3;
+    std_radrd_ = 0.1;
 }
 
 MeasurementModelRadar::~MeasurementModelRadar()
@@ -25,8 +25,11 @@ Eigen::VectorXd MeasurementModelRadar::predictMeasurement(const Eigen::VectorXd&
 
     const double px = state(0);
     const double py = state(1);
-    const double vx = state(2);
-    const double vy = state(3);
+    const double v = state(2);
+    const double yaw = state(3);
+
+    const double vx = v * std::cos(yaw);
+    const double vy = v * std::sin(yaw);
 
     const double sqrt_sum = std::sqrt(px*px + py*py);
 

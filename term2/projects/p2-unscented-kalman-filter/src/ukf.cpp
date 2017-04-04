@@ -16,20 +16,23 @@ UKF::UKF(const std::size_t n_states, const MotionModel &motion_model)
       weights_(computeNumberOfSigmaPoints(n_augmented_))
 {
     // Initial covariance matrix
-    const double p0 = 10.0;
+    const double p0 = 1.0;
     for (int i = 0U; i < P_.rows(); ++i)
     {
         P_(i,i) = p0;
     }
 
+    P_(4,4) = 0.1;
+
     // Precompute weights
     // TODO: make this nicer
+    const double n_augmented_d = static_cast<double>(n_augmented_);
     const double lambda = 3.0 - n_augmented_;
-    weights_[0] = lambda / (lambda + n_augmented_);
+    weights_[0] = lambda / (lambda + n_augmented_d);
 
     for(std::size_t i = 1U; i < weights_.size(); ++i)
     {
-        weights_[i] = 0.5 / (lambda + n_augmented_);
+        weights_[i] = 0.5 / (lambda + n_augmented_d);
     }
 }
 
@@ -44,7 +47,8 @@ void UKF::generateSigmaPoints(const Eigen::VectorXd& x,
 {
     const std::size_t n_states = x.rows();
     const std::size_t n_sigma_pts = computeNumberOfSigmaPoints(n_states);
-    const double lambda = 3.0 - n_states;
+    const double n_states_d = static_cast<double>(n_states);
+    const double lambda = 3.0 - n_states_d;
 
     const Eigen::MatrixXd P_sqrt = Tools::sqrt(P);
 
@@ -54,8 +58,8 @@ void UKF::generateSigmaPoints(const Eigen::VectorXd& x,
 
     for(std::size_t i = 0U; i < n_states; ++i)
     {
-        x_sig[1U + i]             = x + (lambda + n_states) * P_sqrt.col(i);
-        x_sig[1U + n_states + i]  = x - (lambda + n_states) * P_sqrt.col(i);
+        x_sig[1U + i]             = x + std::sqrt(lambda + n_states_d) * P_sqrt.col(i);
+        x_sig[1U + n_states + i]  = x - std::sqrt(lambda + n_states_d) * P_sqrt.col(i);
     }
 }
 
@@ -89,15 +93,15 @@ void UKF::predict(const MotionModel& motion_model, const double delta_t)
     x_.fill(0.0);
     for (std::size_t i = 0U; i < weights_.size(); ++i)
     {
-        x_ += weights_[i] * x_sig_pred_[i].head(n_states_);
+        x_ += weights_[i] * x_sig_pred_[i];
     }
 
     // Compute predicted covariance
     P_.fill(0.0);
     for (std::size_t i = 0U; i < weights_.size(); ++i)
     {
-        const Eigen::VectorXd x_diff = x_sig_pred_[i].head(n_states_) - x_;
-        Tools::normalizeAngle(x_diff[3]);
+        Eigen::VectorXd x_diff = x_sig_pred_[i] - x_;
+        x_diff(3) = Tools::normalizeAngle(x_diff(3));
 
         P_ += weights_[i] * x_diff * x_diff.transpose();
     }
@@ -132,8 +136,8 @@ double UKF::update(const MeasurementModel& sensor_model, const Eigen::VectorXd& 
 
         S += weights_[i] * z_diff * z_diff.transpose();
 
-        Eigen::VectorXd x_diff = x_sig_pred_[i].head(n_states_) - x_;
-        x_diff[3] = Tools::normalizeAngle(x_diff[3]);
+        Eigen::VectorXd x_diff = x_sig_pred_[i] - x_;
+        x_diff(3) = Tools::normalizeAngle(x_diff(3));
 
         T += weights_[i] * x_diff * z_diff.transpose();
     }

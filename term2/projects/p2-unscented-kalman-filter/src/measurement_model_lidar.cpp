@@ -22,7 +22,7 @@ Eigen::VectorXd MeasurementModelLidar::predictMeasurement(const Eigen::VectorXd&
 }
 
 Eigen::VectorXd MeasurementModelLidar::computeDifference(const Eigen::VectorXd &z_a,
-                                                       const Eigen::VectorXd &z_b) const
+                                                         const Eigen::VectorXd &z_b) const
 {
     return z_a - z_b;
 }
