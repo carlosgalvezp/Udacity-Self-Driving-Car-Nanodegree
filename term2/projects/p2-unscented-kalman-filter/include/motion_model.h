@@ -9,12 +9,7 @@ static const double std_a_     = 0.8;   // [m/s^2]
 /// Process noise standard deviation rotational acceleration
 static const double std_yawdd_ = 0.6;  // [rad/s^2]
 
-/// Number of independent noise sources in the motion model
-static const std::size_t kNoiseVectorSize = 2U;
-
-/// Size of the augmented vector
-static const std::size_t kAugmentedStateSize = 7U;
-
+/// \brief Implements the motion model
 class MotionModel
 {
 public:
@@ -31,11 +26,25 @@ public:
     /// \return the Q matrix
     const Eigen::MatrixXd& getQ() const { return Q_; }
 
+    /// \brief Returns the size of the state vector
+    /// \return the size of the state vector
+    std::size_t getStateVectorSize() const { return kNumberOfStates; }
+
     /// \brief Returns the size of the augmented vector
     /// \return the size of the augmented vector
-    std::size_t getAugmentedSize() const { return kAugmentedStateSize; }
+    std::size_t getAugStateVectorSize() const { return kNumberOfStatesAugmented; }
 
 private:
+    // Size of the state vector
+    static const std::size_t kNumberOfStates = 5U;
+
+    // Size of the augmented vector
+    static const std::size_t kNumberOfStatesAugmented = 7U;
+
+    // Number of independent noise sources in the motion model
+    static const std::size_t kNoiseVectorSize = 2U;
+
+    // Process noise matrix
     Eigen::MatrixXd Q_;
 };
 

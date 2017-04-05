@@ -3,6 +3,7 @@
 #include <vector>
 #include "Eigen/Dense"
 
+/// \brief Set of common tools required for the project
 class Tools
 {
 public:

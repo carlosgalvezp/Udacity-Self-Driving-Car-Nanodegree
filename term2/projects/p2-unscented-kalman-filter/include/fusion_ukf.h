@@ -8,8 +8,6 @@
 #include "measurement_model_lidar.h"
 #include "measurement_model_radar.h"
 
-static const std::size_t kNumberOfStates = 5U;
-
 /// \brief Uses an UKF to fuse sensor data from lidar and radar to estimate
 /// the position, orientation, speed and yaw rate of a target
 class FusionUKF

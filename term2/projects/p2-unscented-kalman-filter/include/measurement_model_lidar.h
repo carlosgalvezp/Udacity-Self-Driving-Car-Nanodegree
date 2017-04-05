@@ -4,11 +4,12 @@
 #include "measurement_model.h"
 
 /// Laser measurement noise standard deviation - px
-static const double noise_px_ = 0.0225;  // [m]^2
+static const double std_px_ = 0.15;  // [m]^2
 
 /// Laser measurement noise standard deviation - py
-static const double noise_py_ = 0.0225;  // [m]^2
+static const double std_py_ = 0.15;  // [m]^2
 
+/// \brief Implements a Lidar sensor model
 class MeasurementModelLidar : public MeasurementModel
 {
 public:
@@ -16,6 +17,11 @@ public:
     /// \param n_states dimension of the state vector
     explicit MeasurementModelLidar(std::size_t n_states);
     virtual ~MeasurementModelLidar();
+
+    /// \brief computes the initialization state, given a measurement
+    /// \param z initial measurement
+    /// \return the initial state for the filter
+    virtual Eigen::VectorXd computeInitialState(const Eigen::VectorXd& z) const;
 
     /// \brief Computes z_hat = h(x')
     /// \param state predicted state, x'
@@ -31,10 +37,11 @@ public:
 
     /// \brief computes and returns the measurement noise matrix, R
     /// \return the R matrix
-    virtual Eigen::MatrixXd getR() const;
+    virtual Eigen::MatrixXd getR() const { return R_; }
 
 private:
     const std::size_t n_observed_states_ = 2U;
+    Eigen::MatrixXd R_;
 };
 
 #endif // MEASUREMENT_MODEL_LIDAR_H

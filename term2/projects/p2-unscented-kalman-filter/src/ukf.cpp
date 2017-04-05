@@ -1,78 +1,29 @@
-#include <iostream>
 #include "ukf.h"
 #include "tools.h"
 
-/**
- * Initializes Unscented Kalman filter
- */
-UKF::UKF(const std::size_t n_states, const MotionModel& motion_model)
-    : n_states_(n_states),
-      n_augmented_(motion_model_.getAugmentedSize()),
-      x_new_(),
-      x_(Eigen::VectorXd::Zero(n_states)),
-      P_(Eigen::MatrixXd::Zero(n_states, n_states)),
+UKF::UKF(const MotionModel &motion_model)
+    : n_states_(motion_model.getStateVectorSize()),
+      x_(Eigen::VectorXd::Zero(n_states_)),
+      P_(Eigen::MatrixXd::Identity(n_states_, n_states_) * kInitialUncertainty),
       motion_model_(motion_model),
       x_sig_pred_(),
-      weights_(computeNumberOfSigmaPoints(n_augmented_))
+      lambda_(3.0 - motion_model.getAugStateVectorSize()),
+      weights_(computeNumberOfSigmaPoints(motion_model.getAugStateVectorSize()))
 {
-    // Initial covariance matrix
-    const double p0 = 1.0;
-
-    for (int i = 0U; i < P_.rows(); ++i)
-    {
-        P_(i, i) = p0;
-    }
-
-    P_(4, 4) = 0.1;
-
     // Precompute weights
-    // TODO: make this nicer
-    const double n_augmented_d = static_cast<double>(n_augmented_);
-    const double lambda = 3.0 - n_augmented_;
-    weights_[0] = lambda / (lambda + n_augmented_d);
+    const std::size_t n_states_augmented = motion_model_.getAugStateVectorSize();
+    weights_[0] = lambda_ / (lambda_ + n_states_augmented);
 
     for (std::size_t i = 1U; i < weights_.size(); ++i)
     {
-        weights_[i] = 0.5 / (lambda + n_augmented_d);
+        weights_[i] = 0.5 / (lambda_ + n_states_augmented);
     }
 }
 
-std::size_t UKF::computeNumberOfSigmaPoints(const std::size_t n_states) const
-{
-    return 2U * n_states + 1U;
-}
-
-void UKF::generateSigmaPoints(const Eigen::VectorXd& x,
-                              const Eigen::MatrixXd& P,
-                              std::vector<Eigen::VectorXd>& x_sig)
-{
-    const std::size_t n_states = x.rows();
-    const std::size_t n_sigma_pts = computeNumberOfSigmaPoints(n_states);
-    const double n_states_d = static_cast<double>(n_states);
-    const double lambda = 3.0 - n_states_d;
-
-    const Eigen::MatrixXd P_sqrt = Tools::sqrt(P);
-
-    x_sig.resize(n_sigma_pts);
-
-    x_sig[0] = x;
-
-    for (std::size_t i = 0U; i < n_states; ++i)
-    {
-        x_sig[1U + i]             = x + std::sqrt(lambda + n_states_d) * P_sqrt.col(i);
-        x_sig[1U + n_states + i]  = x - std::sqrt(lambda + n_states_d) * P_sqrt.col(i);
-    }
-}
-
-/**
- * Predicts sigma points, the state, and the state covariance matrix.
- * @param {double} delta_t the change in time (in seconds) between the last
- * measurement and this one.
- */
 void UKF::predict(const MotionModel& motion_model, const double delta_t)
 {
     const Eigen::MatrixXd Q = motion_model.getQ();
-    const std::size_t n_augmented = motion_model.getAugmentedSize();
+    const std::size_t n_augmented = motion_model.getAugStateVectorSize();
 
     Eigen::VectorXd x_a = Eigen::VectorXd::Zero(n_augmented);
     Eigen::MatrixXd P_a = Eigen::MatrixXd::Zero(n_augmented, n_augmented);
@@ -165,4 +116,29 @@ double UKF::update(const MeasurementModel& sensor_model,
     }
 
     return nis;
+}
+
+std::size_t UKF::computeNumberOfSigmaPoints(const std::size_t n_states) const
+{
+    return 2U * n_states + 1U;
+}
+
+void UKF::generateSigmaPoints(const Eigen::VectorXd& x,
+                              const Eigen::MatrixXd& P,
+                              std::vector<Eigen::VectorXd>& x_sig)
+{
+    const std::size_t n_states = x.rows();
+    const std::size_t n_sigma_pts = computeNumberOfSigmaPoints(n_states);
+
+    const Eigen::MatrixXd P_sqrt = Tools::sqrt((lambda_ + n_states) * P);
+
+    x_sig.resize(n_sigma_pts);
+
+    x_sig[0] = x;
+
+    for (std::size_t i = 0U; i < n_states; ++i)
+    {
+        x_sig[1U + i]             = x + P_sqrt.col(i);
+        x_sig[1U + n_states + i]  = x - P_sqrt.col(i);
+    }
 }

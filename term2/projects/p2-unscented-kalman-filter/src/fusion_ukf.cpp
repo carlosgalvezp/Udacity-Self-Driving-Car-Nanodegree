@@ -3,10 +3,10 @@
 #include "tools.h"
 
 FusionUKF::FusionUKF():
-    ukf_(kNumberOfStates, motion_model_),
+    ukf_(motion_model_),
     motion_model_(),
-    sensor_model_lidar_(kNumberOfStates),
-    sensor_model_radar_(kNumberOfStates),
+    sensor_model_lidar_(motion_model_.getStateVectorSize()),
+    sensor_model_radar_(motion_model_.getStateVectorSize()),
     previous_timestamp_(0U),
     is_initialized_(false),
     use_laser_(true),
@@ -18,25 +18,16 @@ FusionUKF::FusionUKF():
 
 void FusionUKF::initialize(const MeasurementPackage& measurement_pack)
 {
-    double px = 0.0;
-    double py = 0.0;
+    Eigen::VectorXd x0;
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
     {
-        const double rho = measurement_pack.raw_measurements_[0];
-        const double phi = measurement_pack.raw_measurements_[1];
-
-        px = rho * std::cos(phi);
-        py = rho * std::sin(phi);
+        x0 = sensor_model_radar_.computeInitialState(measurement_pack.raw_measurements_);
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER)
     {
-        px = measurement_pack.raw_measurements_[0];
-        py = measurement_pack.raw_measurements_[1];
+        x0 = sensor_model_lidar_.computeInitialState(measurement_pack.raw_measurements_);
     }
-
-    Eigen::VectorXd x0(kNumberOfStates);
-    x0 << px, py, 0.0, 0.0, 0.0;
 
     if (Tools::isNotZero(x0.norm()))
     {

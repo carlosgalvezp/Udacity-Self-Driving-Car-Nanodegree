@@ -4,14 +4,15 @@
 #include "measurement_model.h"
 
 /// Radar measurement noise standard deviation - range
-static const double noise_range_      = 0.09;   // [m]^2
+static const double std_range_      = 0.3;   // [m]
 
 /// Radar measurement noise standard deviation - bearing
-static const double noise_bearing_    = 0.0009; // [rad]^2
+static const double std_bearing_    = 0.03;  // [rad]
 
 /// Radar measurement noise standard deviation - range-rate
-static const double noise_range_rate_ = 0.09;   // [m/s]^2
+static const double std_range_rate_ = 0.3;   // [m/s]
 
+/// \brief Implements a radar sensor model
 class MeasurementModelRadar : public MeasurementModel
 {
 public:
@@ -19,6 +20,11 @@ public:
     /// \param n_states dimension of the state vector
     explicit MeasurementModelRadar(const std::size_t n_states);
     virtual ~MeasurementModelRadar();
+
+    /// \brief computes the initialization state, given a measurement
+    /// \param z initial measurement
+    /// \return the initial state for the filter
+    virtual Eigen::VectorXd computeInitialState(const Eigen::VectorXd& z) const;
 
     /// \brief Computes z_hat = h(x')
     /// \param state predicted state, x'
@@ -34,10 +40,11 @@ public:
 
     /// \brief Computes and returns the measurement noise matrix, R
     /// \return the R matrix
-    virtual Eigen::MatrixXd getR() const;
+    virtual Eigen::MatrixXd getR() const { return R_; }
 
 private:
     const std::size_t n_observed_states_ = 3U;
+    Eigen::MatrixXd R_;
 };
 
 #endif // MEASUREMENT_MODEL_RADAR_H
