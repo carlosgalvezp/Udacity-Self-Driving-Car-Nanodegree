@@ -5,14 +5,6 @@
 MeasurementModelRadar::MeasurementModelRadar(const std::size_t n_states):
     MeasurementModel(n_states)
 {
-    // Radar measurement noise standard deviation radius in m
-    std_radr_ = 0.3;
-
-    // Radar measurement noise standard deviation angle in rad
-    std_radphi_ = 0.0175;
-
-    // Radar measurement noise standard deviation radius change in m/s
-    std_radrd_ = 0.1;
 }
 
 MeasurementModelRadar::~MeasurementModelRadar()

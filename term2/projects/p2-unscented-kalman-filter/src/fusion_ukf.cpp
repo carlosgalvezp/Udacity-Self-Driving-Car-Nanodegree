@@ -6,14 +6,14 @@ FusionUKF::FusionUKF():
     ukf_(kNumberOfStates, motion_model_),
     motion_model_(),
     sensor_model_lidar_(kNumberOfStates),
-    sensor_model_radar_(kNumberOfStates)
+    sensor_model_radar_(kNumberOfStates),
+    previous_timestamp_(0U),
+    is_initialized_(false),
+    use_laser_(true),
+    use_radar_(true),
+    NIS_lidar_(0.0),
+    NIS_radar_(0.0)
 {
-    // if this is false, laser measurements will be ignored (except during init)
-    use_laser_ = true;
-
-    // if this is false, radar measurements will be ignored (except during init)
-    use_radar_ = true;
-
 }
 
 void FusionUKF::initialize(const MeasurementPackage& measurement_pack)

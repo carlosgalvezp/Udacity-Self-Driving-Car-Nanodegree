@@ -6,7 +6,7 @@
 /// Process noise standard deviation longitudinal acceleration
 static const double std_a_     = 0.8;   // [m/s^2]
 
-// Process noise standard deviation rotational acceleration
+/// Process noise standard deviation rotational acceleration
 static const double std_yawdd_ = 0.6;  // [rad/s^2]
 
 /// Number of independent noise sources in the motion model
@@ -18,7 +18,6 @@ static const std::size_t kAugmentedStateSize = 7U;
 class MotionModel
 {
 public:
-    /// \brief Constructor
     MotionModel();
 
     /// \brief Computes x' = f(x)
@@ -32,6 +31,8 @@ public:
     /// \return the Q matrix
     const Eigen::MatrixXd& getQ() const { return Q_; }
 
+    /// \brief Returns the size of the augmented vector
+    /// \return the size of the augmented vector
     std::size_t getAugmentedSize() const { return kAugmentedStateSize; }
 
 private:

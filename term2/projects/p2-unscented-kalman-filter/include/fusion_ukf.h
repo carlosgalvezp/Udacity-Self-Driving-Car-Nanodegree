@@ -10,20 +10,32 @@
 
 static const std::size_t kNumberOfStates = 5U;
 
+/// \brief Uses an UKF to fuse sensor data from lidar and radar to estimate
+/// the position, orientation, speed and yaw rate of a target
 class FusionUKF
 {
 public:
     FusionUKF();
 
+    /// \brief Runs one cycle of the UKF using a given measurement
+    /// \param meas_package the sensor data
     void processMeasurement(const MeasurementPackage& meas_package);
+
+    /// \brief getState returns the current state
+    /// \return the current state
     const Eigen::VectorXd& getState() const { return ukf_.getState(); }
+
+    /// \brief getNISLidar the NIS from the lidar
+    /// \return the NIS from the lidar
     double getNISLidar() const { return NIS_lidar_; }
+
+    /// \brief getNISRadar the NIS from the radar
+    /// \return the NIS from the radar
     double getNISRadar() const { return NIS_radar_; }
 
 private:
     void initialize(const MeasurementPackage& measurement_pack);
 
-    /// Unscented Kalman Filter
     UKF ukf_;
 
     MotionModel motion_model_;
@@ -35,10 +47,10 @@ private:
 
     bool is_initialized_;
 
-    ///* if this is false, laser measurements will be ignored (except for init)
+    // if false, laser measurements will be ignored (except for init)
     bool use_laser_;
 
-    ///* if this is false, radar measurements will be ignored (except for init)
+    // if false, radar measurements will be ignored (except for init)
     bool use_radar_;
 
     double NIS_lidar_;
