@@ -16,8 +16,8 @@ public:
     const Eigen::VectorXd& getState() const { return x_; }
     void setState(const Eigen::VectorXd& x) { x_ = x; }
 
-    void generateSigmaPoints(const Eigen::VectorXd &x, const Eigen::MatrixXd &P,
-                             std::vector<Eigen::VectorXd> &x_sig);
+    void generateSigmaPoints(const Eigen::VectorXd& x, const Eigen::MatrixXd& P,
+                             std::vector<Eigen::VectorXd>& x_sig);
     void predict(const MotionModel& motion_model, const double delta_t);
     double update(const MeasurementModel& sensor_model, const Eigen::VectorXd& z);
 private:

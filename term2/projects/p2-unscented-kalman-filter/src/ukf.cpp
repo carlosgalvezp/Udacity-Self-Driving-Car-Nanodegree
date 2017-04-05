@@ -5,7 +5,7 @@
 /**
  * Initializes Unscented Kalman filter
  */
-UKF::UKF(const std::size_t n_states, const MotionModel &motion_model)
+UKF::UKF(const std::size_t n_states, const MotionModel& motion_model)
     : n_states_(n_states),
       n_augmented_(motion_model_.getAugmentedSize()),
       x_new_(),
@@ -17,12 +17,13 @@ UKF::UKF(const std::size_t n_states, const MotionModel &motion_model)
 {
     // Initial covariance matrix
     const double p0 = 1.0;
+
     for (int i = 0U; i < P_.rows(); ++i)
     {
-        P_(i,i) = p0;
+        P_(i, i) = p0;
     }
 
-    P_(4,4) = 0.1;
+    P_(4, 4) = 0.1;
 
     // Precompute weights
     // TODO: make this nicer
@@ -30,7 +31,7 @@ UKF::UKF(const std::size_t n_states, const MotionModel &motion_model)
     const double lambda = 3.0 - n_augmented_;
     weights_[0] = lambda / (lambda + n_augmented_d);
 
-    for(std::size_t i = 1U; i < weights_.size(); ++i)
+    for (std::size_t i = 1U; i < weights_.size(); ++i)
     {
         weights_[i] = 0.5 / (lambda + n_augmented_d);
     }
@@ -56,7 +57,7 @@ void UKF::generateSigmaPoints(const Eigen::VectorXd& x,
 
     x_sig[0] = x;
 
-    for(std::size_t i = 0U; i < n_states; ++i)
+    for (std::size_t i = 0U; i < n_states; ++i)
     {
         x_sig[1U + i]             = x + std::sqrt(lambda + n_states_d) * P_sqrt.col(i);
         x_sig[1U + n_states + i]  = x - std::sqrt(lambda + n_states_d) * P_sqrt.col(i);
@@ -91,6 +92,7 @@ void UKF::predict(const MotionModel& motion_model, const double delta_t)
 
     // Compute predicted mean
     x_.fill(0.0);
+
     for (std::size_t i = 0U; i < weights_.size(); ++i)
     {
         x_ += weights_[i] * x_sig_pred_[i];
@@ -98,6 +100,7 @@ void UKF::predict(const MotionModel& motion_model, const double delta_t)
 
     // Compute predicted covariance
     P_.fill(0.0);
+
     for (std::size_t i = 0U; i < weights_.size(); ++i)
     {
         Eigen::VectorXd x_diff = x_sig_pred_[i] - x_;
@@ -107,7 +110,8 @@ void UKF::predict(const MotionModel& motion_model, const double delta_t)
     }
 }
 
-double UKF::update(const MeasurementModel& sensor_model, const Eigen::VectorXd& z)
+double UKF::update(const MeasurementModel& sensor_model,
+                   const Eigen::VectorXd& z)
 {
     const std::size_t n_observed = z.rows();
     double nis = 0.0;
@@ -115,14 +119,15 @@ double UKF::update(const MeasurementModel& sensor_model, const Eigen::VectorXd& 
     // Predict the measurement for each sigma point
     std::vector<Eigen::VectorXd> z_sig_pred(x_sig_pred_.size());
 
-    for(std::size_t i = 0U; i < z_sig_pred.size(); ++i)
+    for (std::size_t i = 0U; i < z_sig_pred.size(); ++i)
     {
         z_sig_pred[i] = sensor_model.predictMeasurement(x_sig_pred_[i]);
     }
 
     // Compute mean
     Eigen::VectorXd z_mean = Eigen::VectorXd::Zero(n_observed);
-    for(std::size_t i = 0U; i < z_sig_pred.size(); ++i)
+
+    for (std::size_t i = 0U; i < z_sig_pred.size(); ++i)
     {
         z_mean += weights_[i] * z_sig_pred[i];
     }
@@ -130,7 +135,8 @@ double UKF::update(const MeasurementModel& sensor_model, const Eigen::VectorXd& 
     // Compute covariance and cross-correlation
     Eigen::MatrixXd S = Eigen::MatrixXd::Zero(n_observed, n_observed);
     Eigen::MatrixXd T = Eigen::MatrixXd::Zero(n_states_, n_observed);
-    for(std::size_t i = 0U; i < z_sig_pred.size(); ++i)
+
+    for (std::size_t i = 0U; i < z_sig_pred.size(); ++i)
     {
         Eigen::VectorXd z_diff = sensor_model.computeDifference(z_sig_pred[i], z_mean);
 

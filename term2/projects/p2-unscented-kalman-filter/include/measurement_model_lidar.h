@@ -25,7 +25,7 @@ public:
     /// \param z_hat predicted measurement
     /// \return the residual, y
     virtual Eigen::VectorXd computeDifference(const Eigen::VectorXd& z_a,
-                                              const Eigen::VectorXd& z_b) const;
+            const Eigen::VectorXd& z_b) const;
 
     /// \brief computes and returns the measurement noise matrix, R
     /// \return the R matrix

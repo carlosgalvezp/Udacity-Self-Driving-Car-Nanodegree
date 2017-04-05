@@ -11,7 +11,8 @@ public:
     /// \param estimations estimates
     /// \param ground_truth ground truth
     /// \return the computed RMSE
-    static Eigen::VectorXd calculateRMSE(const std::vector<Eigen::VectorXd>& estimations,
+    static Eigen::VectorXd calculateRMSE(const std::vector<Eigen::VectorXd>&
+                                         estimations,
                                          const std::vector<Eigen::VectorXd>& ground_truth);
 
     /// \brief Returns true if x is not zero, up to some predefined threshold

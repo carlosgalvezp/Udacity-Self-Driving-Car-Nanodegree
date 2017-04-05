@@ -17,7 +17,7 @@ static const std::size_t kAugmentedStateSize = 7U;
 
 class MotionModel
 {
-public:    
+public:
     /// \brief Constructor
     MotionModel();
 

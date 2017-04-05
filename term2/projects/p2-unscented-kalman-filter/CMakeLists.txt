@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 3.5)
 
 option(build_tests "Build the tests." OFF)
 
-add_definitions(-std=c++0x -Wall -Wextra -Werror -pedantic)
+add_definitions(-std=c++0x -Wall -Wextra -Werror -pedantic -O2)
 
 include_directories(include)
 include_directories(3rdparty)

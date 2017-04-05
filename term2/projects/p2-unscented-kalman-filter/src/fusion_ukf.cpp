@@ -21,7 +21,7 @@ void FusionUKF::initialize(const MeasurementPackage& measurement_pack)
     double px = 0.0;
     double py = 0.0;
 
-    if(measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
+    if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR)
     {
         const double rho = measurement_pack.raw_measurements_[0];
         const double phi = measurement_pack.raw_measurements_[1];

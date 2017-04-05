@@ -21,7 +21,7 @@ public:
     virtual Eigen::VectorXd predictMeasurement(const Eigen::VectorXd& state) const;
 
     virtual Eigen::VectorXd computeDifference(const Eigen::VectorXd& z_a,
-                                              const Eigen::VectorXd& z_b) const;
+            const Eigen::VectorXd& z_b) const;
 
     /// \brief Computes and returns the measurement noise matrix, R
     /// \return the R matrix
