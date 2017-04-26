@@ -9,8 +9,11 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
+#include <random>
 
 #include "particle_filter.h"
+
+const std::size_t kNumberOfParticles = 100U;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// TODO: Set the number of particles. Initialize all particles to first position (based on estimates of 
@@ -18,6 +21,27 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
 
+    // Allocate memory for particles and weights
+    particles.resize(kNumberOfParticles);
+    weights.resize(kNumberOfParticles);
+
+    // Randomly initialize
+    std::default_random_engine gen;
+    std::normal_distribution<double> norm_x(x, std[0U]);
+    std::normal_distribution<double> norm_y(y, std[1U]);
+    std::normal_distribution<double> norm_theta(theta, std[2U]);
+
+    int id = 0;
+    for (Particle & p : particles)
+    {
+        p.id = id;
+        p.x = norm_x(gen);
+        p.y = norm_y(gen);
+        p.theta = norm_theta(gen);
+        p.weight = 1.0 / static_cast<double>(kNumberOfParticles);
+
+        ++id;
+    }
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate) {
