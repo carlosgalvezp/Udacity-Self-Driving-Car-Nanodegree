@@ -186,6 +186,21 @@ void ParticleFilter::resample()
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
 
+    // Store the weights in a vector for convenience
+    for (std::size_t i = 0U; i < particles.size(); ++i)
+    {
+        weights[i] = particles[i].weight;
+    }
+
+    // Resample according to weights
+    std::vector<Particle> particles_original(particles);
+    std::default_random_engine gen;
+    std::discrete_distribution<std::size_t> d(weights.begin(), weights.end());
+
+    for (Particle& p : particles)
+    {
+        p = particles_original[d(gen)];
+    }
 }
 
 void ParticleFilter::write(std::string filename) {
