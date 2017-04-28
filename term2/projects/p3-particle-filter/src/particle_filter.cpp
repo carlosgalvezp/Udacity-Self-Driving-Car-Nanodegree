@@ -10,10 +10,13 @@
 #include <iostream>
 #include <numeric>
 #include <random>
+#include <cmath>
+#include <limits>
 
 #include "particle_filter.h"
 
 const std::size_t kNumberOfParticles = 100U;
+const double kZeroTolerance = 1.0E-3;
 
 void ParticleFilter::init(double x, double y, double theta, double std[])
 {
@@ -45,11 +48,6 @@ void ParticleFilter::init(double x, double y, double theta, double std[])
 void ParticleFilter::prediction(double delta_t, double std_pos[],
                                 double velocity, double yaw_rate)
 {
-	// TODO: Add measurements to each particle and add random Gaussian noise.
-	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
-	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
-	//  http://www.cplusplus.com/reference/random/default_random_engine/
-
     std::default_random_engine gen;
     std::normal_distribution<double> norm_x    (0.0, std_pos[0U]);
     std::normal_distribution<double> norm_y    (0.0, std_pos[1U]);
@@ -58,7 +56,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
     for (Particle &p : particles)
     {
         // Predict
-        if (std::fabs(yaw_rate) < 1.0E-3)
+        if (std::fabs(yaw_rate) < kZeroTolerance)
         {
             p.x += velocity * delta_t * std::cos(p.theta);
             p.y += velocity * delta_t * std::sin(p.theta);
@@ -80,7 +78,8 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
     }
 }
 
-void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::vector<LandmarkObs>& observations)
+void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted,
+                                     std::vector<LandmarkObs>& observations)
 {
 	// TODO: Find the predicted measurement that is closest to each observed measurement and assign the 
 	//   observed measurement to this particular landmark.
@@ -97,12 +96,88 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	// NOTE: The observations are given in the VEHICLE'S coordinate system. Your particles are located
 	//   according to the MAP'S coordinate system. You will need to transform between the two systems.
 	//   Keep in mind that this transformation requires both rotation AND translation (but no scaling).
-	//   The following is a good resource for the theory:
+    //   The following is a good resource for the theory:
 	//   https://www.willamette.edu/~gorr/classes/GeneralGraphics/Transforms/transforms2d.htm
 	//   and the following is a good resource for the actual equation to implement (look at equation 
 	//   3.33. Note that you'll need to switch the minus sign in that equation to a plus to account 
 	//   for the fact that the map's y-axis actually points downwards.)
-	//   http://planning.cs.uiuc.edu/node99.html
+    //   http://planning.cs.uiuc.edu/node99.html
+
+    double weight_sum = 0.0;
+
+    const double std_x = std_landmark[0U];
+    const double std_y = std_landmark[1U];
+
+    // Loop over particles
+    for (Particle& p : particles)
+    {
+        double total_prob = 1.0;  // To multiply probabilities later
+
+        const double c_theta = std::cos(p.theta);
+        const double s_theta = std::sin(p.theta);
+
+        // Loop over measurements
+        for (LandmarkObs& z : observations)
+        {
+            // Transform measurements from car frame to particle frame
+            const double z_x_car = z.x;
+            const double z_y_car = z.y;
+
+            const double z_x_p = p.x + z_x_car*c_theta - z_y_car*s_theta;
+            const double z_y_p = p.y + z_x_car*s_theta + z_y_car*c_theta;
+
+            // Perform nearest neighbor data association
+            double d_min = std::numeric_limits<double>::max();
+            std::size_t id_min = map_landmarks.landmark_list.size();
+
+            for (std::size_t i = 0U; i < map_landmarks.landmark_list.size(); ++i)
+            {
+                const Map::single_landmark_s& m_i  = map_landmarks.landmark_list[i];
+
+                const double d_p_to_landmark = dist(p.x, p.y, m_i.x_f, m_i.y_f);
+
+                if (d_p_to_landmark < sensor_range)
+                {
+                    const double d_z_to_landmark =
+                            dist(z_x_p, z_y_p, m_i.x_f, m_i.y_f);
+
+                    if (d_z_to_landmark < d_min)
+                    {
+                        d_min = d_z_to_landmark;
+                        id_min = i;
+                    }
+                }
+            }
+
+            if (id_min < map_landmarks.landmark_list.size())
+            {
+                // Could not find associated landmark within sensor_range
+                continue;
+            }
+
+            // Compute probability and update weight
+            const double m_x = map_landmarks.landmark_list[id_min].x_f;
+            const double m_y = map_landmarks.landmark_list[id_min].y_f;
+
+            const double k = 1.0 / (2.0 * M_PI * std_x * std_y);
+            const double a = (z_x_p - m_x) * (z_x_p - m_x) / (std_x * std_x);
+            const double b = (z_y_p - m_y) * (z_y_p - m_y) / (std_y * std_y);
+
+            const double prob_z = k * std::exp(-0.5 * (a + b));
+
+            total_prob *= prob_z;
+        }
+
+        // Assign weight = 0.0 if no observations were associated to landmarks
+        p.weight = (total_prob != 1.0 ? total_prob : 0.0);
+        weight_sum += p.weight;
+    }
+
+    // Normalize weights
+    for (Particle& p : particles)
+    {
+        p.weight /= weight_sum;
+    }
 }
 
 void ParticleFilter::resample()
