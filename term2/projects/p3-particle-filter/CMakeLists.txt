@@ -7,6 +7,7 @@ project(PARTICLE_FILTER)
 set(SRCS src/main.cpp src/particle_filter.cpp)
 set_source_files_properties(${SRCS} PROPERTIES COMPILE_FLAGS
                             "-std=c++0x -Wall -Wextra -pedantic")
+set(CMAKE_BUILD_TYPE Debug)
 
 # Create the executable
 add_executable(particle_filter ${SRCS})
