@@ -1,46 +1,31 @@
 #ifndef PID_H
 #define PID_H
 
-class PID {
+class PID
+{
 public:
-  /*
-  * Errors
-  */
-  double p_error;
-  double i_error;
-  double d_error;
+    // Constructor
+    PID(const double kp, const double kd, const double ki);
 
-  /*
-  * Coefficients
-  */ 
-  double Kp;
-  double Ki;
-  double Kd;
+    // Destructor
+    virtual ~PID();
 
-  /*
-  * Constructor
-  */
-  PID();
+    // Update the PID error variables given cross track error
+    void UpdateError(double cte);
 
-  /*
-  * Destructor.
-  */
-  virtual ~PID();
+    // Calculate the total PID error
+    double TotalError();
 
-  /*
-  * Initialize PID.
-  */
-  void Init(double Kp, double Ki, double Kd);
+private:
+    // Coefficients
+    const double kp_;
+    const double ki_;
+    const double kd_;
 
-  /*
-  * Update the PID error variables given cross track error.
-  */
-  void UpdateError(double cte);
-
-  /*
-  * Calculate the total PID error.
-  */
-  double TotalError();
+    // Errors
+    double p_error_;
+    double i_error_;
+    double d_error_;
 };
 
 #endif /* PID_H */

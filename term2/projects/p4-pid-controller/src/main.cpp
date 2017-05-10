@@ -32,8 +32,11 @@ int main()
 {
   uWS::Hub h;
 
-  PID pid;
-  // TODO: Initialize the pid variable.
+  // Create PID
+  const double kp = 0.0;
+  const double kd = 0.0;
+  const double ki = 0.0;
+  PID pid(kp, ki, kd);
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -41,7 +44,7 @@ int main()
     // The 2 signifies a websocket event
     if (length && length > 2 && data[0] == '4' && data[1] == '2')
     {
-      auto s = hasData(std::string(data));
+      auto s = hasData(std::string(data).substr(0, length));
       if (s != "") {
         auto j = json::parse(s);
         std::string event = j[0].get<std::string>();
@@ -57,7 +60,7 @@ int main()
           * NOTE: Feel free to play around with the throttle and speed. Maybe use
           * another PID controller to control the speed!
           */
-          
+
           // DEBUG
           std::cout << "CTE: " << cte << " Steering Value: " << steer_value << std::endl;
 
