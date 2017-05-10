@@ -11,10 +11,10 @@ public:
     virtual ~PID();
 
     // Update the PID error variables given cross track error
-    void UpdateError(double cte);
+    void updateError(double cte);
 
-    // Calculate the total PID error
-    double TotalError();
+    // Calculate the PID output
+    double computeSteering();
 
 private:
     // Coefficients
@@ -24,8 +24,8 @@ private:
 
     // Errors
     double p_error_;
-    double i_error_;
     double d_error_;
+    double i_error_;
 };
 
 #endif /* PID_H */
