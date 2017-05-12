@@ -5,7 +5,7 @@ class PID
 {
 public:
     // Constructor
-    PID(const double kp, const double kd, const double ki);
+    PID(const double kp, const double ki, const double kd);
 
     // Destructor
     virtual ~PID();
@@ -26,6 +26,9 @@ private:
     double p_error_;
     double d_error_;
     double i_error_;
+
+    static constexpr double kSteeringMax = 1.0;
+    static constexpr double kSteeringMin = -1.0;
 };
 
 #endif /* PID_H */

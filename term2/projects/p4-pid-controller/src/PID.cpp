@@ -1,6 +1,7 @@
 #include "PID.h"
+#include <iostream>
 
-PID::PID(const double kp, const double kd, const double ki):
+PID::PID(const double kp, const double ki, const double kd):
     kp_(kp),
     ki_(ki),
     kd_(kd),
@@ -20,6 +21,21 @@ void PID::updateError(double cte)
 
 double PID::computeSteering()
 {
-    return kp_ * p_error_ + ki_ * i_error_ + kd_ * d_error_;
+    double output = -(kp_ * p_error_ +
+                      ki_ * i_error_ +
+                      kd_ * d_error_);
+
+    if (output > kSteeringMax)
+    {
+        std::cout << "[WARNING] Too large steering output: " << output << std::endl;
+        output = kSteeringMax;
+    }
+    else if (output < kSteeringMin)
+    {
+        std::cout << "[WARNING] Too large steering output: " << output << std::endl;
+        output = kSteeringMin;
+    }
+
+    return output;
 }
 

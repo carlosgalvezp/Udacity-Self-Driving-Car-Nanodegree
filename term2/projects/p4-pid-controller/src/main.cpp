@@ -33,9 +33,10 @@ int main()
   uWS::Hub h;
 
   // Create PID
-  const double kp = 0.0;
-  const double kd = 0.0;
+  const double kp = 0.2;
   const double ki = 0.0;
+  const double kd = 0.5;
+
   PID pid(kp, ki, kd);
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
