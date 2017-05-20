@@ -1,8 +1,10 @@
 #include <uWS/uWS.h>
 #include <iostream>
+#include <fstream>
+#include <math.h>
+
 #include "json.hpp"
 #include "PID.h"
-#include <math.h>
 
 // for convenience
 using json = nlohmann::json;
@@ -28,14 +30,38 @@ std::string hasData(std::string s) {
   return "";
 }
 
+const char *const pid_config_file = "../pid_config.txt";
+
 int main()
 {
   uWS::Hub h;
 
-  // Create PID
-  const double kp = 0.2;
-  const double ki = 0.0;
-  const double kd = 0.5;
+  // Read PID config from file
+  double kp = 0.;
+  double ki = 0.;
+  double kd = 0.;
+
+  std::ifstream fd(pid_config_file);
+  if (fd.is_open())
+  {
+      std::string line;
+
+      std::getline(fd, line);
+      kp = std::stod(line);
+
+      std::getline(fd, line);
+      ki = std::stod(line);
+
+      std::getline(fd, line);
+      kd = std::stod(line);
+
+      std::cout << "Read PID: kp = " << kp << ", ki = " << ki << ", kd = " << kd << std::endl;
+  }
+  else
+  {
+      std::cerr << "Could not open file " << pid_config_file;
+      exit(EXIT_FAILURE);
+  }
 
   PID pid(kp, ki, kd);
 
