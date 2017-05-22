@@ -2,7 +2,7 @@
 #define MPC_H
 
 #include <vector>
-#include "Eigen-3.3/Eigen/Core"
+#include <Eigen/Core>
 
 using namespace std;
 
