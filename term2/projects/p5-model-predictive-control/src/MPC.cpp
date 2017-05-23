@@ -2,8 +2,6 @@
 #include <cppad/cppad.hpp>
 #include <cppad/ipopt/solve.hpp>
 
-using CppAD::AD;
-
 // TODO: Set the timestep length and duration
 size_t N = 0;
 double dt = 0;
@@ -27,7 +25,7 @@ public:
     Eigen::VectorXd coeffs;
     FG_eval(Eigen::VectorXd coeffs) { this->coeffs = coeffs; }
 
-    typedef CPPAD_TESTVECTOR(AD<double>) ADvector;
+    typedef CPPAD_TESTVECTOR(CppAD::AD<double>) ADvector;
     void operator()(ADvector& fg, const ADvector& vars)
     {
         // TODO: implement MPC
@@ -40,10 +38,7 @@ public:
 //
 // MPC class definition implementation.
 //
-MPC::MPC() {}
-MPC::~MPC() {}
-
-vector<double> MPC::Solve(Eigen::VectorXd state, Eigen::VectorXd coeffs)
+std::vector<double> MPC::solve(Eigen::VectorXd state, Eigen::VectorXd coeffs)
 {
     bool ok = true;
     size_t i;
