@@ -1,4 +1,5 @@
 #include "MPC.h"
+
 #include <cppad/cppad.hpp>
 #include <cppad/ipopt/solve.hpp>
 
@@ -18,15 +19,28 @@ double dt = 0;
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
+/// This is a helper class required by CppAD::ipopt::solve.
+/// Documentation on this function can be found here:
+///
+/// https://www.coin-or.org/CppAD/Doc/ipopt_solve.htm
+///
+/// The purpose of this class is to define the multi-dimensional
+/// functions f(x) and g(x), where x is the state whose
+/// solution we intend to find.
 class FG_eval
 {
 public:
-    // Fitted polynomial coefficients
+    /// Fitted polynomial coefficients
     Eigen::VectorXd coeffs;
     FG_eval(Eigen::VectorXd coeffs) { this->coeffs = coeffs; }
 
+    /// Required
     typedef CPPAD_TESTVECTOR(CppAD::AD<double>) ADvector;
-    void operator()(ADvector& fg, const ADvector& vars)
+
+    /// \brief operator (), required per definition of FG_eval
+    /// \param fg f and g functions
+    /// \param x state
+    void operator()(ADvector& fg, const ADvector& x)
     {
         // TODO: implement MPC
         // fg a vector of constraints, x is a vector of constraints.
@@ -35,10 +49,8 @@ public:
     }
 };
 
-//
-// MPC class definition implementation.
-//
-std::vector<double> MPC::solve(Eigen::VectorXd state, Eigen::VectorXd coeffs)
+Actuators MPC::solve(const Eigen::VectorXd &state,
+                     const Eigen::VectorXd &coeffs)
 {
     bool ok = true;
     size_t i;
@@ -118,5 +130,6 @@ std::vector<double> MPC::solve(Eigen::VectorXd state, Eigen::VectorXd coeffs)
     //
     // {...} is shorthand for creating a vector, so auto x1 = {1.0,2.0}
     // creates a 2 element double vector.
-    return {};
+    Actuators output = Actuators();
+    return output;
 }

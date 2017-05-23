@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 #include <uWS/uWS.h>
 #include <chrono>
 #include <iostream>
@@ -6,6 +6,7 @@
 #include <vector>
 #include <Eigen/Core>
 #include <Eigen/QR>
+
 #include "MPC.h"
 #include "json.hpp"
 
