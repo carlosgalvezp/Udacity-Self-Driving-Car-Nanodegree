@@ -4,6 +4,9 @@
 #include <vector>
 #include <Eigen/Core>
 
+#include <cppad/cppad.hpp>
+#include <cppad/ipopt/solve.hpp>
+
 #include "actuators.h"
 
 class MPC
@@ -15,6 +18,19 @@ public:
     /// \return actuator commands for next control loop
     Actuators solve(const Eigen::VectorXd& state,
                     const Eigen::VectorXd& coeffs);
+
+private:
+    class Solver
+    {
+    public:
+        typedef CPPAD_TESTVECTOR(double) Dvector;
+        typedef Dvector Solution;
+
+        Solution solve(const Eigen::VectorXd &state,
+                       const Eigen::VectorXd &coeffs);
+    };
+
+    Solver solver_;
 };
 
 #endif  // MPC_H

@@ -1,8 +1,5 @@
 #include "MPC.h"
 
-#include <cppad/cppad.hpp>
-#include <cppad/ipopt/solve.hpp>
-
 // TODO: Set the timestep length and duration
 size_t N = 0;
 double dt = 0;
@@ -50,7 +47,20 @@ public:
 };
 
 Actuators MPC::solve(const Eigen::VectorXd &state,
-                     const Eigen::VectorXd &coeffs)
+                     const Eigen::VectorXd &trajectory)
+{
+    const Solver::Solution solution = solver_.solve(state, trajectory);
+
+    Actuators actuators = Actuators();
+
+    actuators.acceleration = solution[0U];
+    actuators.steering     = solution[1U];
+
+    return actuators;
+}
+
+MPC::Solver::Solution MPC::Solver::solve(const Eigen::VectorXd &state,
+                                         const Eigen::VectorXd &coeffs)
 {
     bool ok = true;
     size_t i;
@@ -130,6 +140,5 @@ Actuators MPC::solve(const Eigen::VectorXd &state,
     //
     // {...} is shorthand for creating a vector, so auto x1 = {1.0,2.0}
     // creates a 2 element double vector.
-    Actuators output = Actuators();
-    return output;
+    return solution.x;
 }
