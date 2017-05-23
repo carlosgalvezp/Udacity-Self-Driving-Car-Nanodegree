@@ -13,9 +13,11 @@ fi
 
 # Set Docker run base command
 DOCKER_IMG_NAME=carlosgalvezp/sdcnd_p5
-DOCKER_RUN_BASE="docker run --volume=$SCRIPT_DIR:$SCRIPT_DIR     \
+DOCKER_RUN_BASE="docker run --rm=true
+                            --volume=$SCRIPT_DIR:$SCRIPT_DIR     \
                             --workdir=$BUILD_FOLDER              \
-                            --user=$UID:$GROUPS $DOCKER_IMG_NAME"
+                            --user=$UID:$GROUPS                  \
+                            $DOCKER_IMG_NAME"
 
 # Run CMake from Docker image
 $DOCKER_RUN_BASE cmake ..
