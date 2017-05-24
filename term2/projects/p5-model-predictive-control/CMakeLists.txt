@@ -12,7 +12,8 @@ set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 set(sources src/main.cpp
             src/mpc_model.cpp
             src/MPC.cpp
-            src/optimizer.cpp)
+            src/optimizer.cpp
+            src/tools.cpp)
 
 include_directories(include)
 include_directories(/usr/local/include)
