@@ -9,8 +9,9 @@ add_definitions(-std=c++11 -O3)
 set(CXX_FLAGS "-Wall _Wextra -Werror -pedantic ")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
-set(sources src/MPC.cpp
-            src/main.cpp
+set(sources src/main.cpp
+            src/mpc_model.cpp
+            src/MPC.cpp
             src/optimizer.cpp)
 
 include_directories(include)

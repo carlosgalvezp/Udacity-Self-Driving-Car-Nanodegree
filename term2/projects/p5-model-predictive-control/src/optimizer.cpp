@@ -1,4 +1,3 @@
-// Copyright 2017 Zenuity AB
 #include "include/optimizer.h"
 
 Optimizer::Optimizer()

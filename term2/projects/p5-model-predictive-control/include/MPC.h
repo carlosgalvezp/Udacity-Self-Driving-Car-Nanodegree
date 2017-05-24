@@ -20,16 +20,6 @@ public:
                     const Eigen::VectorXd& coeffs);
 
 private:
-    class Solver
-    {
-    public:
-        typedef CPPAD_TESTVECTOR(double) Dvector;
-        typedef Dvector Solution;
-
-        Solution solve(const Eigen::VectorXd &state,
-                       const Eigen::VectorXd &coeffs);
-    };
-
     Solver solver_;
 };
 
