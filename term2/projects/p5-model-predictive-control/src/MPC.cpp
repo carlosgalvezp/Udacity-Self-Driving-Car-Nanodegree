@@ -4,6 +4,11 @@
 size_t N = 0;
 double dt = 0;
 
+MPC::MPC()
+    : optimizer_()
+{
+}
+
 // This value assumes the model presented in the classroom is used.
 //
 // It was obtained by measuring the radius formed by running the vehicle in the
@@ -16,13 +21,17 @@ double dt = 0;
 // This is the length from front to CoG that has a similar radius.
 const double Lf = 2.67;
 
-Actuators MPC::solve(const Eigen::VectorXd &state,
-                     const Eigen::VectorXd &trajectory)
+Actuators MPC::computeCommands(const Eigen::VectorXd &state,
+                               const Eigen::VectorXd &trajectory)
 {
-    const Solver::Solution solution = solver_.solve(state, trajectory);
+    // Create MPC model given the trajectory
+    MPC_Model model(trajectory);
 
+    // Solve the MPC problem
+    const Optimizer::Dvector solution = optimizer_.solve(state, model);
+
+    // Compute output
     Actuators actuators = Actuators();
-
     actuators.acceleration = solution[0U];
     actuators.steering     = solution[1U];
 

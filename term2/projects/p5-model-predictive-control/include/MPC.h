@@ -4,23 +4,24 @@
 #include <vector>
 #include <Eigen/Core>
 
-#include <cppad/cppad.hpp>
-#include <cppad/ipopt/solve.hpp>
-
 #include "actuators.h"
+#include "optimizer.h"
+#include "mpc_model.h"
 
 class MPC
 {
 public:
-    /// \brief Solves the model
+    MPC();
+
+    /// \brief Solves the MPC model, outputting actuator commands
     /// \param state current state of the car
     /// \param coeffs desired trajectory
     /// \return actuator commands for next control loop
-    Actuators solve(const Eigen::VectorXd& state,
-                    const Eigen::VectorXd& coeffs);
+    Actuators computeCommands(const Eigen::VectorXd& state,
+                              const Eigen::VectorXd& coeffs);
 
 private:
-    Solver solver_;
+    Optimizer optimizer_;
 };
 
 #endif  // MPC_H

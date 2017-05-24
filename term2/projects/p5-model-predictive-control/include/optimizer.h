@@ -1,6 +1,9 @@
 #ifndef OPTIMIZER_H
 #define OPTIMIZER_H
 
+#include <Eigen/Dense>
+#include <cppad/cppad.hpp>
+
 #include "mpc_model.h"
 
 class Optimizer
@@ -10,8 +13,8 @@ public:
 
     typedef CPPAD_TESTVECTOR(double) Dvector;
 
-    Dvector solve(const DVector& x,
-                  const MPC_Model& mpc_model);
+    Dvector solve(const Eigen::VectorXd& x,
+                  MPC_Model &mpc_model);
 };
 
 #endif // OPTIMIZER_H

@@ -1,15 +1,16 @@
-#include "include/optimizer.h"
+#include "optimizer.h"
+
+#include <cppad/ipopt/solve.hpp>
 
 Optimizer::Optimizer()
 {
 }
 
-Optimizer::Solution Optimizer::solve(const Eigen::VectorXd &state,
-                                     const Problem& problem)
+Optimizer::Dvector Optimizer::solve(const Eigen::VectorXd &state,
+                                    MPC_Model& model)
 {
     bool ok = true;
     size_t i;
-    typedef CPPAD_TESTVECTOR(double) Dvector;
 
     // TODO: Set the number of model variables (includes both states and inputs).
     // For example: If the state is a 4 element vector, the actuators is a 2
@@ -44,9 +45,6 @@ Optimizer::Solution Optimizer::solve(const Eigen::VectorXd &state,
         constraints_upperbound[i] = 0;
     }
 
-    // object that computes objective and constraints
-    FG_eval fg_eval(coeffs);
-
     //
     // NOTE: You don't have to worry about these options
     //
@@ -69,9 +67,9 @@ Optimizer::Solution Optimizer::solve(const Eigen::VectorXd &state,
     CppAD::ipopt::solve_result<Dvector> solution;
 
     // solve the problem
-    CppAD::ipopt::solve<Dvector, FG_eval>(
+    CppAD::ipopt::solve<Dvector, MPC_Model>(
         options, vars, vars_lowerbound, vars_upperbound, constraints_lowerbound,
-        constraints_upperbound, fg_eval, solution);
+        constraints_upperbound, model, solution);
 
     // Check some of the solution values
     ok &= solution.status == CppAD::ipopt::solve_result<Dvector>::success;
