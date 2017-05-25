@@ -28,12 +28,12 @@ Actuators MPC::computeCommands(const Eigen::VectorXd &state,
     MPC_Model model(trajectory);
 
     // Solve the MPC problem
-    const Optimizer::Dvector solution = optimizer_.solve(state, model);
+//    const Optimizer::Dvector solution = optimizer_.solve(state, model);
 
     // Compute output
     Actuators actuators = Actuators();
-    actuators.acceleration = solution[0U];
-    actuators.steering     = solution[1U];
+    actuators.acceleration = 0.0; // solution[0U];
+    actuators.steering     = 0.0; // solution[1U];
 
     return actuators;
 }

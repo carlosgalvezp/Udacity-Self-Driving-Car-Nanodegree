@@ -7,8 +7,9 @@
 #include <Eigen/Core>
 #include <Eigen/QR>
 
-#include "MPC.h"
 #include "json.hpp"
+#include "MPC.h"
+#include "tools.h"
 
 // for convenience
 using json = nlohmann::json;
@@ -69,18 +70,24 @@ int main()
                     double psi = j[1]["psi"];
                     double v = j[1]["speed"];
 
-                    /*
-                    * TODO: Calculate steeering angle and throttle using MPC.
-                    *
-                    * Both are in between [-1, 1].
-                    *
-                    */
-                    double steer_value;
-                    double throttle_value;
+                    // Create state vector
+                    Eigen::VectorXd state(4);
+                    state << px, py, psi, v;
 
+                    // Fit third order polynomial to trajectory
+                    const Eigen::VectorXd xvals = Eigen::VectorXd::Map(ptsx.data(), ptsx.size());
+                    const Eigen::VectorXd yvals = Eigen::VectorXd::Map(ptsy.data(), ptsy.size());
+                    const int order = 3;
+
+                    const Eigen::VectorXd trajectory = Tools::polyfit(xvals, yvals, order);
+
+                    // Calculate steeering angle and throttle using MPC.
+                    const Actuators commands = mpc.computeCommands(state, trajectory);
+
+                    // Output through JSON message
                     json msgJson;
-                    msgJson["steering_angle"] = steer_value;
-                    msgJson["throttle"] = throttle_value;
+                    msgJson["steering_angle"] = commands.steering;
+                    msgJson["throttle"] = commands.acceleration;
 
                     //Display the MPC predicted trajectory
                     std::vector<double> mpc_x_vals;
@@ -93,8 +100,8 @@ int main()
                     msgJson["mpc_y"] = mpc_y_vals;
 
                     //Display the waypoints/reference line
-                    std::vector<double> next_x_vals;
-                    std::vector<double> next_y_vals;
+                    std::vector<double> next_x_vals = ptsx;
+                    std::vector<double> next_y_vals = ptsy;
 
                     //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
                     // the points in the simulator are connected by a Yellow line

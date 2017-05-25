@@ -6,6 +6,7 @@
 
 class Tools
 {
+public:
     // Evaluate a polynomial.
     static double polyeval(const Eigen::VectorXd& coeffs, double x);
 

@@ -18,7 +18,7 @@ public:
     /// \param coeffs desired trajectory
     /// \return actuator commands for next control loop
     Actuators computeCommands(const Eigen::VectorXd& state,
-                              const Eigen::VectorXd& coeffs);
+                              const Eigen::VectorXd& trajectory);
 
 private:
     Optimizer optimizer_;
