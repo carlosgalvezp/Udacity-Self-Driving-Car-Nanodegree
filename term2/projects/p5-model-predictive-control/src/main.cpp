@@ -74,9 +74,20 @@ int main()
                     Eigen::VectorXd state(4);
                     state << px, py, psi, v;
 
-                    // Fit third order polynomial to trajectory
-                    const Eigen::VectorXd xvals = Eigen::VectorXd::Map(ptsx.data(), ptsx.size());
-                    const Eigen::VectorXd yvals = Eigen::VectorXd::Map(ptsy.data(), ptsy.size());
+                    // Convert points from global to local frame
+                    Eigen::VectorXd xvals(ptsx.size());
+                    Eigen::VectorXd yvals(ptsy.size());
+                    const double c = std::cos(psi);
+                    const double s = std::sin(psi);
+
+                    for (std::size_t i = 0U; i < ptsx.size(); ++i)
+                    {
+                        xvals[i] =  c*ptsx[i] + s*ptsy[i] -(c*px + s*py);
+                        yvals[i] = -s*ptsx[i] + c*ptsy[i] -(c*py - s*px);
+                    }
+
+
+                    // Fit polynomial to trajectory
                     const int order = 3;
 
                     const Eigen::VectorXd trajectory = Tools::polyfit(xvals, yvals, order);
@@ -100,11 +111,16 @@ int main()
                     msgJson["mpc_y"] = mpc_y_vals;
 
                     //Display the waypoints/reference line
-                    std::vector<double> next_x_vals = ptsx;
-                    std::vector<double> next_y_vals = ptsy;
+                    std::vector<double> next_x_vals(ptsx.size());
+                    std::vector<double> next_y_vals(ptsy.size());
 
                     //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
                     // the points in the simulator are connected by a Yellow line
+                    for (std::size_t i = 0U; i < ptsx.size(); ++i)
+                    {
+                        next_x_vals[i] = xvals[i];
+                        next_y_vals[i] = yvals[i];
+                    }
 
                     msgJson["next_x"] = next_x_vals;
                     msgJson["next_y"] = next_y_vals;

@@ -118,7 +118,8 @@ void Optimizer::setupVariablesBounds()
 
 void Optimizer::setupConstraintsBounds()
 {
-
+    // Do nothing - the lower and upper bounds are equal to 0.0, since
+    // the equations for the constraints are in the form: g(x) = 0.0
 }
 
 void Optimizer::updateInitialState(const Eigen::VectorXd& state,

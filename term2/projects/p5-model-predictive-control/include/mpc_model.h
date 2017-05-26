@@ -26,6 +26,9 @@ public:
     /// \param x state on which f(x) and g(x) are evaluated
     void operator()(ADvector& fg, const ADvector& x);
 
+    static constexpr std::size_t kHorizonSteps = 25;
+    static constexpr double      kDeltaTime    = 0.05;  // [s]
+
 private:
     const Eigen::VectorXd& trajectory_;
 };
