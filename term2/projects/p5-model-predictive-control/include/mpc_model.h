@@ -25,6 +25,9 @@ public:
     ///           fg[N] = g_N
     /// \param x state on which f(x) and g(x) are evaluated
     void operator()(ADvector& fg, const ADvector& x);
+
+private:
+    const Eigen::VectorXd& trajectory_;
 };
 
 #endif  // MPC_MODEL_H
