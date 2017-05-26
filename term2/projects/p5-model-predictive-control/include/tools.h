@@ -19,8 +19,8 @@ public:
 
     // For converting back and forth between radians and degrees.
     static inline constexpr double pi() { return M_PI; }
-    static inline double deg2rad(double x) { return x * pi() / 180; }
-    static inline double rad2deg(double x) { return x * 180 / pi(); }
+    static inline constexpr double deg2rad(double x) { return x * pi() / 180.0; }
+    static inline constexpr double rad2deg(double x) { return x * 180.0 / pi(); }
 };
 
 #endif // TOOLS_H
