@@ -156,9 +156,9 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
     // The part of the cost based on the reference state.
     for (int i = 0; i < kHorizonSteps; ++i)
     {
-        cost += CppAD::pow(x[kIdxCTE_start + i]  - kRefCte,  2);
-        cost += CppAD::pow(x[kIdxEpsi_start + i] - kRefEpsi, 2);
-        cost += CppAD::pow(x[kIdxV_start + i]    - kRefV,    2);
+        cost += CppAD::pow(x[kIdxCTE_start + i]  - double(kRefCte),  2);
+        cost += CppAD::pow(x[kIdxEpsi_start + i] - double(kRefEpsi), 2);
+        cost += CppAD::pow(x[kIdxV_start + i]    - double(kRefV),    2);
     }
 
     // Minimize the use of actuators.
@@ -220,6 +220,8 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
         const CppAD::AD<double> epsi_t = psi_t - psi_des_t;
 
         // Vehicle model
+        const double dt = kDeltaT;
+
         fg[2 + kIdxPx_start + t]   = x_t1    - (x_t + v_t * CppAD::cos(psi_t) * dt);
         fg[2 + kIdxPy_start + t]   = y_t1    - (y_t + v_t * CppAD::sin(psi_t) * dt);
         fg[2 + kIdxPsi_start + t]  = psi_t1  - (psi_t + (v_t/Lf) * delta_t * dt);
