@@ -11,6 +11,8 @@
 #include "MPC.h"
 #include "tools.h"
 
+const double kMphToMs = 0.44704;
+
 // for convenience
 using json = nlohmann::json;
 
@@ -65,10 +67,13 @@ int main()
                     // j[1] is the data JSON object
                     std::vector<double> ptsx = j[1]["ptsx"];
                     std::vector<double> ptsy = j[1]["ptsy"];
-                    double px = j[1]["x"];
-                    double py = j[1]["y"];
-                    double psi = j[1]["psi"];
-                    double v = j[1]["speed"];
+                    double px = j[1]["x"];                  // [m]
+                    double py = j[1]["y"];                  // [m]
+                    double psi = j[1]["psi"];               // [m]
+                    double v = j[1]["speed"];               // [mph]
+
+                    // Transform velocity to m/s
+                    v = v * kMphToMs;                       // [m/s]
 
                     // Create state vector
                     Eigen::VectorXd state(4);
@@ -86,7 +91,6 @@ int main()
                         yvals[i] = -s*ptsx[i] + c*ptsy[i] -(c*py - s*px);
                     }
 
-
                     // Fit polynomial to trajectory
                     const int order = 3;
 
@@ -95,10 +99,13 @@ int main()
                     // Calculate steeering angle and throttle using MPC.
                     const Actuators commands = mpc.computeCommands(state, trajectory);
 
+                    const double steering = commands.steering / Tools::deg2rad(25.0);
+                    const double acceleration = commands.acceleration;
+
                     // Output through JSON message
                     json msgJson;
-                    msgJson["steering_angle"] = commands.steering;
-                    msgJson["throttle"] = commands.acceleration;
+                    msgJson["steering_angle"] = steering;
+                    msgJson["throttle"] = acceleration;
 
                     //Display the MPC predicted trajectory
                     std::vector<double> mpc_x_vals;
@@ -137,7 +144,7 @@ int main()
                     //
                     // NOTE: REMEMBER TO SET THIS TO 100 MILLISECONDS BEFORE
                     // SUBMITTING.
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+//                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     ws.send(msg.data(), msg.length(), uWS::OpCode::TEXT);
                 }
             }
