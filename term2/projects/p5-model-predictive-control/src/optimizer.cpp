@@ -34,9 +34,9 @@ Optimizer::Dvector Optimizer::solve(const Eigen::VectorXd &state,
                 model, solution);
 
     // Check some of the solution values
-    if (solution.status == CppAD::ipopt::solve_result<Dvector>::success)
+    if (solution.status != CppAD::ipopt::solve_result<Dvector>::success)
     {
-        std::cout << "[WARNING] solution.status != SUCCESS";
+        std::cerr << "[WARNING] solution.status != SUCCESS" << std::endl;
     }
 
     // Cost
@@ -171,9 +171,9 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
     // The part of the cost based on the reference state.
     for (std::size_t i = 0U; i < kHorizonSteps; ++i)
     {
-        cost += CppAD::pow(x[kIdxCTE_start  + i] - double(kRefCte),  2);
-        cost += CppAD::pow(x[kIdxEpsi_start + i] - double(kRefEpsi), 2);
-        cost += CppAD::pow(x[kIdxV_start    + i] - double(kRefV),    2);
+        cost += CppAD::pow(x[kIdxCTE_start  + i] - 0.0,  2);
+        cost += CppAD::pow(x[kIdxEpsi_start + i] - 0.0,  2);
+        cost += CppAD::pow(x[kIdxV_start    + i] - 15.0, 2);
     }
 
     // Minimize the use of actuators.
@@ -186,7 +186,7 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
     // Minimize the value gap between sequential actuations.
     for (std::size_t i = 0U; i < kHorizonSteps - 2U; ++i)
     {
-        cost += CppAD::pow(x[kIdxDelta_start + i + 1] - x[kIdxDelta_start + i], 2);
+        cost += 100.0 * CppAD::pow(x[kIdxDelta_start + i + 1] - x[kIdxDelta_start + i], 2);
         cost += CppAD::pow(x[kIdxAcc_start   + i + 1] - x[kIdxAcc_start   + i], 2);
     }
 

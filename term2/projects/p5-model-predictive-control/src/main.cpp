@@ -51,7 +51,7 @@ int main()
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
         std::string sdata = std::string(data).substr(0, length);
-        std::cout << sdata << std::endl;
+//        std::cout << sdata << std::endl;
 
         if (sdata.size() > 2 && sdata[0] == '4' && sdata[1] == '2')
         {
@@ -114,13 +114,20 @@ int main()
                     std::vector<double> mpc_x_vals;
                     std::vector<double> mpc_y_vals;
 
+                    const auto t1 = std::chrono::high_resolution_clock::now();
                     (void)mpc.computeCommands(state, trajectory, commands,
                                               mpc_x_vals, mpc_y_vals);
+                    const auto t2 = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double, std::milli> t = t2 - t1;
+
+                    std::cout << "Computation time: " << t.count() << " ms" << std::endl;
 
                     const double steering = commands.steering / Tools::deg2rad(25.0);
                     const double acceleration = commands.acceleration;
 
-                    // Output through JSON message
+                    // Output through JSON message. The minus sign in steering
+                    // is due to the simulator using a different sign convention
+                    // for angles
                     json msgJson;
                     msgJson["steering_angle"] = -steering;
                     msgJson["throttle"] = acceleration;
@@ -147,7 +154,7 @@ int main()
 
 
                     auto msg = "42[\"steer\"," + msgJson.dump() + "]";
-                    std::cout << msg << std::endl;
+//                    std::cout << msg << std::endl;
                     // Latency
                     // The purpose is to mimic real driving conditions where
                     // the car does actuate the commands instantly.
