@@ -6,7 +6,6 @@
 
 #include "actuators.h"
 #include "optimizer.h"
-#include "mpc_model.h"
 
 class MPC
 {

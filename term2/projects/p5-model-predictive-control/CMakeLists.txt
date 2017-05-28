@@ -10,7 +10,7 @@ set(CXX_FLAGS "-Wall -Wextra -Werror -pedantic")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 set(sources src/main.cpp
-            src/mpc_model.cpp
+            #src/mpc_model.cpp
             src/MPC.cpp
             src/optimizer.cpp
             src/tools.cpp)

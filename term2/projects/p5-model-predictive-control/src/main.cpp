@@ -75,10 +75,6 @@ int main()
                     // Transform velocity to m/s
                     v = v * kMphToMs;                       // [m/s]
 
-                    // Create state vector
-                    Eigen::VectorXd state(4);
-                    state << px, py, psi, v;
-
                     // Convert points from global to local frame
                     Eigen::VectorXd xvals(ptsx.size());
                     Eigen::VectorXd yvals(ptsy.size());
@@ -95,6 +91,14 @@ int main()
                     const int order = 3;
 
                     const Eigen::VectorXd trajectory = Tools::polyfit(xvals, yvals, order);
+
+                    // Compute cte and epsi
+                    const double cte = Tools::polyeval(trajectory, 0.0);
+                    const double epsi = 0.0 - std::atan(trajectory[1]);
+
+                    // Create state vector
+                    Eigen::VectorXd state(6);
+                    state << px, py, psi, v, cte, epsi;
 
                     // Placeholder for actuator commands from MPC
                     Actuators commands;
