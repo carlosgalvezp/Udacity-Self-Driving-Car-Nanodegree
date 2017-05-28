@@ -96,8 +96,15 @@ int main()
 
                     const Eigen::VectorXd trajectory = Tools::polyfit(xvals, yvals, order);
 
-                    // Calculate steeering angle and throttle using MPC.
-                    const Actuators commands = mpc.computeCommands(state, trajectory);
+                    // Placeholder for actuator commands from MPC
+                    Actuators commands;
+
+                    // Placeholder for predicted trajectory from MPC
+                    std::vector<double> mpc_x_vals;
+                    std::vector<double> mpc_y_vals;
+
+                    (void)mpc.computeCommands(state, trajectory, commands,
+                                              mpc_x_vals, mpc_y_vals);
 
                     const double steering = commands.steering / Tools::deg2rad(25.0);
                     const double acceleration = commands.acceleration;
@@ -107,13 +114,8 @@ int main()
                     msgJson["steering_angle"] = steering;
                     msgJson["throttle"] = acceleration;
 
-                    //Display the MPC predicted trajectory
-                    std::vector<double> mpc_x_vals;
-                    std::vector<double> mpc_y_vals;
-
                     //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system
                     // the points in the simulator are connected by a Green line
-
                     msgJson["mpc_x"] = mpc_x_vals;
                     msgJson["mpc_y"] = mpc_y_vals;
 

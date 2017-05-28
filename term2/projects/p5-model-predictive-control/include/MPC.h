@@ -17,8 +17,11 @@ public:
     /// \param state current state of the car
     /// \param coeffs desired trajectory
     /// \return actuator commands for next control loop
-    Actuators computeCommands(const Eigen::VectorXd& state,
-                              const Eigen::VectorXd& trajectory);
+    bool computeCommands(const Eigen::VectorXd& state,
+                         const Eigen::VectorXd& des_trajectory_coeffs,
+                         Actuators& actuator_commands,
+                         std::vector<double>& output_trajectory_x,
+                         std::vector<double>& output_trajectory_y);
 
 private:
     Optimizer optimizer_;

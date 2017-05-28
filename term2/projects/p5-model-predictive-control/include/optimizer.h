@@ -17,7 +17,6 @@ public:
     Dvector solve(const Eigen::VectorXd& x,
                   MPC_Model &mpc_model);
 
-private:
     // MPC Horizon definition
     static constexpr std::size_t kHorizonSteps = 25U;
     static constexpr float       kDeltaT       = 0.05;  // [s]
@@ -61,6 +60,7 @@ private:
     // Actuator limitations
     static constexpr double kMaxSteering = Tools::deg2rad(25.0);  // [rad]
     static constexpr double kMaxAcc      = 1.0;                   // [m/s^2]
+private:
 
     // Optimizer workspace
     std::string options_;
