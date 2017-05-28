@@ -75,7 +75,7 @@ int main()
                     // Transform velocity to m/s
                     v = v * kMphToMs;                       // [m/s]
 
-                    // Convert points from global to local frame
+                    // Convert trajectory points from global to local frame
                     Eigen::VectorXd xvals(ptsx.size());
                     Eigen::VectorXd yvals(ptsy.size());
                     const double c = std::cos(psi);
@@ -83,22 +83,29 @@ int main()
 
                     for (std::size_t i = 0U; i < ptsx.size(); ++i)
                     {
-                        xvals[i] =  c*ptsx[i] + s*ptsy[i] -(c*px + s*py);
-                        yvals[i] = -s*ptsx[i] + c*ptsy[i] -(c*py - s*px);
+                        xvals[i] =  c * (ptsx[i] - px) + s * (ptsy[i] - py);
+                        yvals[i] = -s * (ptsx[i] - px) + c * (ptsy[i] - py);
                     }
 
                     // Fit polynomial to trajectory
                     const int order = 3;
-
                     const Eigen::VectorXd trajectory = Tools::polyfit(xvals, yvals, order);
 
-                    // Compute cte and epsi
-                    const double cte = Tools::polyeval(trajectory, 0.0);
-                    const double epsi = 0.0 - std::atan(trajectory[1]);
+                    // Compute cte and epsi in local coordinates
+                    const double x_local = 0.0;
+                    const double y_local = 0.0;
+                    const double psi_local = 0.0;
+
+                    const double cte_local = Tools::polyeval(trajectory, x_local);
+
+                    // epsi = psi - atan(f'(x)) where f is the trajectory
+                    // Since we evaluate at x_local = 0, the only remaining
+                    // term is trajectory[1]
+                    const double epsi_local = psi_local - std::atan(trajectory[1]);
 
                     // Create state vector
                     Eigen::VectorXd state(6);
-                    state << px, py, psi, v, cte, epsi;
+                    state << x_local, y_local, psi_local, v, cte_local, epsi_local;
 
                     // Placeholder for actuator commands from MPC
                     Actuators commands;
@@ -115,7 +122,7 @@ int main()
 
                     // Output through JSON message
                     json msgJson;
-                    msgJson["steering_angle"] = steering;
+                    msgJson["steering_angle"] = -steering;
                     msgJson["throttle"] = acceleration;
 
                     //.. add (x,y) points to list here, points are in reference to the vehicle's coordinate system

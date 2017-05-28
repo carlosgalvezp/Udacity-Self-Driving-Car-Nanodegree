@@ -11,8 +11,10 @@ Optimizer::Optimizer():
     constraints_upperbound_(kNrConstraints)
 {
     setupOptions();
-    setupVariablesBounds();
-    setupConstraintsBounds();
+
+    initializeVariables();
+    initializeVariablesBounds();
+    initializeConstraintsBounds();
 }
 
 Optimizer::Dvector Optimizer::solve(const Eigen::VectorXd &state,
@@ -67,7 +69,15 @@ void Optimizer::setupOptions()
     options_ += "Numeric max_cpu_time          0.5\n";
 }
 
-void Optimizer::setupVariablesBounds()
+void Optimizer::initializeVariables()
+{
+    for (std::size_t i = 0U; i < variables_.size(); ++i)
+    {
+        variables_[i] = 0.0;
+    }
+}
+
+void Optimizer::initializeVariablesBounds()
 {
     // State variables can have any value
     for (std::size_t i = 0U; i < kIdxDelta_start; ++i)
@@ -91,10 +101,15 @@ void Optimizer::setupVariablesBounds()
     }
 }
 
-void Optimizer::setupConstraintsBounds()
+void Optimizer::initializeConstraintsBounds()
 {
-    // Do nothing - the lower and upper bounds are equal to 0.0, since
+    // The lower and upper bounds are equal to 0.0, since
     // the equations for the constraints are in the form: g(x) = 0.0
+    for (std::size_t i = 0; i < constraints_lowerbound_.size(); ++i)
+    {
+        constraints_lowerbound_[i] = 0.0;
+        constraints_upperbound_[i] = 0.0;
+    }
 }
 
 void Optimizer::updateInitialState(const Eigen::VectorXd& state)
@@ -115,21 +130,21 @@ void Optimizer::updateInitialState(const Eigen::VectorXd& state)
     variables_[kIdxCTE_start]  = cte;
     variables_[kIdxEpsi_start] = epsi;
 
-    // Setup the upper and lower bounds of the state at t = 0 to the state
-    // i.e. it cannot be modififed
-    variables_lowerbound_[kIdxPx_start]   = px;
-    variables_lowerbound_[kIdxPy_start]   = py;
-    variables_lowerbound_[kIdxPsi_start]  = psi;
-    variables_lowerbound_[kIdxV_start]    = v;
-    variables_lowerbound_[kIdxCTE_start]  = cte;
-    variables_lowerbound_[kIdxEpsi_start] = epsi;
+    // Setup the upper and lower bounds of the constraints for the state
+    // at t = 0 i.e. it cannot be modififed
+    constraints_lowerbound_[kIdxPx_start]   = px;
+    constraints_lowerbound_[kIdxPy_start]   = py;
+    constraints_lowerbound_[kIdxPsi_start]  = psi;
+    constraints_lowerbound_[kIdxV_start]    = v;
+    constraints_lowerbound_[kIdxCTE_start]  = cte;
+    constraints_lowerbound_[kIdxEpsi_start] = epsi;
 
-    variables_upperbound_[kIdxPx_start]   = px;
-    variables_upperbound_[kIdxPy_start]   = py;
-    variables_upperbound_[kIdxPsi_start]  = psi;
-    variables_upperbound_[kIdxV_start]    = v;
-    variables_upperbound_[kIdxCTE_start]  = cte;
-    variables_upperbound_[kIdxEpsi_start] = epsi;
+    constraints_upperbound_[kIdxPx_start]   = px;
+    constraints_upperbound_[kIdxPy_start]   = py;
+    constraints_upperbound_[kIdxPsi_start]  = psi;
+    constraints_upperbound_[kIdxV_start]    = v;
+    constraints_upperbound_[kIdxCTE_start]  = cte;
+    constraints_upperbound_[kIdxEpsi_start] = epsi;
 }
 
 // This value assumes the model presented in the classroom is used.
@@ -154,22 +169,22 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
     CppAD::AD<double> cost = 0.0;
 
     // The part of the cost based on the reference state.
-    for (int i = 0; i < kHorizonSteps; ++i)
+    for (std::size_t i = 0U; i < kHorizonSteps; ++i)
     {
-        cost += CppAD::pow(x[kIdxCTE_start + i]  - double(kRefCte),  2);
+        cost += CppAD::pow(x[kIdxCTE_start  + i] - double(kRefCte),  2);
         cost += CppAD::pow(x[kIdxEpsi_start + i] - double(kRefEpsi), 2);
-        cost += CppAD::pow(x[kIdxV_start + i]    - double(kRefV),    2);
+        cost += CppAD::pow(x[kIdxV_start    + i] - double(kRefV),    2);
     }
 
     // Minimize the use of actuators.
-    for (int i = 0; i < kHorizonSteps - 1; i++)
+    for (std::size_t i = 0U; i < kHorizonSteps - 1U; ++i)
     {
         cost += CppAD::pow(x[kIdxDelta_start + i], 2);
-        cost += CppAD::pow(x[kIdxAcc_start + i],   2);
+        cost += CppAD::pow(x[kIdxAcc_start   + i], 2);
     }
 
     // Minimize the value gap between sequential actuations.
-    for (int i = 0; i < kHorizonSteps - 2; i++)
+    for (std::size_t i = 0U; i < kHorizonSteps - 2U; ++i)
     {
         cost += CppAD::pow(x[kIdxDelta_start + i + 1] - x[kIdxDelta_start + i], 2);
         cost += CppAD::pow(x[kIdxAcc_start   + i + 1] - x[kIdxAcc_start   + i], 2);
@@ -196,28 +211,28 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
         const CppAD::AD<double> v_t    = x[kIdxV_start    + t];
 
         // Next state
-        const CppAD::AD<double> x_t1    = x[kIdxPx_start   + t + 1];
-        const CppAD::AD<double> y_t1    = x[kIdxPy_start   + t + 1];
-        const CppAD::AD<double> psi_t1  = x[kIdxPsi_start  + t + 1];
-        const CppAD::AD<double> v_t1    = x[kIdxV_start    + t + 1];
-        const CppAD::AD<double> cte_t1  = x[kIdxCTE_start  + t + 1];
-        const CppAD::AD<double> epsi_t1 = x[kIdxEpsi_start + t + 1];
+        const CppAD::AD<double> x_t1    = x[kIdxPx_start   + t + 1U];
+        const CppAD::AD<double> y_t1    = x[kIdxPy_start   + t + 1U];
+        const CppAD::AD<double> psi_t1  = x[kIdxPsi_start  + t + 1U];
+        const CppAD::AD<double> v_t1    = x[kIdxV_start    + t + 1U];
+        const CppAD::AD<double> cte_t1  = x[kIdxCTE_start  + t + 1U];
+        const CppAD::AD<double> epsi_t1 = x[kIdxEpsi_start + t + 1U];
 
         // Current actuators
         const CppAD::AD<double> delta_t  = x[kIdxDelta_start  + t];
         const CppAD::AD<double> acc_t    = x[kIdxAcc_start  + t];
 
-        // Compute actual CTE and Epsi_t
+        // Compute cte_t and epsi_t for a more reliable error estimate
         const CppAD::AD<double> fx_t  = trajectory_[0]                      +
                                         trajectory_[1] *            x_t     +
                                         trajectory_[2] * CppAD::pow(x_t, 2) +
                                         trajectory_[3] * CppAD::pow(x_t, 3);
+        const CppAD::AD<double> fd_x_t =                  trajectory_[1U]           +
+                                         2.0 *            trajectory_[2U]     * x_t +
+                                         3.0 * CppAD::pow(trajectory_[3U], 2) * x_t;
 
         const CppAD::AD<double> cte_t = fx_t - y_t;
-        const CppAD::AD<double> psi_des_t = CppAD::atan(    trajectory_[1] +
-                                                        2 * trajectory_[2] +
-                                                        3 * trajectory_[3] * trajectory_[3]);
-        const CppAD::AD<double> epsi_t = psi_t - psi_des_t;
+        const CppAD::AD<double> epsi_t = psi_t - CppAD::atan(fd_x_t);
 
         // Vehicle model
         const double dt = kDeltaT;

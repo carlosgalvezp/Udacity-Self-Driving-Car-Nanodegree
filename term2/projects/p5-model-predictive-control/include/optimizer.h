@@ -105,8 +105,9 @@ private:
 
     // Helper functions
     void setupOptions();
-    void setupVariablesBounds();
-    void setupConstraintsBounds();
+    void initializeVariables();
+    void initializeVariablesBounds();
+    void initializeConstraintsBounds();
 
     void updateInitialState(const Eigen::VectorXd& state);
 };
