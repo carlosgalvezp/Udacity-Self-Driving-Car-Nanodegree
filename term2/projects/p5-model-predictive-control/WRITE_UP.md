@@ -186,5 +186,45 @@ The following preprocessing is applied before calling the MPC routine:
 
 **4. Model Predictive Control with Latency**
 --------------------------------------------
+The way we handle latency in this project is by modifying the motion model.
+The effect of latency in the system is that the vehicle keeps moving
+with the same actuators during the latency period (in this case, 100 ms),
+and then new actuators are applied during this time.
 
+Therefore, it makes sense to predict an optimal trajectory starting from a
+**predicted state of the vehicle after 100 ms**.
 
+This can be observed in Lines 237-243 of src/optimizer.cpp:
+
+```
+    // Predict current state 100 ms into the future to account for latency
+    // Assumming constant the previous actuator commands
+    const double latency = 0.1;  // [s]
+    x_t   = x_t   + v_t * CppAD::cos(psi_t) * latency;
+    y_t   = y_t   + v_t * CppAD::sin(psi_t) * latency;
+    psi_t = psi_t + (v_t/Lf) * delta_t * latency;
+    v_t   = v_t   + acc_t * latency;
+```
+
+As can be seen, we do **not** use the normal variables at time `t`,
+such as x_t, y_t and so on, which are part of the complete state vector.
+
+Instead, we take those varibles and predict the real ones after 100 ms.
+Only after we perform this operation we apply the complete vehicle model.
+
+The resulting effect is that, after every step in the horizon, the MPC
+tries to optimize for a trajectory in which the commands don't arrive
+to the vehicle until 100 ms after they have been sent.
+
+This simple strategy completely removes the effect of latency - great
+oscillations in the vehicle to the point that it went out of the road.
+With this modification in the code, the vehicle can complete a lap
+without any oscillation or problems, just as if there was no latency
+at all!
+
+**NOTE**: it is NOT enough to perform this latency prediction only
+for t = 0, i.e. before sending the state to the MPC. Otherwise, the MPC
+will optimize for a trajectory where all but the first state
+are delayed, which is an incorrect assumption - there is latency
+at **every** time step, and therefore it needs to be accounted for
+inside the for loop over the N steps of the horizon.
