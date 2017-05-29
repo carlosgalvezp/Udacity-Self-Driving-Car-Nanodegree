@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <Eigen/Dense>
+#include <cppad/cppad.hpp>
 
 class Tools
 {
@@ -19,8 +20,11 @@ public:
 
     // For converting back and forth between radians and degrees.
     static inline constexpr double pi() { return M_PI; }
+
     static inline constexpr double deg2rad(double x) { return x * pi() / 180.0; }
     static inline constexpr double rad2deg(double x) { return x * 180.0 / pi(); }
+
+    static inline constexpr double mphtoms(double x) { return x * 0.44704; }
 };
 
 #endif // TOOLS_H

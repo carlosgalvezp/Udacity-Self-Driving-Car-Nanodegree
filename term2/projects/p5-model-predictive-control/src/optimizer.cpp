@@ -171,9 +171,9 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
     // The part of the cost based on the reference state.
     for (std::size_t i = 0U; i < kHorizonSteps; ++i)
     {
-        cost += CppAD::pow(x[kIdxCTE_start  + i] - 0.0,  2);
-        cost += CppAD::pow(x[kIdxEpsi_start + i] - 0.0,  2);
-        cost += CppAD::pow(x[kIdxV_start    + i] - 15.0, 2);
+        cost += CppAD::pow(x[kIdxCTE_start  + i] - 0.0,                     2);
+        cost += CppAD::pow(x[kIdxEpsi_start + i] - 0.0,                     2);
+        cost += CppAD::pow(x[kIdxV_start    + i] - Tools::mphtoms(40.0),    2);
     }
 
     // Minimize the use of actuators.
@@ -187,7 +187,7 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
     for (std::size_t i = 0U; i < kHorizonSteps - 2U; ++i)
     {
         cost += 100.0 * CppAD::pow(x[kIdxDelta_start + i + 1] - x[kIdxDelta_start + i], 2);
-        cost += CppAD::pow(x[kIdxAcc_start   + i + 1] - x[kIdxAcc_start   + i], 2);
+        cost +=         CppAD::pow(x[kIdxAcc_start   + i + 1] - x[kIdxAcc_start   + i], 2);
     }
 
     fg[0] = cost;

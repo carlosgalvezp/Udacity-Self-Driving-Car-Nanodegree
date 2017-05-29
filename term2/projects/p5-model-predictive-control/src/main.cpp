@@ -11,8 +11,6 @@
 #include "MPC.h"
 #include "tools.h"
 
-const double kMphToMs = 0.44704;
-
 // for convenience
 using json = nlohmann::json;
 
@@ -73,7 +71,7 @@ int main()
                     double v = j[1]["speed"];               // [mph]
 
                     // Transform velocity to m/s
-                    v = v * kMphToMs;                       // [m/s]
+                    v = Tools::mphtoms(v);                       // [m/s]
 
                     // Convert trajectory points from global to local frame
                     Eigen::VectorXd xvals(ptsx.size());
@@ -101,7 +99,8 @@ int main()
                     // epsi = psi - atan(f'(x)) where f is the trajectory
                     // Since we evaluate at x_local = 0, the only remaining
                     // term is trajectory[1]
-                    const double epsi_local = psi_local - std::atan(trajectory[1]);
+                    const double psi_traj = std::atan(trajectory[1]);
+                    const double epsi_local = psi_local - psi_traj;
 
                     // Create state vector
                     Eigen::VectorXd state(6);
