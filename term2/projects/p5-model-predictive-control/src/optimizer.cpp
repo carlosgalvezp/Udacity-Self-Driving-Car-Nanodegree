@@ -2,6 +2,18 @@
 
 #include <cppad/ipopt/solve.hpp>
 
+// MPC Horizon definition
+const double kDeltaT = 0.05;  // [s]
+
+// Actuator limitations
+const double kMaxSteering = Tools::deg2rad(25.0);  // [rad]
+const double kMaxAcc      = 1.0;                   // [m/s^2]
+
+// Reference values
+const double kRefCte  = 0.0;                   // [m]
+const double kRefEpsi = 0.0;                   // [rad]
+const double kRefV    = Tools::mphtoms(40.0);  // [m/s]
+
 Optimizer::Optimizer():
     options_(""),
     variables_(kNrVars),
@@ -171,9 +183,9 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
     // The part of the cost based on the reference state.
     for (std::size_t i = 0U; i < kHorizonSteps; ++i)
     {
-        cost += CppAD::pow(x[kIdxCTE_start  + i] - 0.0,                     2);
-        cost += CppAD::pow(x[kIdxEpsi_start + i] - 0.0,                     2);
-        cost += CppAD::pow(x[kIdxV_start    + i] - Tools::mphtoms(40.0),    2);
+        cost += CppAD::pow(x[kIdxCTE_start  + i] - kRefCte,  2);
+        cost += CppAD::pow(x[kIdxEpsi_start + i] - kRefEpsi, 2);
+        cost += CppAD::pow(x[kIdxV_start    + i] - kRefV,    2);
     }
 
     // Minimize the use of actuators.
