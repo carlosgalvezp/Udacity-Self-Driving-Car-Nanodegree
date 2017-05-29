@@ -44,7 +44,7 @@ public:
 
     // MPC Horizon definition
     static constexpr std::size_t kHorizonSteps = 10U;
-    static constexpr float       kDeltaT       = 0.1;  // [s]
+    static constexpr float       kDeltaT       = 0.05;  // [s]
 
     // Number of states: [x, y, psi, v, CTE, epsi]
     static constexpr std::size_t kNrStates     = 6U;

@@ -186,7 +186,7 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
     // Minimize the value gap between sequential actuations.
     for (std::size_t i = 0U; i < kHorizonSteps - 2U; ++i)
     {
-        cost += 100.0 * CppAD::pow(x[kIdxDelta_start + i + 1] - x[kIdxDelta_start + i], 2);
+        cost += 500.0 * CppAD::pow(x[kIdxDelta_start + i + 1] - x[kIdxDelta_start + i], 2);
         cost +=         CppAD::pow(x[kIdxAcc_start   + i + 1] - x[kIdxAcc_start   + i], 2);
     }
 
@@ -205,10 +205,10 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
     for (std::size_t t = 0; t < kHorizonSteps - 1U; ++t)
     {
         // Current state
-        const CppAD::AD<double> x_t    = x[kIdxPx_start   + t];
-        const CppAD::AD<double> y_t    = x[kIdxPy_start   + t];
-        const CppAD::AD<double> psi_t  = x[kIdxPsi_start  + t];
-        const CppAD::AD<double> v_t    = x[kIdxV_start    + t];
+        CppAD::AD<double> x_t    = x[kIdxPx_start   + t];
+        CppAD::AD<double> y_t    = x[kIdxPy_start   + t];
+        CppAD::AD<double> psi_t  = x[kIdxPsi_start  + t];
+        CppAD::AD<double> v_t    = x[kIdxV_start    + t];
 
         // Next state
         const CppAD::AD<double> x_t1    = x[kIdxPx_start   + t + 1U];
@@ -221,6 +221,14 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
         // Current actuators
         const CppAD::AD<double> delta_t  = x[kIdxDelta_start  + t];
         const CppAD::AD<double> acc_t    = x[kIdxAcc_start  + t];
+
+        // Predict current state 100 ms into the future to account for latency
+        // Assumming constant the previous actuator commands
+        const double latency = 0.1;  // [s]
+        x_t   = x_t   + v_t * CppAD::cos(psi_t) * latency;
+        y_t   = y_t   + v_t * CppAD::sin(psi_t) * latency;
+        psi_t = psi_t + (v_t/Lf) * delta_t * latency;
+        v_t   = v_t   + acc_t * latency;
 
         // Compute cte_t and epsi_t for a more reliable error estimate
         const CppAD::AD<double> fx_t  = trajectory_[0]                      +

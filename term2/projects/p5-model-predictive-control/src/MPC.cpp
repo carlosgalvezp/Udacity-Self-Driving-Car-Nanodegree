@@ -1,9 +1,5 @@
 #include "MPC.h"
 
-// TODO: Set the timestep length and duration
-size_t N = 0;
-double dt = 0;
-
 MPC::MPC()
     : optimizer_()
 {
