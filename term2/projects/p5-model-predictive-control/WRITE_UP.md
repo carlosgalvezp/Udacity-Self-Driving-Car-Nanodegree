@@ -133,4 +133,58 @@ complete vector passed to the optimizer:
   -Steering actuator: can vary between -degtoRad(25.0) and degToRad(25º) [rad]
   -Accelerator actuator: can vary between -1.0 and 1.0 [m/s^2]
 
+**2. Timestep length and elapsed duration (N and dt)**
+------------------------------------------------------
+
+**3. Polynomial Fitting and MPC Preprocessing**
+-----------------------------------------------
+The following preprocessing is applied before calling the MPC routine:
+
+  -Transform velocity from mph to m/s [S.I.] - Line 74 in main.cpp
+  -Transform waypoints from global to local vehicle coordinate system - Lines 82-86 in main.cpp:
+
+```
+    for (std::size_t i = 0U; i < ptsx.size(); ++i)
+    {
+        xvals[i] =  c * (ptsx[i] - px) + s * (ptsy[i] - py);
+        yvals[i] = -s * (ptsx[i] - px) + c * (ptsy[i] - py);
+    }
+```
+
+  where xvals and yvals are Eigen::VectorXd that we can pass to the polyfit() function.
+
+  -Transform state vector into local vehicle coordinates - Lines 93-96:
+
+```
+     const double x_local = 0.0;
+     const double y_local = 0.0;
+     const double psi_local = 0.0;
+```
+     v is unchanged
+
+  -We compute CTE and epsi to pass a 6-dimensional state vector to the MPC,
+   as shown in Lines 97-103. The computations are simplified since we use
+   local coordinates:
+
+```
+    const double cte_local = Tools::polyeval(trajectory, x_local);
+
+    // epsi = psi - atan(f'(x)) where f is the trajectory
+    // Since we evaluate at x_local = 0, the only remaining
+    // term is trajectory[1]
+    const double psi_traj = std::atan(trajectory[1]);
+    const double epsi_local = psi_local - psi_traj;
+```
+
+  -We create the 6-dimensional state vector that we pass to the MPC routine
+   in lines 106-107
+
+```
+    Eigen::VectorXd state(6);
+    state << x_local, y_local, psi_local, v, cte_local, epsi_local;
+```
+
+**4. Model Predictive Control with Latency**
+--------------------------------------------
+
 
