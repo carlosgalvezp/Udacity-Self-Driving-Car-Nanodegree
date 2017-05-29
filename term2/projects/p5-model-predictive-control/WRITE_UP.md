@@ -135,6 +135,63 @@ complete vector passed to the optimizer:
 
 **2. Timestep length and elapsed duration (N and dt)**
 ------------------------------------------------------
+Another important factor to tune in an MPC is the horizon, defined by the
+number of prediction steps in the future (N) and the elapsed duration
+between each timestep (dt).
+
+We have chosen the following values:
+
+N = 10.
+dt = 0.05.
+
+This gives us a prediction horizon of T = 0.5 seconds, which we found was enough
+for a target speed of 40 mph.
+
+Now we describe other values tried, in order to motivate the final choice.
+
+-**Tuning N**.
+
+First, we tried larger values of N, starting at N = 25 and going
+down to 10 in steps of 5. We noticed that the larger the value of N the larger
+the computation time. This makes sense because we should remember that
+the state vector passed to the optimizer is proportional to N. Therefore
+the bigger the state the more variables to optimize. Even though the trajectory
+could be very good (one can see very far ahead), there is a huge latency
+involved due to the computation time, which renders the trajectory useless.
+Therefore we lowered N down to 10 to have a computation time between 10-20 ms.
+We didn't see significant performance drop by doing this, but the computation
+time went down pretty much.
+
+Just for fun, we also tried N = 5. In this case the horizon was too short
+and actually the vehicle ended up either accelerating and braking (not moving)
+or turning very sharply going off road very quickly. In sum, a too short
+horizon is not good very you cannot see a reasonable section of the
+overall trajectory.
+
+-**Tuning dt**.
+Once we were satisfied with the computation time from N, we tune `dt` to
+determine how far into the future (in time) we can predict.
+
+We started with dt = 0.1 to obtain T = 1 second of horizon. The vehicle
+performance was very good in the beginning at low speeds. However when
+approaching 40 mph the horizon extended too far into the future (the green line
+was very large), which made the optimization much harder since the trajectory
+had curves far in the future that maybe the vehicle didn't even have to consider
+at that point. Because of this, the computation time would raise sometimes
+to quite large values, and as a consequence the vehicle would start to oscillate
+due to the latency.
+
+Then we moved down to dt = 0.05 which we found to be a very good time step. It
+also provides a better approximation of the reference trajectory since 
+the difference between time steps is smaller.
+At 40 mph, the horizon (green line) looked much smaller
+in the simulator, which made the vehicle focus on optimizing only the necessary
+trajectory ahead to keep straight or take curves, excelling in both cases.
+
+For fun we also tried dt = 0.01, but as expected we have the same problems
+as with small N: the horizon is too small and the vehicle can't see the big
+picture: the trajectory ahead, leading to sharp movements.
+
 
 **3. Polynomial Fitting and MPC Preprocessing**
 -----------------------------------------------
