@@ -63,8 +63,11 @@ int main()
                 if (event == "telemetry")
                 {
                     // j[1] is the data JSON object
+                    // Get reference trajectory, in global coordinates
                     std::vector<double> ptsx = j[1]["ptsx"];
                     std::vector<double> ptsy = j[1]["ptsy"];
+
+                    // Get vehicle state
                     double px = j[1]["x"];                  // [m]
                     double py = j[1]["y"];                  // [m]
                     double psi = j[1]["psi"];               // [m]
@@ -85,15 +88,16 @@ int main()
                         yvals[i] = -s * (ptsx[i] - px) + c * (ptsy[i] - py);
                     }
 
-                    // Fit polynomial to trajectory
+                    // Fit 3rd-order polynomial to trajectory
                     const int order = 3;
                     const Eigen::VectorXd trajectory = Tools::polyfit(xvals, yvals, order);
 
-                    // Compute cte and epsi in local coordinates
+                    // Setup vehicle state in local coordinates
                     const double x_local = 0.0;
                     const double y_local = 0.0;
                     const double psi_local = 0.0;
 
+                    // Compute CTE and epsi in local coordinates
                     const double cte_local = Tools::polyeval(trajectory, x_local);
 
                     // epsi = psi - atan(f'(x)) where f is the trajectory
@@ -102,7 +106,7 @@ int main()
                     const double psi_traj = std::atan(trajectory[1]);
                     const double epsi_local = psi_local - psi_traj;
 
-                    // Create state vector
+                    // Create state vector in local coordinates
                     Eigen::VectorXd state(6);
                     state << x_local, y_local, psi_local, v, cte_local, epsi_local;
 
@@ -113,15 +117,17 @@ int main()
                     std::vector<double> mpc_x_vals;
                     std::vector<double> mpc_y_vals;
 
+                    // Run MPC routine
                     const auto t1 = std::chrono::high_resolution_clock::now();
-                    (void)mpc.computeCommands(state, trajectory, commands,
-                                              mpc_x_vals, mpc_y_vals);
+                    mpc.computeCommands(state, trajectory, commands,
+                                        mpc_x_vals, mpc_y_vals);
                     const auto t2 = std::chrono::high_resolution_clock::now();
                     std::chrono::duration<double, std::milli> t = t2 - t1;
 
                     std::cout << "Computation time: " << t.count() << " ms" << std::endl;
 
-                    const double steering = commands.steering / Tools::deg2rad(25.0);
+                    // Extract actuator commands
+                    const double steering = -commands.steering / Tools::deg2rad(25.0);
                     const double acceleration = commands.acceleration;
 
                     // Output through JSON message. The minus sign in steering

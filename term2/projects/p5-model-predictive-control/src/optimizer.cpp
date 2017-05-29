@@ -14,6 +14,18 @@ const double kRefCte  = 0.0;                   // [m]
 const double kRefEpsi = 0.0;                   // [rad]
 const double kRefV    = Tools::mphtoms(40.0);  // [m/s]
 
+// This value assumes the model presented in the classroom is used.
+//
+// It was obtained by measuring the radius formed by running the vehicle in the
+// simulator around in a circle with a constant steering angle and velocity on a
+// flat terrain.
+//
+// Lf was tuned until the the radius formed by the simulating the model
+// presented in the classroom matched the previous radius.
+//
+// This is the length from front to CoG that has a similar radius.
+const double Lf = 2.67;
+
 Optimizer::Optimizer():
     options_(""),
     variables_(kNrVars),
@@ -35,17 +47,16 @@ Optimizer::Dvector Optimizer::solve(const Eigen::VectorXd &state,
     // Setup initial state
     updateInitialState(state);
 
-    // place to return solution
+    // Placeholder to return solution
     CppAD::ipopt::solve_result<Dvector> solution;
 
-    // solve the problem
+    // Solve the problem
     CppAD::ipopt::solve<Dvector, MPC_Model>(
                 options_,
                 variables_, variables_lowerbound_, variables_upperbound_,
                 constraints_lowerbound_, constraints_upperbound_,
                 model, solution);
 
-    // Check some of the solution values
     if (solution.status != CppAD::ipopt::solve_result<Dvector>::success)
     {
         std::cerr << "[WARNING] solution.status != SUCCESS" << std::endl;
@@ -55,11 +66,7 @@ Optimizer::Dvector Optimizer::solve(const Eigen::VectorXd &state,
     auto cost = solution.obj_value;
     std::cout << "Cost " << cost << std::endl;
 
-    // TODO: Return the first actuator values. The variables can be accessed with
-    // `solution.x[i]`.
-    //
-    // {...} is shorthand for creating a vector, so auto x1 = {1.0,2.0}
-    // creates a 2 element double vector.
+    // Return solution
     return solution.x;
 }
 
@@ -159,18 +166,6 @@ void Optimizer::updateInitialState(const Eigen::VectorXd& state)
     constraints_upperbound_[kIdxEpsi_start] = epsi;
 }
 
-// This value assumes the model presented in the classroom is used.
-//
-// It was obtained by measuring the radius formed by running the vehicle in the
-// simulator around in a circle with a constant steering angle and velocity on a
-// flat terrain.
-//
-// Lf was tuned until the the radius formed by the simulating the model
-// presented in the classroom matched the previous radius.
-//
-// This is the length from front to CoG that has a similar radius.
-const double Lf = 2.67;
-
 Optimizer::MPC_Model::MPC_Model(const Eigen::VectorXd& trajectory):
     trajectory_(trajectory)
 {
@@ -180,7 +175,7 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
 {
     CppAD::AD<double> cost = 0.0;
 
-    // The part of the cost based on the reference state.
+    // Minimize CTE and epsi, and keep target velocity
     for (std::size_t i = 0U; i < kHorizonSteps; ++i)
     {
         cost += CppAD::pow(x[kIdxCTE_start  + i] - kRefCte,  2);
@@ -188,14 +183,14 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
         cost += CppAD::pow(x[kIdxV_start    + i] - kRefV,    2);
     }
 
-    // Minimize the use of actuators.
+    // Minimize the use of actuators
     for (std::size_t i = 0U; i < kHorizonSteps - 1U; ++i)
     {
         cost += CppAD::pow(x[kIdxDelta_start + i], 2);
         cost += CppAD::pow(x[kIdxAcc_start   + i], 2);
     }
 
-    // Minimize the value gap between sequential actuations.
+    // Minimize the value gap between sequential actuations -> smooth trajectory
     for (std::size_t i = 0U; i < kHorizonSteps - 2U; ++i)
     {
         cost += 500.0 * CppAD::pow(x[kIdxDelta_start + i + 1] - x[kIdxDelta_start + i], 2);
@@ -213,7 +208,7 @@ void Optimizer::MPC_Model::operator()(ADvector& fg, const ADvector& x)
     fg[1 + kIdxCTE_start]  = x[kIdxCTE_start];
     fg[1 + kIdxEpsi_start] = x[kIdxEpsi_start];
 
-    // g_1:N, how the state changes over time
+    // g_1:N = vehicle model, how the state changes over time
     for (std::size_t t = 0; t < kHorizonSteps - 1U; ++t)
     {
         // Current state

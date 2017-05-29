@@ -5,7 +5,7 @@ MPC::MPC()
 {
 }
 
-bool MPC::computeCommands(const Eigen::VectorXd& state,
+void MPC::computeCommands(const Eigen::VectorXd& state,
                           const Eigen::VectorXd& des_trajectory_coeffs,
                           Actuators& actuator_commands,
                           std::vector<double>& output_trajectory_x,
@@ -31,6 +31,4 @@ bool MPC::computeCommands(const Eigen::VectorXd& state,
         output_trajectory_x[i] = solution[Optimizer::kIdxPx_start + i];
         output_trajectory_y[i] = solution[Optimizer::kIdxPy_start + i];
     }
-
-    return true;
 }

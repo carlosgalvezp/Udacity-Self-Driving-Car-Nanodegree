@@ -16,6 +16,9 @@ public:
     class MPC_Model
     {
     public:
+        /// \brief Constructor
+        /// \param trajectory coefficients of the polynomial defining the
+        ///        trajectory to approximate using an MPC
         explicit MPC_Model(const Eigen::VectorXd& trajectory);
 
         /// Required
@@ -39,24 +42,28 @@ public:
 
     typedef CPPAD_TESTVECTOR(double) Dvector;
 
+    /// \brief solve solves the MPC model
+    /// \param x current state
+    /// \param mpc_model MPC model to solve
+    /// \return solution to the MPC problem
     Dvector solve(const Eigen::VectorXd& x,
                   MPC_Model &mpc_model);
 
-    // MPC horizon definitions
+    /// Number of steps in the MPC horizon (N)
     static const std::size_t kHorizonSteps = 10U;
 
-    // Number of states: [x, y, psi, v, CTE, epsi]
+    /// Number of states: [x, y, psi, v, CTE, epsi]
     static const std::size_t kNrStates     = 6U;
 
-    // Number of actuators [delta, acceleration]
+    /// Number of actuators [delta, acceleration]
     static const std::size_t kNrActuators  = 2U;
 
-    // We have N states and (N-1) actuators, where N = kHorizonSteps
+    /// We have N*6 states and (N-1)*2 actuators, where N = kHorizonSteps
     static const std::size_t kNrVars = kHorizonSteps * kNrStates +
                                            (kHorizonSteps - 1U) * kNrActuators;
     static const std::size_t kNrConstraints = kHorizonSteps * kNrStates;
 
-    // Indices to interesting variables in the vectors
+    /// Indices to interesting variables in the vectors
     static const std::size_t kIdxPx_start    = 0U;
     static const std::size_t kIdxPx_end      = kIdxPx_start    + kHorizonSteps;
 
@@ -82,7 +89,6 @@ public:
     static const std::size_t kIdxAcc_end     = kIdxAcc_start   + kHorizonSteps - 1U;
 
 private:
-
     // Optimizer workspace
     std::string options_;
 
