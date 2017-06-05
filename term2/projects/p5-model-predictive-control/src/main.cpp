@@ -127,7 +127,7 @@ int main()
                     std::cout << "Computation time: " << t.count() << " ms" << std::endl;
 
                     // Extract actuator commands
-                    const double steering = -commands.steering / Tools::deg2rad(25.0);
+                    const double steering = commands.steering / Tools::deg2rad(25.0);
                     const double acceleration = commands.acceleration;
 
                     // Output through JSON message. The minus sign in steering
