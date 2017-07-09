@@ -5,6 +5,7 @@ class GNB(object):
 
     def __init__(self):
         self.possible_labels = ['left', 'keep', 'right']
+        self.lane_width = 4.0
         self.clf = GaussianNB()
 
     def train(self, data, labels):
@@ -46,10 +47,24 @@ class GNB(object):
         be one of "left", "keep" or "right".
         """
         # Get relevant features
-        X_test = self._get_features(observation)
+        x_test = self._get_features([observation])
 
         # Predict class
-        return self.clf.predict([X_test])
+        return self.clf.predict(x_test)
 
     def _get_features(self, data):
-        return data
+        output = []
+
+        for data_point in data:
+            s         = data_point[0]
+            d_in_lane = data_point[1] % self.lane_width
+            s_dot     = data_point[2]
+            d_dot     = data_point[3]
+
+            feature = []
+            feature.append(d_in_lane)
+            feature.append(d_dot)
+
+            output.append(feature)
+
+        return output
