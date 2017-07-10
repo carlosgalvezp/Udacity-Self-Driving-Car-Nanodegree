@@ -38,16 +38,16 @@ def main():
 	while road.get_ego().s <= GOAL[0]:
 		timestep += 1
 		if timestep > 150: 
-			print "Taking too long to reach goal. Go faster!"
+			print("Taking too long to reach goal. Go faster!")
 			break
 		road.advance()
-		print road
+		print(road)
 		time.sleep(float(1.0) / FRAMES_PER_SECOND)
 	ego = road.get_ego()
 	if ego.lane == GOAL[1]:
-		print "You got to the goal in {} seconds!".format(timestep)
+		print("You got to the goal in {} seconds!".format(timestep))
 	else:
-		print "You missed the goal. You are in lane {} instead of {}.".format(ego.lane, GOAL[1])
+		print("You missed the goal. You are in lane {} instead of {}.".format(ego.lane, GOAL[1]))
 
 
 if __name__ == "__main__":

@@ -140,25 +140,25 @@ class Vehicle(object):
 
       nearest_behind = max(ids_and_vehicles, key=lambda v: v[1][0]['s'])
 
-      print "nearest behind : {}".format(nearest_behind)
+      print("nearest behind : {}".format(nearest_behind))
       nearest_behind = nearest_behind[1]
       target_vel = nearest_behind[1]['s'] - nearest_behind[0]['s']
       delta_v = self.v - target_vel
       delta_s = self.s - nearest_behind[0]['s']
       if delta_v != 0:
-        print "delta_v {}".format(delta_v)
-        print "delta_s {}".format(delta_s)
+        print("delta_v {}".format(delta_v))
+        print("delta_s {}".format(delta_s))
         time = -2 * delta_s / delta_v
         if time == 0:
           a = self.a
         else:
           a = delta_v / time
-        print "raw a is {}".format(a)
+        print("raw a is {}".format(a))
         if a > self.max_acceleration: a = self.max_acceleration
         if a < -self.max_acceleration: a = -self.max_acceleration
         self.a = a
-        print "time : {}".format(time)
-        print "a: {}".format(self.a)
+        print("time : {}".format(time))
+        print("a: {}".format(self.a))
       else :
         min_acc = max(-self.max_acceleration, -delta_s)
         self.a = min_acc

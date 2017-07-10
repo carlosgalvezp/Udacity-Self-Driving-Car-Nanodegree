@@ -18,7 +18,7 @@ class Road(object):
     return self.vehicles[self.ego_key]
     
   def populate_traffic(self):
-    start_s = max(self.camera_center - (self.update_width / 2), 0)
+    start_s = int(max(self.camera_center - (self.update_width / 2), 0))
     for l in range(self.num_lanes):
       lane_speed = self.lane_speeds[l]
       vehicle_just_added = False
@@ -78,7 +78,7 @@ class Road(object):
             vehicle = Vehicle(lane_num, s, speed, 0)
             self.vehicles_added += 1
             self.vehicles[self.vehicles_added] = vehicle
-            print 'adding vehicle {} at lane {} with s={}'.format(self.vehicles_added, lane_num, s)
+            print('adding vehicle {} at lane {} with s={}'.format(self.vehicles_added, lane_num, s))
 
   def __repr__(self):
     s = self.vehicles.get(self.ego_key).s
@@ -92,7 +92,7 @@ class Road(object):
           marker = self.ego_rep
         else:
           marker = " %03d " % v_id
-        road[v.s - s_min][v.lane] = marker
+        road[int(v.s - s_min)][v.lane] = marker
     s = ""
     i = s_min
     for l in road:
