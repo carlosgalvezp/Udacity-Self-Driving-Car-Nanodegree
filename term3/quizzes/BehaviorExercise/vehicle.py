@@ -45,8 +45,13 @@ class Vehicle(object):
     }
 
     """
-    self.state = "KL" # this is an example of how you change state.
-  
+    if self.lane < self.goal_lane:
+        self.state = 'LCL'
+    elif self.lane > self.goal_lane:
+        self.state = 'LCR'
+    else:
+        self.state = "KL" # this is an example of how you change state.
+
   def configure(self, road_data):
     """
     Called by simulator before simulation begins. Sets various
@@ -56,20 +61,20 @@ class Vehicle(object):
     self.lanes_available = road_data["num_lanes"]
     self.max_acceleration = road_data['max_acceleration']
     goal = road_data['goal']
-    self.goal_lane = goal[0]
-    self.goal_s = goal[1]
-          
+    self.goal_s = goal[0]
+    self.goal_lane = goal[1]
+
   def __repr__(self):
     s = "s:    {}\n".format(self.s)
     s +="lane: {}\n".format(self.lane)
     s +="v:    {}\n".format(self.v)
     s +="a:    {}\n".format(self.a)
     return s
-      
+
   def increment(self, dt=1):
     self.s += self.v * dt
     self.v += self.a * dt
-      
+
   def state_at(self, t):
     """
     Predicts state of vehicle in t seconds (assuming constant acceleration)
