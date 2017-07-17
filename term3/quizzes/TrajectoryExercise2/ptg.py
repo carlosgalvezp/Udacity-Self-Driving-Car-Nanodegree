@@ -6,8 +6,8 @@ from constants import *
 # TODO - tweak weights to existing cost functions
 WEIGHTED_COST_FUNCTIONS = [
     (time_diff_cost,    1),
-    (s_diff_cost,       1),
-    (d_diff_cost,       1),
+    (s_diff_cost,       2),
+    (d_diff_cost,       2),
     (efficiency_cost,   1),
     (max_jerk_cost,     1),
     (total_jerk_cost,   1),
@@ -82,7 +82,7 @@ def calculate_cost(trajectory, target_vehicle, delta, goal_t, predictions, cost_
         new_cost = weight * cf(trajectory, target_vehicle, delta, goal_t, predictions)
         cost += new_cost
         if verbose:
-            print "cost for {} is \t {}".format(cf.func_name, new_cost)
+            print("cost for {} is \t {}".format(cf.__name__, new_cost))
     return cost
 
 def perturb_goal(goal_s, goal_d):
