@@ -4,10 +4,14 @@ cmake_minimum_required (VERSION 3.5)
 
 add_definitions(-std=c++11)
 
-set(CXX_FLAGS "-Wall")
+set(CXX_FLAGS "-Wall, -Wextra, -Werror -pedantic")
 set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
-set(sources src/main.cpp)
+set(sources src/behavior_planner.cpp
+            src/main.cpp
+            src/path_planner.cpp
+            src/trajectory_generator.cpp
+            src/utils.cpp)
 
 include_directories(include
                     3rdparty/Eigen-3.3)
