@@ -10,13 +10,15 @@
 #include <uWS/uWS.h>
 
 #include "json.hpp"
+#include "sensor_fusion_data.h"
 #include "path_planner.h"
 #include "utils.h"
 
 // for convenience
 using json = nlohmann::json;
 
-int main() {
+int main()
+{
     uWS::Hub h;
     PathPlanner path_planner;
 
@@ -93,7 +95,8 @@ int main() {
                     double end_path_d = j[1]["end_path_d"];
 
                     // Sensor Fusion Data, a list of all other cars on the same side of the road.
-                    auto sensor_fusion = j[1]["sensor_fusion"];
+                    const std::vector<std::vector<double>>& sensor_fusion_raw = j[1]["sensor_fusion"];
+                    SensorFusionData sensor_fusion_data(sensor_fusion_raw);
 
                     json msgJson;
 
@@ -101,7 +104,8 @@ int main() {
                     std::vector<double> next_x_vals;
                     std::vector<double> next_y_vals;
 
-                    path_planner.generateTrajectory(next_x_vals, next_y_vals);
+                    path_planner.generateTrajectory(sensor_fusion_data,
+                                                    next_x_vals, next_y_vals);
 
                     msgJson["next_x"] = next_x_vals;
                     msgJson["next_y"] = next_y_vals;
@@ -162,6 +166,4 @@ int main() {
         return -1;
     }
     h.run();
-
-    return 0;
 }

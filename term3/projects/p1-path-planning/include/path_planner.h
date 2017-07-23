@@ -3,11 +3,14 @@
 
 #include <vector>
 
+#include "sensor_fusion_data.h"
+
 class PathPlanner
 {
 public:
     PathPlanner();
-    void generateTrajectory(std::vector<double>& out_x,
+    void generateTrajectory(const SensorFusionData& sensor_fusion_data,
+                            std::vector<double>& out_x,
                             std::vector<double>& out_y);
 };
 
