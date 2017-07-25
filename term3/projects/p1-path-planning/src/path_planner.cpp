@@ -24,10 +24,16 @@ void PathPlanner::generateTrajectory(const EgoVehicleData& ego_vehicle_data,
 //                                            out_x, out_y);
     out_x.resize(kNrTrajectoryPoints);
     out_y.resize(kNrTrajectoryPoints);
-    double dist_inc = 0.5;
+
+    double dist_inc = 0.3;
     for(std::size_t i = 0; i < kNrTrajectoryPoints; ++i)
     {
-        out_x[i] = ego_vehicle_data.x + (dist_inc*i)*std::cos(deg2rad(ego_vehicle_data.yaw));
-        out_y[i] = ego_vehicle_data.y + (dist_inc*i)*std::sin(deg2rad(ego_vehicle_data.yaw));
+        const double s_next = ego_vehicle_data.s + dist_inc * i;
+        const double d_next = ego_vehicle_data.d;
+
+        std::vector<double> xy_next = getXY(s_next, d_next, map_data.s, map_data.x, map_data.y);
+
+        out_x[i] = xy_next[0U];
+        out_y[i] = xy_next[1U];
     }
 }
