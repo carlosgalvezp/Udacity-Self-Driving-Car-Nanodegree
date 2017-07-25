@@ -31,7 +31,7 @@ int main()
     // Waypoint map to read from
     std::string map_file_ = "../data/highway_map.csv";
     // The max s value before wrapping around the track back to 0
-    double max_s = 6945.554;
+//    double max_s = 6945.554;
 
     std::ifstream in_map_(map_file_.c_str(), std::ifstream::in);
 
@@ -60,6 +60,7 @@ int main()
                     uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                     uWS::OpCode opCode)
     {
+        (void) opCode;
         // "42" at the start of the message means there's a websocket message event.
         // The 4 signifies a websocket message
         // The 2 signifies a websocket event
@@ -86,11 +87,11 @@ int main()
                     ego_vehicle_data.speed = j[1]["speed"];
 
                     // Previous path data given to the Planner
-                    auto previous_path_x = j[1]["previous_path_x"];
-                    auto previous_path_y = j[1]["previous_path_y"];
+//                    auto previous_path_x = j[1]["previous_path_x"];
+//                    auto previous_path_y = j[1]["previous_path_y"];
                     // Previous path's end s and d values
-                    double end_path_s = j[1]["end_path_s"];
-                    double end_path_d = j[1]["end_path_d"];
+//                    double end_path_s = j[1]["end_path_s"];
+//                    double end_path_d = j[1]["end_path_d"];
 
                     // Sensor Fusion Data, a list of all other cars on the same side of the road.
                     const std::vector<std::vector<double>>& sensor_fusion_raw = j[1]["sensor_fusion"];
@@ -131,6 +132,7 @@ int main()
     h.onHttpRequest([](uWS::HttpResponse *res, uWS::HttpRequest req, char *data,
                      size_t, size_t)
     {
+        (void)data;
         const std::string s = "<h1>Hello world!</h1>";
         if (req.getUrl().valueLength == 1)
         {
@@ -145,12 +147,17 @@ int main()
 
     h.onConnection([&h](uWS::WebSocket<uWS::SERVER> ws, uWS::HttpRequest req)
     {
+        (void)ws;
+        (void)req;
         std::cout << "Connected!!!" << std::endl;
     });
 
     h.onDisconnection([&h](uWS::WebSocket<uWS::SERVER> ws, int code,
                            char *message, size_t length)
     {
+        (void)code;
+        (void)message;
+        (void)length;
         ws.close();
         std::cout << "Disconnected" << std::endl;
     });

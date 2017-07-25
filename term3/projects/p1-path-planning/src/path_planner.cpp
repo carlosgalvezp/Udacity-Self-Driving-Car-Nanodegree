@@ -11,6 +11,7 @@ void PathPlanner::generateTrajectory(const EgoVehicleData& ego_vehicle_data,
                                      std::vector<double> &out_x,
                                      std::vector<double> &out_y)
 {
+    (void)sensor_fusion_data;
     // Decide next action
     CarBehavior next_action = behavior_planner_.getNextAction();
 

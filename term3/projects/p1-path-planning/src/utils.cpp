@@ -1,5 +1,8 @@
 #include "utils.h"
+
 #include <limits>
+
+#include <Eigen/Dense>
 
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in string format will be returned,
@@ -31,7 +34,7 @@ int ClosestWaypoint(double x, double y, std::vector<double> maps_x,
     double closestLen = std::numeric_limits<double>::max();
     int closestWaypoint = 0;
 
-    for(int i = 0; i < maps_x.size(); i++)
+    for(std::size_t i = 0U; i < maps_x.size(); i++)
     {
         double map_x = maps_x[i];
         double map_y = maps_y[i];
@@ -143,4 +146,40 @@ std::vector<double> getXY(double s, double d, std::vector<double> maps_s,
     double y = seg_y + d*sin(perp_heading);
 
     return {x,y};
+}
+
+void generateJerkMinTrajectory(const double x0, const double x0_d, const double x0_dd,
+                               const double xf, const double xf_d, const double xf_dd,
+                               const double t,
+                               std::vector<double>& trajectory_coeffs)
+{
+    // Define output
+    const std::size_t kNrCoeffs = 6U;  // 5th-order polynomial
+    trajectory_coeffs.resize(kNrCoeffs);
+
+    // Compute the last coefficients
+    const double t2 = t * t;
+    const double t3 = t * t2;
+    const double t4 = t * t3;
+    const double t5 = t * t4;
+
+    Eigen::Matrix3d A;
+    A <<     t3,       t4,        t5,
+         3.0*t2,   4.0*t3,    5.0*t4,
+         6.0*t,   12.0*t2,   20.0*t3;
+
+    Eigen::Vector3d b;
+    b << xf    - (x0 + x0_d*t + 0.5*x0_dd*t2),
+         xf_d  - (     x0_d   +     x0_dd*t),
+         xf_dd - (                  x0_dd);
+
+    Eigen::Vector3d a3a4a5 = A.inverse() * b;
+
+    // Set output
+    trajectory_coeffs[0U] = x0;
+    trajectory_coeffs[1U] = x0_d;
+    trajectory_coeffs[2U] = 0.5 * x0_dd;
+    trajectory_coeffs[3U] = a3a4a5[0U];
+    trajectory_coeffs[4U] = a3a4a5[1U];
+    trajectory_coeffs[5U] = a3a4a5[2U];
 }

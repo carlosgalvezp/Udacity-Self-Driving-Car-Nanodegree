@@ -22,4 +22,22 @@ std::vector<double> getFrenet(double x, double y, double theta,
 std::vector<double> getXY(double s, double d, std::vector<double> maps_s,
                     std::vector<double> maps_x, std::vector<double> maps_y);
 
+/// \brief Computes the coefficients of a jerk-minimizing 5-order polynomial
+///        trajectory, given the initial and final conditions, as well as
+///        the time taken to go from initial to final states.
+/// \param x0       initial position
+/// \param x0_d     initial velocity
+/// \param x0_dd    initial acceleration
+/// \param xf       final position
+/// \param xf_d     final velocity
+/// \param xf_dd    final acceleration
+/// \param t        time to go from initial to final state
+/// \param trajectory_coeffs coefficients of the trajectory, in the form:
+///
+///        x(t) = c[0] + c[1]*t + c[2]*t^2 + c[3]*t^3 + c[4]*t^4 + c[5]*t^5
+void generateJerkMinTrajectory(const double x0, const double x0_d, const double x0_dd,
+                               const double xf, const double xf_d, const double xf_dd,
+                               const double t,
+                               std::vector<double>& trajectory_coeffs);
+
 #endif // UTILS_H
