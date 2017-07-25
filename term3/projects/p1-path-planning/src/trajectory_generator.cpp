@@ -27,18 +27,36 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleData& ego
                                                        std::vector<double>& out_x,
                                                        std::vector<double>& out_y)
 {
+    // Set initial state
+    const double s0 = ego_vehicle_data.s;
+    const double s0_d = ego_vehicle_data.speed;
+    const double s0_dd = 0.0;
+
+    // Set final state
+    const double sf = s0 + 100.0;
+    const double sf_d = 22.352;  // 50 mph
+    const double sf_dd = 0.0;
+
+    // Set final time
+    const double t = kNrTrajectoryPoints * kSimulationTimeStep;
+
+    // Compute Jerk-minimizing trajectory
+    std::vector<double> trajectory_coeffs;
+    generateJerkMinTrajectory(s0, s0_d, s0_dd, sf, sf_d, sf_dd, t, trajectory_coeffs);
+
+    // Output
     out_x.resize(kNrTrajectoryPoints);
     out_y.resize(kNrTrajectoryPoints);
 
-    double dist_inc = 0.5;
-    for(std::size_t i = 0; i < kNrTrajectoryPoints; ++i)
+    for (std::size_t i = 0U; i < out_x.size(); ++i)
     {
-        const double s_next = ego_vehicle_data.s + dist_inc * i;
-        const double d_next = ego_vehicle_data.d;
+        const double t_i = kSimulationTimeStep * i;
+        const double s_next = evaluatePolynomial(trajectory_coeffs, t_i);
+        const double d_next = 0.0;
 
-        std::vector<double> xy_next = getXY(s_next, d_next, map_data.s, map_data.x, map_data.y);
+        const std::vector<double> xy = getXY(s_next, d_next, map_data.s, map_data.x, map_data.y);
 
-        out_x[i] = xy_next[0U];
-        out_y[i] = xy_next[1U];
+        out_x[i] = xy[0U];
+        out_y[i] = xy[1U];
     }
 }

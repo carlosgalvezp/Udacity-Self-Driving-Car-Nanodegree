@@ -40,4 +40,13 @@ void generateJerkMinTrajectory(const double x0, const double x0_d, const double 
                                const double t,
                                std::vector<double>& trajectory_coeffs);
 
+/// \brief Evaluates the polynomial:
+///
+///        f(x) = coeffs[0] + coeffs[1]*x + coeffs[2]*x^2 + ...
+///
+/// \param coeffs coefficients of the polynomial
+/// \param x      point at which the polynomial is evaluated
+/// \return f(x), the polynomial evaluated at x
+double evaluatePolynomial(const std::vector<double>& coeffs, const double x);
+
 #endif // UTILS_H

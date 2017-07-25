@@ -22,7 +22,7 @@ private:
     static const std::size_t kNrTrajectoryPoints = 50U;
 
     // The delta time between waypoints, in seconds
-    static constexpr double delta_t = 0.02;
+    static constexpr double kSimulationTimeStep = 0.02;
 
     void generateTrajectoryFollowLane(const EgoVehicleData& ego_vehicle_data,
                                       const MapData& map_data,

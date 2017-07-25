@@ -183,3 +183,14 @@ void generateJerkMinTrajectory(const double x0, const double x0_d, const double 
     trajectory_coeffs[4U] = a3a4a5[1U];
     trajectory_coeffs[5U] = a3a4a5[2U];
 }
+
+double evaluatePolynomial(const std::vector<double>& coeffs, const double x)
+{
+    double result = 0.0;
+    for (std::size_t i = 0U; i < coeffs.size(); ++i)
+    {
+        result += coeffs[i] * std::pow(x, i);
+    }
+
+    return result;
+}
