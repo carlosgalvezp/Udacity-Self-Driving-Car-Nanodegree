@@ -11,6 +11,8 @@
 
 #include "json.hpp"
 #include "sensor_fusion_data.h"
+#include "ego_vehicle_data.h"
+#include "map_data.h"
 #include "path_planner.h"
 #include "utils.h"
 
@@ -21,13 +23,10 @@ int main()
 {
     uWS::Hub h;
     PathPlanner path_planner;
+    EgoVehicleData ego_vehicle_data;
 
     // Load up map values for waypoint's x,y,s and d normalized normal vectors
-    std::vector<double> map_waypoints_x;
-    std::vector<double> map_waypoints_y;
-    std::vector<double> map_waypoints_s;
-    std::vector<double> map_waypoints_dx;
-    std::vector<double> map_waypoints_dy;
+    MapData map_data;
 
     // Waypoint map to read from
     std::string map_file_ = "../data/highway_map.csv";
@@ -50,15 +49,14 @@ int main()
         iss >> s;
         iss >> d_x;
         iss >> d_y;
-        map_waypoints_x.push_back(x);
-        map_waypoints_y.push_back(y);
-        map_waypoints_s.push_back(s);
-        map_waypoints_dx.push_back(d_x);
-        map_waypoints_dy.push_back(d_y);
+        map_data.x.push_back(x);
+        map_data.y.push_back(y);
+        map_data.s.push_back(s);
+        map_data.dx.push_back(d_x);
+        map_data.dy.push_back(d_y);
     }
 
-    h.onMessage([&map_waypoints_x, &map_waypoints_y, &map_waypoints_s,
-                 &map_waypoints_dx,&map_waypoints_dy, &path_planner](
+    h.onMessage([&map_data, &path_planner, &ego_vehicle_data](
                     uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                     uWS::OpCode opCode)
     {
@@ -80,12 +78,12 @@ int main()
                 {
                     // j[1] is the data JSON object
                     // Main car's localization Data
-                    double car_x = j[1]["x"];
-                    double car_y = j[1]["y"];
-                    double car_s = j[1]["s"];
-                    double car_d = j[1]["d"];
-                    double car_yaw = j[1]["yaw"];
-                    double car_speed = j[1]["speed"];
+                    ego_vehicle_data.x = j[1]["x"];
+                    ego_vehicle_data.y = j[1]["y"];
+                    ego_vehicle_data.s = j[1]["s"];
+                    ego_vehicle_data.d = j[1]["d"];
+                    ego_vehicle_data.yaw = j[1]["yaw"];
+                    ego_vehicle_data.speed = j[1]["speed"];
 
                     // Previous path data given to the Planner
                     auto previous_path_x = j[1]["previous_path_x"];
@@ -104,7 +102,9 @@ int main()
                     std::vector<double> next_x_vals;
                     std::vector<double> next_y_vals;
 
-                    path_planner.generateTrajectory(sensor_fusion_data,
+                    path_planner.generateTrajectory(ego_vehicle_data,
+                                                    sensor_fusion_data,
+                                                    map_data,
                                                     next_x_vals, next_y_vals);
 
                     msgJson["next_x"] = next_x_vals;
