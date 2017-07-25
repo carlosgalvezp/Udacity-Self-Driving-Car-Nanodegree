@@ -1,13 +1,8 @@
 #include "path_planner.h"
 
-#include <iostream>
-#include <cmath>
-
-#include "utils.h"
-
-PathPlanner::PathPlanner()
+PathPlanner::PathPlanner():
+    behavior_planner_()
 {
-
 }
 
 void PathPlanner::generateTrajectory(const EgoVehicleData& ego_vehicle_data,
@@ -16,24 +11,12 @@ void PathPlanner::generateTrajectory(const EgoVehicleData& ego_vehicle_data,
                                      std::vector<double> &out_x,
                                      std::vector<double> &out_y)
 {
-//    // Decide next action
-//    action = behavior_planner.nextAction(ego_vehicle_data, sensor_fusion_data);
+    // Decide next action
+    CarBehavior next_action = behavior_planner_.getNextAction();
 
-//    // Generate trajectory
-//    trajectory_generator.generateTrajectory(action, sensor_fusion_data,
-//                                            out_x, out_y);
-    out_x.resize(kNrTrajectoryPoints);
-    out_y.resize(kNrTrajectoryPoints);
-
-    double dist_inc = 0.3;
-    for(std::size_t i = 0; i < kNrTrajectoryPoints; ++i)
-    {
-        const double s_next = ego_vehicle_data.s + dist_inc * i;
-        const double d_next = ego_vehicle_data.d;
-
-        std::vector<double> xy_next = getXY(s_next, d_next, map_data.s, map_data.x, map_data.y);
-
-        out_x[i] = xy_next[0U];
-        out_y[i] = xy_next[1U];
-    }
+    // Generate trajectory
+    trajectory_generator_.generateTrajectory(next_action,
+                                             ego_vehicle_data,
+                                             map_data,
+                                             out_x, out_y);
 }

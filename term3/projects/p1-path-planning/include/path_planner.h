@@ -7,6 +7,9 @@
 #include "ego_vehicle_data.h"
 #include "map_data.h"
 
+#include "behavior_planner.h"
+#include "trajectory_generator.h"
+
 class PathPlanner
 {
 public:
@@ -18,11 +21,8 @@ public:
                             std::vector<double>& out_y);
 
 private:
-    // The number of waypoints for the output trajectory
-    static const std::size_t kNrTrajectoryPoints = 50U;
-
-    // The delta time between waypoints, in seconds
-    static constexpr double delta_t = 0.02;
+    BehaviorPlanner behavior_planner_;
+    TrajectoryGenerator trajectory_generator_;
 };
 
 #endif // PATH_PLANNER_H
