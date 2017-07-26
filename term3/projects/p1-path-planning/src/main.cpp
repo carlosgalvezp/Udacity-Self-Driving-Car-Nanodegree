@@ -87,8 +87,9 @@ int main()
                     ego_vehicle_data.speed = j[1]["speed"];
 
                     // Previous path data given to the Planner
-//                    auto previous_path_x = j[1]["previous_path_x"];
-//                    auto previous_path_y = j[1]["previous_path_y"];
+                    const auto& previous_path_x = j[1]["previous_path_x"];
+                    const auto& previous_path_y = j[1]["previous_path_y"];
+
                     // Previous path's end s and d values
 //                    double end_path_s = j[1]["end_path_s"];
 //                    double end_path_d = j[1]["end_path_d"];
@@ -97,16 +98,23 @@ int main()
                     const std::vector<std::vector<double>>& sensor_fusion_raw = j[1]["sensor_fusion"];
                     SensorFusionData sensor_fusion_data(sensor_fusion_raw);
 
-                    json msgJson;
-
                     // Plan desired trajectory
                     std::vector<double> next_x_vals;
                     std::vector<double> next_y_vals;
 
+                    auto t1 = std::chrono::high_resolution_clock::now();
                     path_planner.generateTrajectory(ego_vehicle_data,
                                                     sensor_fusion_data,
                                                     map_data,
+                                                    previous_path_x,
+                                                    previous_path_y,
                                                     next_x_vals, next_y_vals);
+                    auto t2 = std::chrono::high_resolution_clock::now();
+                    auto diff = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
+                    std::cout << "Computation time: " << diff << " us" << std::endl;
+
+                    // Output
+                    json msgJson;
 
                     msgJson["next_x"] = next_x_vals;
                     msgJson["next_y"] = next_y_vals;

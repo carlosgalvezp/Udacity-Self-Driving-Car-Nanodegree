@@ -8,6 +8,12 @@
 
 #include "behavior_planner.h"
 
+// The number of waypoints for the output trajectory
+const std::size_t kNrTrajectoryPoints = 50U;
+
+// The delta time between waypoints, in seconds
+const double kSimulationTimeStep = 0.02;
+
 class TrajectoryGenerator
 {
 public:
@@ -15,17 +21,15 @@ public:
     void generateTrajectory(const CarBehavior next_action,
                             const EgoVehicleData& ego_vehicle_data,
                             const MapData& map_data,
+                            const std::vector<double>& previous_x,
+                            const std::vector<double>& previous_y,
                             std::vector<double>& out_x,
                             std::vector<double>& out_y);
 private:
-    // The number of waypoints for the output trajectory
-    static const std::size_t kNrTrajectoryPoints = 50U;
-
-    // The delta time between waypoints, in seconds
-    static constexpr double kSimulationTimeStep = 0.02;
-
     void generateTrajectoryFollowLane(const EgoVehicleData& ego_vehicle_data,
                                       const MapData& map_data,
+                                      const std::vector<double>& previous_x,
+                                      const std::vector<double>& previous_y,
                                       std::vector<double>& out_x,
                                       std::vector<double>& out_y);
 };

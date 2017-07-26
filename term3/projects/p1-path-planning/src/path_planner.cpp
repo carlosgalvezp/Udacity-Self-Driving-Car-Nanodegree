@@ -8,8 +8,10 @@ PathPlanner::PathPlanner():
 void PathPlanner::generateTrajectory(const EgoVehicleData& ego_vehicle_data,
                                      const SensorFusionData& sensor_fusion_data,
                                      const MapData &map_data,
-                                     std::vector<double> &out_x,
-                                     std::vector<double> &out_y)
+                                     const std::vector<double>& previous_x,
+                                     const std::vector<double>& previous_y,
+                                     std::vector<double>& out_x,
+                                     std::vector<double>& out_y)
 {
     (void)sensor_fusion_data;
     // Decide next action
@@ -19,5 +21,7 @@ void PathPlanner::generateTrajectory(const EgoVehicleData& ego_vehicle_data,
     trajectory_generator_.generateTrajectory(next_action,
                                              ego_vehicle_data,
                                              map_data,
+                                             previous_x,
+                                             previous_y,
                                              out_x, out_y);
 }

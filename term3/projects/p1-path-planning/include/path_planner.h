@@ -17,6 +17,8 @@ public:
     void generateTrajectory(const EgoVehicleData& ego_vehicle_data,
                             const SensorFusionData& sensor_fusion_data,
                             const MapData& map_data,
+                            const std::vector<double>& previous_x,
+                            const std::vector<double>& previous_y,
                             std::vector<double>& out_x,
                             std::vector<double>& out_y);
 
