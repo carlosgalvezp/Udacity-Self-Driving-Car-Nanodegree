@@ -20,7 +20,7 @@ DOCKER_RUN_BASE="docker run --rm=true
                             $DOCKER_IMG_NAME"
 
 # Run CMake from Docker image
-$DOCKER_RUN_BASE cmake ..
+$DOCKER_RUN_BASE cmake -Dbuild_tests=ON ..
 
 # Run make from Docker image
 $DOCKER_RUN_BASE make

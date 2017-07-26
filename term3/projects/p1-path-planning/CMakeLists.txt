@@ -2,10 +2,11 @@ project(Path_Planning)
 
 cmake_minimum_required (VERSION 3.5)
 
+option(build_tests "Build the tests." OFF)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -Wall -Wextra -Werror -pedantic")
 
 set(sources src/behavior_planner.cpp
-            src/main.cpp
             src/path_planner.cpp
             src/trajectory_generator.cpp
             src/utils.cpp)
@@ -23,5 +24,12 @@ link_directories(/usr/local/Cellar/libuv/1.11.0/lib)
 
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 
 
-add_executable(path_planning ${sources})
-target_link_libraries(path_planning z ssl uv uWS)
+add_library(path_planner_lib ${sources})
+
+add_executable(path_planning src/main.cpp)
+target_link_libraries(path_planning path_planner_lib z ssl uv uWS)
+
+if(build_tests)
+    add_subdirectory(3rdparty/googletest-release-1.8.0)
+    add_subdirectory(tests)
+endif()
