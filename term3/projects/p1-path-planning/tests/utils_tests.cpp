@@ -46,4 +46,26 @@ TEST(ToolsTest, JerkMinimizingTrajectory)
     }
 }
 
+TEST(ToolsTest, EvaluatePolynomial)
+{
+    const std::vector<double> coeffs = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    const std::vector<double> inputs = {9.0, 8.0, 7.0, 6.0, 5.0, 4.0};
+    const std::vector<double> expected_outputs =
+    {
+        390277.0,
+        219345.0,
+        114381.0,
+        54121.0,
+        22461.0,
+        7737.0
+    };
+
+    for (std::size_t i = 0U; i < inputs.size(); ++i)
+    {
+        const double exp = expected_outputs[i];
+        const double x = inputs[i];
+        EXPECT_NEAR(exp, evaluatePolynomial(coeffs, x), 1.0E-10);
+    }
+}
+
 }  // namespace test
