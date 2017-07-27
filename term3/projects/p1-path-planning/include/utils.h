@@ -49,4 +49,9 @@ void generateJerkMinTrajectory(const double x0, const double x0_d, const double 
 /// \return f(x), the polynomial evaluated at x
 double evaluatePolynomial(const std::vector<double>& coeffs, const double x);
 
+/// \brief Differentiates once a polynomial
+/// \param coeffs coefficients of the polynomial, f(x)
+/// \return coefficients of the differentiated polynomial, f'(x)
+std::vector<double> differentiatePolynomial(const std::vector<double>& coeffs);
+
 #endif // UTILS_H

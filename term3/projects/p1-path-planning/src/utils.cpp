@@ -194,3 +194,14 @@ double evaluatePolynomial(const std::vector<double>& coeffs, const double x)
 
     return result;
 }
+
+std::vector<double> differentiatePolynomial(const std::vector<double> &coeffs)
+{
+    std::vector<double> output(coeffs.size() - 1U);
+    for (std::size_t i = 1U; i < coeffs.size(); ++i)
+    {
+        output[i - 1U] = i * coeffs[i];
+    }
+
+    return output;
+}
