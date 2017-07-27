@@ -13,7 +13,7 @@ fi
 
 # Set Docker run base command
 DOCKER_IMG_NAME=carlosgalvezp/sdcnd_p5
-DOCKER_RUN_BASE="docker run --rm=true
+DOCKER_RUN_BASE="docker run --rm=true                            \
                             --volume=$SCRIPT_DIR:$SCRIPT_DIR     \
                             --workdir=$BUILD_FOLDER              \
                             --user=$UID:$GROUPS                  \

@@ -6,13 +6,14 @@ option(build_tests "Build the tests." OFF)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -Wall -Wextra -Werror -pedantic")
 
+include_directories(include
+                    3rdparty/Eigen-3.3
+                    3rdparty/spline)
+
 set(sources src/behavior_planner.cpp
             src/path_planner.cpp
             src/trajectory_generator.cpp
             src/utils.cpp)
-
-include_directories(include
-                    3rdparty/Eigen-3.3)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 

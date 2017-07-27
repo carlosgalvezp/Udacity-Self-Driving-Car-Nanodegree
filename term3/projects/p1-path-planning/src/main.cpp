@@ -15,6 +15,7 @@
 #include "map_data.h"
 #include "path_planner.h"
 #include "utils.h"
+#include "spline.h"
 
 // for convenience
 using json = nlohmann::json;
@@ -55,6 +56,10 @@ int main()
         map_data.dx.push_back(d_x);
         map_data.dy.push_back(d_y);
     }
+
+    tk::spline my_spline;
+    my_spline.set_points(map_data.x, map_data.y);
+    (void) my_spline;
 
     h.onMessage([&map_data, &path_planner, &ego_vehicle_data](
                     uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
