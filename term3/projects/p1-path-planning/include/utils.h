@@ -11,17 +11,6 @@ constexpr double rad2deg(double x) { return x * 180.0 / pi(); }
 
 std::string hasData(const std::string& s);
 
-double distance(double x1, double y1, double x2, double y2);
-int ClosestWaypoint(double x, double y, std::vector<double> maps_x,
-                                        std::vector<double> maps_y);
-int NextWaypoint(double x, double y, double theta, std::vector<double> maps_x,
-                                                   std::vector<double> maps_y);
-std::vector<double> getFrenet(double x, double y, double theta,
-                              std::vector<double> maps_x,
-                              std::vector<double> maps_y);
-std::vector<double> getXY(double s, double d, std::vector<double> maps_s,
-                    std::vector<double> maps_x, std::vector<double> maps_y);
-
 /// \brief Computes the coefficients of a jerk-minimizing 5-order polynomial
 ///        trajectory, given the initial and final conditions, as well as
 ///        the time taken to go from initial to final states.
