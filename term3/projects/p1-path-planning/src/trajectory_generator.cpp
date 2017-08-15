@@ -32,13 +32,20 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleData& ego
                                                        std::vector<double>& out_x,
                                                        std::vector<double>& out_y)
 {
-    (void) ego_vehicle_data;
-    (void) map;
     (void) previous_x;
     (void) previous_y;
-    (void) out_x;
-    (void) out_y;
 
     out_x.resize(kNrTrajectoryPoints);
     out_y.resize(kNrTrajectoryPoints);
+
+    for (std::size_t i = 0U; i < kNrTrajectoryPoints; ++i)
+    {
+        const double s = ego_vehicle_data.s + static_cast<double>(i + 1U) * 0.3;
+        const double d = 6.0;
+
+        std::pair<double, double> xy = map.frenetToXy(s, d);
+
+        out_x.push_back(xy.first);
+        out_y.push_back(xy.second);
+    }
 }

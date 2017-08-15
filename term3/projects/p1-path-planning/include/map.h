@@ -5,7 +5,7 @@
 
 #include "spline.h"
 
-/// Struct containing the 181 waypoints that represent the map
+/// Struct containing the waypoints that represent the map
 struct MapData
 {
     std::vector<double> x;   ///< X coordinates
@@ -19,13 +19,15 @@ struct MapData
 class Map
 {
 public:
+    /// \brief Constructor
+    /// \param raw_data reference to the raw map data
     Map(const MapData& raw_data);
 
     /// \brief Transforms from (s,d) Frenet coordinates to (x,y) map coordinates
-    /// \param s
-    /// \param d
-    /// \return a vector representing the
-    std::pair<double, double> frenetToXy(const double s, const double d);
+    /// \param s the s component of the Frenet coordinate
+    /// \param d the d component of the Frenet coordinate
+    /// \return the (x,y) map coordinates, as a pair
+    std::pair<double, double> frenetToXy(const double s, const double d) const;
 
 private:
     const MapData& raw_data_;
