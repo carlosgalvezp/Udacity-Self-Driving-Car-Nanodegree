@@ -4,10 +4,12 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <utility>
 
 constexpr double pi() { return M_PI; }
 constexpr double deg2rad(const double x) { return x * pi() / 180.0; }
 constexpr double rad2deg(double x) { return x * 180.0 / pi(); }
+constexpr double mph2kmh(double x) { return x * 1.60934; }
 
 std::string hasData(const std::string& s);
 

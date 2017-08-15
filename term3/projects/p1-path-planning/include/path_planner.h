@@ -5,7 +5,7 @@
 
 #include "sensor_fusion_data.h"
 #include "ego_vehicle_data.h"
-#include "map_data.h"
+#include "map.h"
 
 #include "behavior_planner.h"
 #include "trajectory_generator.h"
@@ -16,7 +16,7 @@ public:
     PathPlanner();
     void generateTrajectory(const EgoVehicleData& ego_vehicle_data,
                             const SensorFusionData& sensor_fusion_data,
-                            const MapData& map_data,
+                            const Map& map,
                             const std::vector<double>& previous_x,
                             const std::vector<double>& previous_y,
                             std::vector<double>& out_x,

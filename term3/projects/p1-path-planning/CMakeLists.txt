@@ -11,6 +11,7 @@ include_directories(include
                     3rdparty/spline)
 
 set(sources src/behavior_planner.cpp
+            src/map.cpp
             src/path_planner.cpp
             src/trajectory_generator.cpp
             src/utils.cpp)
@@ -25,7 +26,10 @@ link_directories(/usr/local/Cellar/libuv/1.11.0/lib)
 
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Darwin") 
 
+add_library(spline_lib 3rdparty/spline/spline.cpp)
+
 add_library(path_planner_lib ${sources})
+target_link_libraries(path_planner_lib spline_lib)
 
 add_executable(path_planning src/main.cpp)
 target_link_libraries(path_planning path_planner_lib z ssl uv uWS)

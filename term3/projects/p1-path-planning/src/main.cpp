@@ -12,10 +12,9 @@
 #include "json.hpp"
 #include "sensor_fusion_data.h"
 #include "ego_vehicle_data.h"
-#include "map_data.h"
+#include "map.h"
 #include "path_planner.h"
 #include "utils.h"
-#include "spline.h"
 
 // for convenience
 using json = nlohmann::json;
@@ -27,7 +26,7 @@ int main()
     EgoVehicleData ego_vehicle_data;
 
     // Load up map values for waypoint's x,y,s and d normalized normal vectors
-    MapData map_data;
+    MapData map_raw_data;
 
     // Waypoint map to read from
     std::string map_file_ = "../data/highway_map.csv";
@@ -50,18 +49,16 @@ int main()
         iss >> s;
         iss >> d_x;
         iss >> d_y;
-        map_data.x.push_back(x);
-        map_data.y.push_back(y);
-        map_data.s.push_back(s);
-        map_data.dx.push_back(d_x);
-        map_data.dy.push_back(d_y);
+        map_raw_data.x.push_back(x);
+        map_raw_data.y.push_back(y);
+        map_raw_data.s.push_back(s);
+        map_raw_data.dx.push_back(d_x);
+        map_raw_data.dy.push_back(d_y);
     }
 
-    tk::spline my_spline;
-    my_spline.set_points(map_data.x, map_data.y);
-    (void) my_spline;
+    Map map(map_raw_data);
 
-    h.onMessage([&map_data, &path_planner, &ego_vehicle_data](
+    h.onMessage([&map, &path_planner, &ego_vehicle_data](
                     uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                     uWS::OpCode opCode)
     {
@@ -89,7 +86,7 @@ int main()
                     ego_vehicle_data.s = j[1]["s"];
                     ego_vehicle_data.d = j[1]["d"];
                     ego_vehicle_data.yaw = j[1]["yaw"];
-                    ego_vehicle_data.speed = j[1]["speed"];
+                    ego_vehicle_data.speed = mph2kmh(j[1]["speed"]);
 
                     // Previous path data given to the Planner
                     const auto& previous_path_x = j[1]["previous_path_x"];
@@ -110,7 +107,7 @@ int main()
                     auto t1 = std::chrono::high_resolution_clock::now();
                     path_planner.generateTrajectory(ego_vehicle_data,
                                                     sensor_fusion_data,
-                                                    map_data,
+                                                    map,
                                                     previous_path_x,
                                                     previous_path_y,
                                                     next_x_vals, next_y_vals);
