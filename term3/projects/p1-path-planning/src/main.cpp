@@ -83,7 +83,7 @@ int main()
                     ego_vehicle_data.s = j[1]["s"];
                     ego_vehicle_data.d = j[1]["d"];
                     ego_vehicle_data.yaw = j[1]["yaw"];
-                    ego_vehicle_data.speed = mph2kmh(j[1]["speed"]);
+                    ego_vehicle_data.speed = mph2ms(j[1]["speed"]);
 
                     // Previous path data given to the Planner
                     const auto& previous_path_x = j[1]["previous_path_x"];

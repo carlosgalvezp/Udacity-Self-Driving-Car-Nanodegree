@@ -8,8 +8,8 @@
 #include "egovehiclefrenet.h"
 
 #include "map.h"
-
 #include "behavior_planner.h"
+#include "utils.h"
 
 // The delta time between waypoints, in seconds
 const double kSimulationTimeStep = 0.02;
@@ -31,6 +31,12 @@ const double kReactionTime = 0.2;
 
 // The number of points to keep from the previous path
 const std::size_t kNrPreviousPathPoints = static_cast<std::size_t>(kReactionTime / kSimulationTimeStep);
+
+// Maximum acceleration
+const double kMaxAcceleration = 8.0;  // [m/s^2]
+
+// Road speed limit
+const double kRoadSpeedLimit = mph2ms(45.0);  // [m/s]
 
 class TrajectoryGenerator
 {

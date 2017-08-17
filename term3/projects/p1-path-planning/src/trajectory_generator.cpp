@@ -131,11 +131,33 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
                                                        std::vector<double>& out_x,
                                                        std::vector<double>& out_y)
 {
+    // First, compute the desired velocity at every point of the trajectory
+    const double achievable_velocity = ego_vehicle_data.s_dot + kMaxAcceleration * kTrajectoryDuration;
+    const double target_velocity = std::min(achievable_velocity, kRoadSpeedLimit);
+
+    std::vector<double> s_dot_trajectory(n_new_points);
+    s_dot_trajectory[0U] = std::min(ego_vehicle_data.s_dot + kMaxAcceleration * kSimulationTimeStep, target_velocity);
+    for (std::size_t i = 1U; i < n_new_points; ++i)
+    {
+        s_dot_trajectory[i] = std::min(s_dot_trajectory[i - 1U] + kMaxAcceleration * kSimulationTimeStep, target_velocity);
+    }
+
+    // Create spatial trajectory
     for (std::size_t i = 0U; i < n_new_points; ++i)
     {
         // Compute position in Frenet coordinates
-        const double s = std::fmod(ego_vehicle_data.s + static_cast<double>(i + 1U) * 5.0, kMaxS);
-        const double d = 6.0;
+        double s0;
+        if (previous_s_.empty())
+        {
+            s0 = ego_vehicle_data.s;
+        }
+        else
+        {
+            s0 = previous_s_.back();
+        }
+        const double s = std::fmod(s0 + s_dot_trajectory[i] * kSimulationTimeStep,
+                                   kMaxS);
+        const double d = ego_vehicle_data.d;
 
         // Store it for future reference
         previous_s_.push_back(s);
