@@ -45,7 +45,7 @@ public:
     }
 
 private:
-    const MapData& raw_data_;
+    MapData raw_data_;
 
     tk::spline spline_x_;
     tk::spline spline_y_;

@@ -134,7 +134,7 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
     for (std::size_t i = 0U; i < n_new_points; ++i)
     {
         // Compute position in Frenet coordinates
-        const double s = std::fmod(ego_vehicle_data.s + static_cast<double>(i + 1U) * 2.0, kMaxS);
+        const double s = std::fmod(ego_vehicle_data.s + static_cast<double>(i + 1U) * 5.0, kMaxS);
         const double d = 6.0;
 
         // Store it for future reference

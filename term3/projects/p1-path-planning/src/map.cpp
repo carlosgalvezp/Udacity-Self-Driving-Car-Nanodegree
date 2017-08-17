@@ -3,6 +3,14 @@
 Map::Map(const MapData &raw_data) :
     raw_data_(raw_data)
 {
+    // Push an extra point at s = max_s, to ensure continuity
+    raw_data_.s.push_back(kMaxS);
+    raw_data_.x.push_back(raw_data_.x[0U]);
+    raw_data_.y.push_back(raw_data_.y[0U]);
+    raw_data_.dx.push_back(raw_data_.dx[0U]);
+    raw_data_.dy.push_back(raw_data_.dy[0U]);
+
+    // Compute splines
     spline_x_.set_points(raw_data_.s, raw_data_.x);
     spline_y_.set_points(raw_data_.s, raw_data_.y);
     spline_dx_.set_points(raw_data_.s, raw_data_.dx);
