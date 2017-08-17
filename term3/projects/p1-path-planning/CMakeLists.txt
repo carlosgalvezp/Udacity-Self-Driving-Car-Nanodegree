@@ -4,8 +4,7 @@ cmake_minimum_required (VERSION 3.5)
 
 option(build_tests "Build the tests." OFF)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Werror -pedantic")
-add_definitions("-g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3 -Wall -Wextra -Werror -pedantic")
 
 include_directories(include
                     3rdparty/Eigen-3.3

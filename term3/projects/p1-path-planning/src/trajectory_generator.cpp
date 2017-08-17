@@ -99,7 +99,7 @@ double TrajectoryGenerator::estimateVelocity(const std::deque<double>& trajector
     }
     else
     {
-        output = (trajectory[index] - trajectory[index - 1]) / dt;
+        output = Map::s_diff(trajectory[index], trajectory[index - 1U]) / dt;
     }
     return output;
 }
@@ -118,7 +118,7 @@ double TrajectoryGenerator::estimateAcceleration(const std::deque<double>& traje
     else
     {
         const double v1 = estimateVelocity(trajectory, index, dt);
-        const double v2 = estimateVelocity(trajectory, index - 1, dt);
+        const double v2 = estimateVelocity(trajectory, index - 1U, dt);
 
         output = (v2 - v1) / dt;
     }
@@ -134,7 +134,7 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
     for (std::size_t i = 0U; i < n_new_points; ++i)
     {
         // Compute position in Frenet coordinates
-        const double s = ego_vehicle_data.s + static_cast<double>(i + 1U) * 0.3;
+        const double s = std::fmod(ego_vehicle_data.s + static_cast<double>(i + 1U) * 2.0, kMaxS);
         const double d = 6.0;
 
         // Store it for future reference

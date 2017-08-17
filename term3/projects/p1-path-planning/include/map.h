@@ -2,8 +2,11 @@
 #define MAPDATA_H
 
 #include <vector>
+#include <cmath>
 
 #include "spline.h"
+
+constexpr double kMaxS = 6945.554;  // [m]
 
 /// Struct containing the waypoints that represent the map
 struct MapData
@@ -28,6 +31,18 @@ public:
     /// \param d the d component of the Frenet coordinate
     /// \return the (x,y) map coordinates, as a pair
     std::pair<double, double> frenetToXy(const double s, const double d) const;
+
+    /// \brief Computes the difference between two 's' Frenet coordinates:
+    ///        output = s_a - s_b
+    ///        Taking into account that the circuit is circular and therefore
+    ///        there is a wrapping between the final and initial s coordinate.
+    /// \param s_a first s coordinate
+    /// \param s_b second s coordinate
+    /// \return s_a - s_b, wrapped around the circuit length
+    static constexpr double s_diff(double s_a, double s_b)
+    {
+        return std::fmod(s_a - s_b, kMaxS);
+    }
 
 private:
     const MapData& raw_data_;
