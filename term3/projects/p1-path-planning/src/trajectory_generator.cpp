@@ -54,26 +54,40 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
     }
     else
     {
-        ego_vehicle_frenet = getEgoVehicleFrenetFromPreviousTrajectory(n_points_keep - 1U);
+        ego_vehicle_frenet = getEgoVehicleFrenetFromPreviousTrajectory();
     }
 
     // Generate new trajectory
     const std::size_t n_new_points = kNrTrajectoryPoints - n_points_keep;
+    EgoVehicleFrenet next_state = EgoVehicleFrenet();
+
+    next_state.s_dot = kRoadSpeedLimit;
 
     switch (next_action)
     {
         case CarBehavior::GO_STRAIGHT:
-            generateTrajectoryFollowLane(ego_vehicle_frenet, map, n_new_points, out_x, out_y);
+            next_state.d = ego_vehicle_frenet.d;
+            break;
+        case CarBehavior::CHANGE_LANE_LEFT:
+            next_state.d = ego_vehicle_frenet.d - kLaneWidth;
+            break;
+
+        case CarBehavior::CHANGE_LANE_RIGHT:
+            next_state.d = ego_vehicle_frenet.d + kLaneWidth;
             break;
         default:
             break;
     }
+
+    generateTrajectoryFollowLane(ego_vehicle_frenet, next_state, map, n_new_points, out_x, out_y);
 }
 
 
-EgoVehicleFrenet TrajectoryGenerator::getEgoVehicleFrenetFromPreviousTrajectory(const std::size_t last_index)
+EgoVehicleFrenet TrajectoryGenerator::getEgoVehicleFrenetFromPreviousTrajectory()
 {
     EgoVehicleFrenet output;
+
+    const std::size_t last_index = previous_s_.size() - 1U;
 
     output.s = previous_s_[last_index];
     output.s_dot = estimateVelocity(previous_s_, last_index, kSimulationTimeStep);
@@ -126,59 +140,52 @@ double TrajectoryGenerator::estimateAcceleration(const std::deque<double>& traje
 }
 
 void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& ego_vehicle_data,
+                                                       const EgoVehicleFrenet& target_state,
                                                        const Map& map,
                                                        const std::size_t n_new_points,
                                                        std::vector<double>& out_x,
                                                        std::vector<double>& out_y)
 {
-//    // First, compute the desired velocity at every point of the trajectory
-//    const double achievable_velocity = ego_vehicle_data.s_dot + kMaxAcceleration * kTrajectoryDuration;
-//    const double target_velocity = std::min(achievable_velocity, kRoadSpeedLimit);
-
-//    std::vector<double> s_dot_trajectory(n_new_points);
-//    s_dot_trajectory[0U] = std::min(ego_vehicle_data.s_dot + kMaxAcceleration * kSimulationTimeStep, target_velocity);
-//    for (std::size_t i = 1U; i < n_new_points; ++i)
-//    {
-//        s_dot_trajectory[i] = std::min(s_dot_trajectory[i - 1U] + kMaxAcceleration * kSimulationTimeStep, target_velocity);
-//    }
-
     // Create JMT trajectory
-    std::vector<double> coeffs;
-    double s0;
+    double s0, d0;
     if (previous_s_.empty())
     {
         s0 = ego_vehicle_data.s;
+        d0 = ego_vehicle_data.d;
     }
     else
     {
         s0 = previous_s_.back();
+        d0 = previous_d_.back();
     }
 
-    const double v_target = kRoadSpeedLimit;
+    // s-trajectory
+    std::vector<double> coeffs_s;
+    if (target_state.s == 0.0)
+    {
+        // s-Trajectory based on velocity
+        generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, 0.0,
+                                  target_state.s_dot, 0.0, kTrajectoryDuration, coeffs_s);
+    }
+    else
+    {
+        // s-Trajectory based on position
+        generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, 0.0,
+                                  target_state.s, target_state.s_dot, 0.0, kTrajectoryDuration, coeffs_s);
+    }
 
-    generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, 0.0,
-                              v_target, 0.0, kTrajectoryDuration, coeffs);
-
+    // d-Trajectory - always based on position
+    std::vector<double> coeffs_d;
+    std::cout << target_state.d << std::endl;
+    generateJerkMinTrajectory(d0, ego_vehicle_data.d_dot, 0.0,
+                              target_state.d, 0.0, 0.0, kTrajectoryDuration, coeffs_d);
 
     // Create spatial trajectory
     for (std::size_t i = 0U; i < n_new_points; ++i)
     {
-        const double s = evaluatePolynomial(coeffs, static_cast<double>(i+1U) * kSimulationTimeStep);
-        const double d = 6.0;
-
-//        // Compute position in Frenet coordinates
-//        double s0;
-//        if (previous_s_.empty())
-//        {
-//            s0 = ego_vehicle_data.s;
-//        }
-//        else
-//        {
-//            s0 = previous_s_.back();
-//        }
-//        const double s = std::fmod(s0 + s_dot_trajectory[i] * kSimulationTimeStep,
-//                                   kMaxS);
-//        const double d = ego_vehicle_data.d;
+        const double t = static_cast<double>(i+1U) * kSimulationTimeStep;
+        const double s = evaluatePolynomial(coeffs_s, t);
+        const double d = evaluatePolynomial(coeffs_d, t);
 
         // Store it for future reference
         previous_s_.push_back(s);

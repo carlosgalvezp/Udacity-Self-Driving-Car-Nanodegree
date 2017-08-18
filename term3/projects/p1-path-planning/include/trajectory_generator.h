@@ -50,8 +50,9 @@ public:
                             std::vector<double>& out_x,
                             std::vector<double>& out_y);
 private:
-    EgoVehicleFrenet getEgoVehicleFrenetFromPreviousTrajectory(const std::size_t last_index);
+    EgoVehicleFrenet getEgoVehicleFrenetFromPreviousTrajectory();
     void generateTrajectoryFollowLane(const EgoVehicleFrenet& ego_vehicle_data,
+                                      const EgoVehicleFrenet& target_state,
                                       const Map& map,
                                       const std::size_t n_new_points,
                                       std::vector<double>& out_x,

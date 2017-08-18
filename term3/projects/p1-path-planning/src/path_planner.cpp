@@ -18,7 +18,6 @@ void PathPlanner::generateTrajectory(const EgoVehicleData& ego_vehicle_data,
                                                               sensor_fusion_data);
 
     // Generate trajectory
-    next_action = CarBehavior::GO_STRAIGHT;
     trajectory_generator_.generateTrajectory(next_action,
                                              ego_vehicle_data,
                                              map,
