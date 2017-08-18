@@ -164,8 +164,11 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
     if (target_state.s == 0.0)
     {
         // s-Trajectory based on velocity
+        const double v_max = ego_vehicle_data.s_dot + kMaxAcceleration * kTrajectoryDuration;
+        const double v_target = std::min(v_max, target_state.s_dot);
+
         generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, 0.0,
-                                  target_state.s_dot, 0.0, kTrajectoryDuration, coeffs_s);
+                                  v_target, 0.0, kTrajectoryDuration, coeffs_s);
     }
     else
     {
@@ -176,7 +179,7 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
 
     // d-Trajectory - always based on position
     std::vector<double> coeffs_d;
-    std::cout << target_state.d << std::endl;
+    std::cout << ego_vehicle_data.d << " -> " << target_state.d << std::endl;
     generateJerkMinTrajectory(d0, ego_vehicle_data.d_dot, 0.0,
                               target_state.d, 0.0, 0.0, kTrajectoryDuration, coeffs_d);
 
