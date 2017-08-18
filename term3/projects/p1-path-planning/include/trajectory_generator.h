@@ -33,7 +33,7 @@ const double kReactionTime = 0.2;
 const std::size_t kNrPreviousPathPoints = static_cast<std::size_t>(kReactionTime / kSimulationTimeStep);
 
 // Maximum acceleration
-const double kMaxAcceleration = 8.0;  // [m/s^2]
+const double kMaxAcceleration = 9.5;  // [m/s^2]
 
 // Road speed limit
 const double kRoadSpeedLimit = mph2ms(48.0);  // [m/s]
