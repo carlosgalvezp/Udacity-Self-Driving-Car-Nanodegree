@@ -154,11 +154,10 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
         s0 = previous_s_.back();
     }
 
-    const double v_target = mph2ms(49.5);
-    const double avg_v = 0.5 * (ego_vehicle_data.s_dot + v_target);
+    const double v_target = kRoadSpeedLimit;
 
     generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, 0.0,
-                              s0+avg_v * kTrajectoryDuration, v_target, 0.0, kTrajectoryDuration, coeffs);
+                              v_target, 0.0, kTrajectoryDuration, coeffs);
 
     std::cout << ego_vehicle_data.s_dot << std::endl;
     // Create spatial trajectory
