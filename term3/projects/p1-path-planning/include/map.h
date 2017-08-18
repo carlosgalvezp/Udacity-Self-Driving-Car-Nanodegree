@@ -6,7 +6,11 @@
 
 #include "spline.h"
 
+/// The length of the circuit
 constexpr double kMaxS = 6945.554;  // [m]
+
+/// The lane width
+constexpr double kLaneWidth = 4.0;  // [m]
 
 /// Struct containing the waypoints that represent the map
 struct MapData
@@ -42,6 +46,15 @@ public:
     static constexpr double s_diff(double s_a, double s_b)
     {
         return std::fmod(s_a - s_b, kMaxS);
+    }
+
+    /// \brief Returns the lane number given the 'd' Frenet coordinate
+    /// \param d d Frenet coordinate
+    /// \return an integer representing the ID of the lane
+    ///         it will be in the range [-2, 2]
+    static constexpr int getLaneNumber(double d)
+    {
+        return std::floor(d / kLaneWidth);
     }
 
 private:
