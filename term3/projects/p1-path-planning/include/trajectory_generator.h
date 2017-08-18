@@ -36,7 +36,7 @@ const std::size_t kNrPreviousPathPoints = static_cast<std::size_t>(kReactionTime
 const double kMaxAcceleration = 8.0;  // [m/s^2]
 
 // Road speed limit
-const double kRoadSpeedLimit = mph2ms(49.0);  // [m/s]
+const double kRoadSpeedLimit = mph2ms(48.0);  // [m/s]
 
 class TrajectoryGenerator
 {

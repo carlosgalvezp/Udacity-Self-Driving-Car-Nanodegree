@@ -2,6 +2,8 @@
 #include "map.h"
 #include "utils.h"
 
+#include <iostream>
+
 BehaviorPlanner::BehaviorPlanner()
 {
 }
@@ -33,7 +35,7 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
 
             const int lane_nr = Map::getLaneNumber(d_vehicle);
 
-            if (lane_nr > 0 && lane_nr < static_cast<int>(lane_velocities.size()))
+            if (lane_nr >= 0 && lane_nr < static_cast<int>(lane_velocities.size()))
             {
                 lane_velocities[lane_nr] = std::min(lane_velocities[lane_nr], v_vehicle);
             }
@@ -55,17 +57,22 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
         const double left_lane = ego_lane - 1;
         const double right_lane = ego_lane + 1;
 
-        const double v_left = left_lane > 0 ? lane_velocities[left_lane] : 0.0;
+        const double v_left = left_lane >= 0 ? lane_velocities[left_lane] : 0.0;
         const double v_right = right_lane < lane_velocities.size() ? lane_velocities[right_lane] : 0.0;
 
         if (v_left > v_right)
         {
             output = CarBehavior::CHANGE_LANE_LEFT;
+            std::cout << "CHANGE LEFT!";
         }
         else
         {
             output = CarBehavior::CHANGE_LANE_RIGHT;
+            std::cout << "CHANGE RIGHT!";
         }
+
+        std::cout << " - VL: " << v_left << " VR: " << v_right
+                  << " - Ego lane: " << ego_lane << std::endl;
     }
 
     return output;
