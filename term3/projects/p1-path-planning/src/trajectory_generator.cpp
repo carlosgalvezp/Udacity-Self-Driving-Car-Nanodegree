@@ -66,14 +66,14 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
     switch (next_action)
     {
         case CarBehavior::GO_STRAIGHT:
-            next_state.d = ego_vehicle_frenet.d;
+            next_state.d = (Map::getLaneNumber(ego_vehicle_frenet.d) + 0.5) * kLaneWidth;
             break;
         case CarBehavior::CHANGE_LANE_LEFT:
-            next_state.d = ego_vehicle_frenet.d - kLaneWidth;
+            next_state.d = (Map::getLaneNumber(ego_vehicle_frenet.d) - 0.5) * kLaneWidth;
             break;
 
         case CarBehavior::CHANGE_LANE_RIGHT:
-            next_state.d = ego_vehicle_frenet.d + kLaneWidth;
+            next_state.d = (Map::getLaneNumber(ego_vehicle_frenet.d) + 1.5) * kLaneWidth;
             break;
         default:
             break;
