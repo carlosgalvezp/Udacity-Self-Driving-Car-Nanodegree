@@ -64,7 +64,7 @@ double evaluatePolynomial(const std::vector<double>& coeffs, const double x)
     double result = 0.0;
     for (std::size_t i = 0U; i < coeffs.size(); ++i)
     {
-        result += coeffs[i] * std::pow(x, i);
+        result += coeffs[i] * std::pow(x, static_cast<double>(i));
     }
 
     return result;
