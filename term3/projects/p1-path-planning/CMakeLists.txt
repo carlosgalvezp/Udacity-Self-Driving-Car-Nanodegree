@@ -14,7 +14,8 @@ set(sources src/behavior_planner.cpp
             src/map.cpp
             src/path_planner.cpp
             src/trajectory_generator.cpp
-            src/utils.cpp)
+            src/utils.cpp
+            src/vehicle.cpp)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 

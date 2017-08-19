@@ -6,6 +6,8 @@
 #include <cmath>
 #include <utility>
 
+#include "map.h"
+
 constexpr double pi() { return M_PI; }
 constexpr double deg2rad(const double x) { return x * pi() / 180.0; }
 constexpr double rad2deg(double x) { return x * 180.0 / pi(); }

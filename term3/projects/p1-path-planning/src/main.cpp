@@ -26,33 +26,7 @@ int main()
     EgoVehicleData ego_vehicle_data;
 
     // Load up map values for waypoint's x,y,s and d normalized normal vectors
-    MapData map_raw_data;
-
-    // Waypoint map to read from
-    std::string map_file_ = "../data/highway_map.csv";
-    std::ifstream in_map_(map_file_.c_str(), std::ifstream::in);
-
-    std::string line;
-    while (std::getline(in_map_, line))
-    {
-        std::istringstream iss(line);
-        double x;
-        double y;
-        float s;
-        float d_x;
-        float d_y;
-        iss >> x;
-        iss >> y;
-        iss >> s;
-        iss >> d_x;
-        iss >> d_y;
-        map_raw_data.x.push_back(x);
-        map_raw_data.y.push_back(y);
-        map_raw_data.s.push_back(s);
-        map_raw_data.dx.push_back(d_x);
-        map_raw_data.dy.push_back(d_y);
-    }
-
+    MapData map_raw_data("../data/highway_map.csv");
     Map map(map_raw_data);
 
     h.onMessage([&map, &path_planner, &ego_vehicle_data](

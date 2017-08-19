@@ -1,6 +1,7 @@
 #ifndef MAPDATA_H
 #define MAPDATA_H
 
+#include <string>
 #include <vector>
 #include <cmath>
 
@@ -15,6 +16,8 @@ constexpr double kLaneWidth = 4.0;  // [m]
 /// Struct containing the waypoints that represent the map
 struct MapData
 {
+    MapData(const std::string& map_csv_path);
+
     std::vector<double> x;   ///< X coordinates
     std::vector<double> y;   ///< Y coordinates
     std::vector<double> s;   ///< s Frenet coordinates

@@ -1,5 +1,39 @@
 #include "map.h"
 
+#include <fstream>
+#include <sstream>
+
+MapData::MapData(const std::string& map_csv_path):
+    x(),
+    y(),
+    s(),
+    dx(),
+    dy()
+{
+    std::ifstream in_map_(map_csv_path.c_str(), std::ifstream::in);
+
+    std::string line;
+    while (std::getline(in_map_, line))
+    {
+        std::istringstream iss(line);
+        double x_i;
+        double y_i;
+        float s_i;
+        float d_x_i;
+        float d_y_i;
+        iss >> x_i;
+        iss >> y_i;
+        iss >> s_i;
+        iss >> d_x_i;
+        iss >> d_y_i;
+        x.push_back(x_i);
+        y.push_back(y_i);
+        s.push_back(s_i);
+        dx.push_back(d_x_i);
+        dy.push_back(d_y_i);
+    }
+}
+
 Map::Map(const MapData &raw_data) :
     raw_data_(raw_data)
 {
