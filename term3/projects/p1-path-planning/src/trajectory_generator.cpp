@@ -21,14 +21,19 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
     out_x.clear();
     out_y.clear();
 
-    // Number of points that the simulator consummed in the last iteration
-    const std::size_t n_points_consummed = kNrTrajectoryPoints - previous_x.size();
-    for (std::size_t i = 0U; i < n_points_consummed; ++i)
+    // Remove the points that the simulator consumed in the last iteration
+    // from previous_s_ and previous_d_
+    const std::size_t n_points_consumed = kNrTrajectoryPoints - previous_x.size();
+    for (std::size_t i = 0U; i < n_points_consumed; ++i)
     {
         if (!previous_s_.empty() && !previous_d_.empty())
         {
             previous_s_.pop_front();
             previous_d_.pop_front();
+        }
+        else
+        {
+            break;
         }
     }
 
@@ -131,10 +136,10 @@ double TrajectoryGenerator::estimateAcceleration(const std::deque<double>& traje
     }
     else
     {
-        const double v1 = estimateVelocity(trajectory, index, dt);
+        const double v1 = estimateVelocity(trajectory, index,      dt);
         const double v2 = estimateVelocity(trajectory, index - 1U, dt);
 
-        output = (v2 - v1) / dt;
+        output = (v1 - v2) / dt;
     }
     return output;
 }
@@ -167,8 +172,10 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
         const double v_max = ego_vehicle_data.s_dot + kMaxAcceleration * kTrajectoryDuration;
         const double v_target = std::min(v_max, target_state.s_dot);
 
-        generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, 0.0,
-                                  v_target, 0.0, kTrajectoryDuration, coeffs_s);
+//        generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, 0.0,
+//                                  v_target, 0.0, kTrajectoryDuration, coeffs_s);
+        generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot,
+                                  v_target, kTrajectoryDuration, coeffs_s);
     }
     else
     {
@@ -179,7 +186,6 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
 
     // d-Trajectory - always based on position
     std::vector<double> coeffs_d;
-    std::cout << ego_vehicle_data.d << " -> " << target_state.d << std::endl;
     generateJerkMinTrajectory(d0, ego_vehicle_data.d_dot, 0.0,
                               target_state.d, 0.0, 0.0, kTrajectoryDuration, coeffs_d);
 
@@ -187,8 +193,8 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
     for (std::size_t i = 0U; i < n_new_points; ++i)
     {
         const double t = static_cast<double>(i+1U) * kSimulationTimeStep;
-        const double s = evaluatePolynomial(coeffs_s, t);
-        const double d = evaluatePolynomial(coeffs_d, t);
+        const double s = std::fmod(evaluatePolynomial(coeffs_s, t), kMaxS);
+        const double d =           evaluatePolynomial(coeffs_d, t);
 
         // Store it for future reference
         previous_s_.push_back(s);

@@ -90,6 +90,18 @@ void generateJerkMinTrajectory(const double x0, const double x0_d, const double 
     trajectory_coeffs[4U] = a3a4[1U];
 }
 
+void generateJerkMinTrajectory(const double x0, const double x0_d,
+                               const double xf_d, const double t,
+                               std::vector<double>& trajectory_coeffs)
+{
+    // Define output
+    const std::size_t kNrCoeffs = 3U;  // 2nd-order polynomial
+    trajectory_coeffs.resize(kNrCoeffs);
+
+    trajectory_coeffs[0U] = x0;
+    trajectory_coeffs[1U] = x0_d;
+    trajectory_coeffs[2U] = (xf_d - x0_d) / (2.0 * t);
+}
 
 double evaluatePolynomial(const std::vector<double>& coeffs, const double x)
 {
