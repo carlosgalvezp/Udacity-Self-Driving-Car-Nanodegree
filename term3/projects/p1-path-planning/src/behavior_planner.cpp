@@ -75,6 +75,5 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
                   << " - Ego lane: " << ego_lane << std::endl;
     }
 
-    output = CarBehavior::GO_STRAIGHT;
     return output;
 }

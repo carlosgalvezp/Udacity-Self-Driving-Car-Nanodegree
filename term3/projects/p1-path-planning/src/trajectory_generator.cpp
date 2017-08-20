@@ -189,7 +189,7 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
     // d-Trajectory - always based on position
     std::vector<double> coeffs_d;
     generateJerkMinTrajectory(d0, ego_vehicle_data.d_dot, ego_vehicle_data.d_ddot,
-                              2.0, 0.0, 0.0, t_new_trajectory, coeffs_d);
+                              target_state.d, 0.0, 0.0, t_new_trajectory, coeffs_d);
 
     // Create spatial trajectory
     for (std::size_t i = 0U; i < n_new_points; ++i)
