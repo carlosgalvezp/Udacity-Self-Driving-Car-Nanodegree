@@ -85,7 +85,7 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
 
             if (vehicle_lane == ego_lane)
             {
-                const double gap = Map::s_diff(vehicle.s, ego_vehicle_frenet.s);
+                const double gap = Map::s_min_diff(vehicle.s, ego_vehicle_frenet.s);
 
                 if ((gap > 0) && (gap < 20.0) && (gap < min_gap))
                 {
@@ -126,6 +126,11 @@ EgoVehicleFrenet TrajectoryGenerator::getEgoVehicleFrenetFromPreviousTrajectory(
     output.s_dot = estimateVelocity(previous_s_, last_index, kSimulationTimeStep);
     output.s_ddot = estimateAcceleration(previous_s_, last_index, kSimulationTimeStep);
 
+    if (output.s_dot < 0.0)
+    {
+        std::cerr << "WHAT" << std::endl;
+    }
+
     output.d = previous_d_[last_index];
     output.d_dot = estimateVelocity(previous_d_, last_index, kSimulationTimeStep);
     output.d_ddot = estimateAcceleration(previous_d_, last_index, kSimulationTimeStep);
@@ -146,7 +151,7 @@ double TrajectoryGenerator::estimateVelocity(const std::deque<double>& trajector
     }
     else
     {
-        output = Map::s_diff(trajectory[index], trajectory[index - 1U]) / dt;
+        output = Map::s_min_diff(trajectory[index], trajectory[index - 1U]) / dt;
     }
     return output;
 }

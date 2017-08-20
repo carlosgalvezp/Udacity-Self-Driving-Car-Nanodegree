@@ -39,16 +39,27 @@ public:
     /// \return the (x,y) map coordinates, as a pair
     std::pair<double, double> frenetToXy(const double s, const double d) const;
 
-    /// \brief Computes the difference between two 's' Frenet coordinates:
+    /// \brief Computes the smallest difference between two 's' Frenet coordinates:
     ///        output = s_a - s_b
     ///        Taking into account that the circuit is circular and therefore
     ///        there is a wrapping between the final and initial s coordinate.
     /// \param s_a first s coordinate
     /// \param s_b second s coordinate
     /// \return s_a - s_b, wrapped around the circuit length
-    static constexpr double s_diff(double s_a, double s_b)
+    static double s_min_diff(double s_a, double s_b)
     {
-        return std::fmod(s_a - s_b, kMaxS);
+        double output = s_a - s_b;
+
+        if (output < -0.5 * kMaxS)
+        {
+            output += kMaxS;
+        }
+        else if (output > 0.5 * kMaxS)
+        {
+            output -= kMaxS;
+        }
+
+        return output;
     }
 
     /// \brief Returns the lane number given the 'd' Frenet coordinate

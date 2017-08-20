@@ -22,7 +22,7 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
 
         // Check if lane change complete
         const double d_diff = std::abs(ego_vehicle.d - d_before_lane_change_);
-        if (std::abs(d_diff - 4.0) < 0.01)
+        if (std::abs(d_diff - 4.0) < 0.1)
         {
             doing_lane_change_ = false;
             std::cout << "STOPPED LANE CHANGE" << std::endl;
@@ -94,11 +94,11 @@ double BehaviorPlanner::computeLaneCost(const EgoVehicleData& ego_vehicle,
 
         if (vehicle_lane == lane_number)
         {
-            double gap = Map::s_diff(vehicle.s, ego_vehicle.s);
+            double gap = Map::s_min_diff(vehicle.s, ego_vehicle.s);
 
             if (gap > 0.0)  // In front of us
             {
-                const double gap = Map::s_diff(vehicle.s, ego_vehicle.s);
+                const double gap = Map::s_min_diff(vehicle.s, ego_vehicle.s);
                 if (gap < gap_vehicle_front)
                 {
                     gap_vehicle_front = gap;
