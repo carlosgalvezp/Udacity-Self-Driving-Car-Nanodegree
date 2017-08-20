@@ -12,7 +12,8 @@ enum class CarBehavior
 {
     GO_STRAIGHT,
     CHANGE_LANE_LEFT,
-    CHANGE_LANE_RIGHT
+    CHANGE_LANE_RIGHT,
+    COMPLETE_LANE_CHANGE
 };
 
 class BehaviorPlanner
@@ -30,6 +31,9 @@ private:
     double getClosestVehicle(const EgoVehicleData& ego_vehicle,
                              const SensorFusionData& sensor_fusion,
                              const std::size_t lane_number);
+
+    bool doing_lane_change_;
+    double d_before_lane_change_;
 };
 
 #endif // BEHAVIOR_PLANNER_H

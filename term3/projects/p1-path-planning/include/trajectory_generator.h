@@ -28,7 +28,7 @@ const std::size_t kNrTrajectoryPoints = static_cast<std::size_t>(kTrajectoryDura
 // A large value ensures that the trajectory is smooth.
 // However, making it too large will make it slow to react (for example,
 // when another vehicle breaks)
-const double kReactionTime = 0.2;
+const double kReactionTime = 0.1;
 
 // The number of points to keep from the previous path
 const std::size_t kNrPreviousPathPoints = static_cast<std::size_t>(kReactionTime / kSimulationTimeStep);
@@ -68,6 +68,8 @@ private:
 
     std::deque<double> previous_s_;
     std::deque<double> previous_d_;
+
+    double target_d_for_lane_change_;
 };
 
 #endif // TRAJECTORY_GENERATOR_H

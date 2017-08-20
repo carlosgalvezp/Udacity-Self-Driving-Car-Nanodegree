@@ -5,7 +5,8 @@
 
 TrajectoryGenerator::TrajectoryGenerator():
     previous_s_(),
-    previous_d_()
+    previous_d_(),
+    target_d_for_lane_change_(0.0)
 {
 }
 
@@ -71,6 +72,7 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
 
     if (next_action == CarBehavior::GO_STRAIGHT)
     {
+        std::cout << "ACTION: GO STRAIGHT" << std::endl;
         next_state.d = (Map::getLaneNumber(ego_vehicle_frenet.d) + 0.5) * kLaneWidth;
 
         // Set target velocity to match the one of the vehicle in front
@@ -90,7 +92,7 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
                     min_gap = gap;
                     const double v = std::sqrt(vehicle.vx * vehicle.vx +
                                                vehicle.vy * vehicle.vy);
-                    next_state.s_dot = 0.95 * v;
+                    next_state.s_dot = 0.98 * v;
                 }
             }
         }
@@ -98,10 +100,16 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
     else if (next_action == CarBehavior::CHANGE_LANE_LEFT)
     {
         next_state.d = std::max(2.0, (Map::getLaneNumber(ego_vehicle_frenet.d) - 0.5) * kLaneWidth);
+        target_d_for_lane_change_ = next_state.d;
     }
     else if (next_action == CarBehavior::CHANGE_LANE_RIGHT)
     {
         next_state.d = std::min(10.0, (Map::getLaneNumber(ego_vehicle_frenet.d) + 1.5) * kLaneWidth);
+        target_d_for_lane_change_ = next_state.d;
+    }
+    else if (next_action == CarBehavior::COMPLETE_LANE_CHANGE)
+    {
+        next_state.d = target_d_for_lane_change_;
     }
 
     generateTrajectoryFollowLane(ego_vehicle_frenet, next_state, map, n_new_points, out_x, out_y);
@@ -207,6 +215,7 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
     }
 
     // d-Trajectory - always based on position
+    std::cout << "Target d: " << target_state.d << std::endl;
     std::vector<double> coeffs_d;
     generateJerkMinTrajectory(d0, ego_vehicle_data.d_dot, ego_vehicle_data.d_ddot,
                               target_state.d, 0.0, 0.0, t_new_trajectory, coeffs_d);
