@@ -20,6 +20,7 @@ void PathPlanner::generateTrajectory(const EgoVehicleData& ego_vehicle_data,
     // Generate trajectory
     trajectory_generator_.generateTrajectory(next_action,
                                              ego_vehicle_data,
+                                             sensor_fusion_data,
                                              map,
                                              previous_x,
                                              previous_y,

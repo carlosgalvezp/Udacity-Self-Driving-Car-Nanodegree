@@ -8,6 +8,7 @@
 #include "egovehiclefrenet.h"
 
 #include "map.h"
+#include "sensor_fusion_data.h"
 #include "behavior_planner.h"
 #include "utils.h"
 
@@ -44,6 +45,7 @@ public:
     TrajectoryGenerator();
     void generateTrajectory(const CarBehavior next_action,
                             const EgoVehicleData& ego_vehicle_data,
+                            const SensorFusionData& sensor_fusion,
                             const Map& map,
                             const std::vector<double>& previous_x,
                             const std::vector<double>& previous_y,

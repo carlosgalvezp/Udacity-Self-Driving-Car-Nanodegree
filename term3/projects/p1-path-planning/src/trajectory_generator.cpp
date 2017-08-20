@@ -11,6 +11,7 @@ TrajectoryGenerator::TrajectoryGenerator():
 
 void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
                                              const EgoVehicleData& ego_vehicle_data,
+                                             const SensorFusionData& sensor_fusion,
                                              const Map &map,
                                              const std::vector<double>& previous_x,
                                              const std::vector<double>& previous_y,
@@ -68,20 +69,40 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
 
     next_state.s_dot = kRoadSpeedLimit;
 
-    switch (next_action)
+    if (next_action == CarBehavior::GO_STRAIGHT)
     {
-        case CarBehavior::GO_STRAIGHT:
-            next_state.d = (Map::getLaneNumber(ego_vehicle_frenet.d) + 0.5) * kLaneWidth;
-            break;
-        case CarBehavior::CHANGE_LANE_LEFT:
-            next_state.d = std::max(2.0, (Map::getLaneNumber(ego_vehicle_frenet.d) - 0.5) * kLaneWidth);
-            break;
+        next_state.d = (Map::getLaneNumber(ego_vehicle_frenet.d) + 0.5) * kLaneWidth;
 
-        case CarBehavior::CHANGE_LANE_RIGHT:
-            next_state.d = std::min(10.0, (Map::getLaneNumber(ego_vehicle_frenet.d) + 1.5) * kLaneWidth);
-            break;
-        default:
-            break;
+        // Set target velocity to match the one of the vehicle in front
+        const int ego_lane = Map::getLaneNumber(ego_vehicle_frenet.d);
+
+        double min_gap = std::numeric_limits<double>::max();
+        for (const VehicleData& vehicle : sensor_fusion.vehicles)
+        {
+            const int vehicle_lane = Map::getLaneNumber(vehicle.d);
+
+            if (vehicle_lane == ego_lane)
+            {
+                const double gap = Map::s_diff(vehicle.s, ego_vehicle_frenet.s);
+
+                if ((gap > 0) && (gap < 10.0) && (gap < min_gap))
+                {
+                    min_gap = gap;
+                    const double v = std::sqrt(vehicle.vx * vehicle.vx +
+                                               vehicle.vy * vehicle.vy);
+                    next_state.s_dot = v;
+                    next_state.s = Map::s_diff(vehicle.s, 10.0);
+                }
+            }
+        }
+    }
+    else if (next_action == CarBehavior::CHANGE_LANE_LEFT)
+    {
+        next_state.d = std::max(2.0, (Map::getLaneNumber(ego_vehicle_frenet.d) - 0.5) * kLaneWidth);
+    }
+    else if (next_action == CarBehavior::CHANGE_LANE_RIGHT)
+    {
+        next_state.d = std::min(10.0, (Map::getLaneNumber(ego_vehicle_frenet.d) + 1.5) * kLaneWidth);
     }
 
     generateTrajectoryFollowLane(ego_vehicle_frenet, next_state, map, n_new_points, out_x, out_y);

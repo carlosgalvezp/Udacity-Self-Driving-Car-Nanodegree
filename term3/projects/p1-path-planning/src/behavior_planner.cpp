@@ -48,6 +48,7 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
         output = CarBehavior::GO_STRAIGHT;
     }
 
+    output = CarBehavior::GO_STRAIGHT;
     return output;
 }
 
@@ -95,10 +96,19 @@ double BehaviorPlanner::computeLaneCost(const EgoVehicleData& ego_vehicle,
         }
     }
 
-    const double goodness = 0.2 * (gap_vehicle_front / kSearchDistance) +
-                            0.0 * (gap_vehicle_back / kSearchDistance) +
+    double goodness = 0.2 * (gap_vehicle_front / kSearchDistance) +
                             0.7 * (lane_velocity / mph2ms(60.0)) +
                             0.01 * (ego_lane == lane_number);
+
+    if (ego_lane != lane_number)
+    {
+        if (gap_vehicle_back  < kMinVehicleGap ||
+            gap_vehicle_front < kMinVehicleGap)
+        {
+            // Infinite cost if we try to change lane but there's no gap
+            goodness = std::numeric_limits<double>::lowest();
+        }
+    }
 
     return 1.0 / goodness;
 }
