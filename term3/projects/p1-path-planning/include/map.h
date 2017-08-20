@@ -55,7 +55,7 @@ public:
     /// \param d d Frenet coordinate
     /// \return an integer representing the ID of the lane
     ///         it will be in the range [-2, 2]
-    static constexpr int getLaneNumber(double d)
+    static int getLaneNumber(double d)
     {
         return std::floor(d / kLaneWidth);
     }

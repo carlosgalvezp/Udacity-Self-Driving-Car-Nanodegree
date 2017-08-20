@@ -11,68 +11,94 @@ BehaviorPlanner::BehaviorPlanner()
 CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
                                            const SensorFusionData& sensor_fusion)
 {
-    // Compute velocity for each lane
-    const double road_speed_limit = mph2ms(49.5); // TODO
-    const double safety_distance = 30.0;  // [m]
+    // Get our lane
+    const int ego_lane = Map::getLaneNumber(ego_vehicle.d);
 
-    std::vector<double> lane_velocities(3U, road_speed_limit);
+    // Get available lanes to go
+    std::vector<int> available_lanes;
+    available_lanes.push_back(ego_lane);
+    if (ego_lane - 1 >= 0)          { available_lanes.push_back(ego_lane - 1); }
+    if (ego_lane + 1 < kMaxNrLanes) { available_lanes.push_back(ego_lane + 1); }
+
+    // Choose the one with lowest cost
+    int best_lane = 0;
+    double min_cost = std::numeric_limits<double>::max();
+    for(int lane : available_lanes)
+    {
+        const double cost = computeLaneCost(ego_vehicle, sensor_fusion, lane);
+        if (cost < min_cost)
+        {
+            min_cost = cost;
+            best_lane = lane;
+        }
+    }
+
+    // Output desired behaviour
+    CarBehavior output;
+    if (best_lane == (ego_lane - 1))
+    {
+        output = CarBehavior::CHANGE_LANE_LEFT;
+    }
+    else if (best_lane == (ego_lane + 1))
+    {
+        output = CarBehavior::CHANGE_LANE_RIGHT;
+    }
+    else
+    {
+        output = CarBehavior::GO_STRAIGHT;
+    }
+
+    return output;
+}
+
+double BehaviorPlanner::computeLaneCost(const EgoVehicleData& ego_vehicle,
+                                        const SensorFusionData& sensor_fusion,
+                                        const int lane_number)
+{
+    double gap_vehicle_front = std::numeric_limits<double>::max();
+    double gap_vehicle_back = std::numeric_limits<double>::max();
+    double lane_velocity = mph2ms(60.0);
+
+    const int ego_lane = Map::getLaneNumber(ego_vehicle.d);
 
     for (const VehicleData& vehicle : sensor_fusion.vehicles)
     {
-        const double s_vehicle = vehicle.s;
-        const double d_vehicle = vehicle.d;
+        const int vehicle_lane = Map::getLaneNumber(vehicle.d);
 
-        const double s_ego = ego_vehicle.s;
-
-        // Consider only the ones in our direction and in front of us
-        if (d_vehicle > 0.0                            // in our direction
-            && s_vehicle > s_ego                       // in front of us
-            && (s_vehicle - s_ego) < safety_distance)  // too close
+        if (vehicle_lane == lane_number)
         {
-            // Compute velocity and distance to ego
-            const double v_vehicle = std::sqrt(vehicle.vx * vehicle.vx + vehicle.vy + vehicle.vy);
+            double gap = Map::s_diff(vehicle.s, ego_vehicle.s);
 
-            const int lane_nr = Map::getLaneNumber(d_vehicle);
-
-            if (lane_nr >= 0 && lane_nr < static_cast<int>(lane_velocities.size()))
+            if (gap > 0.0)  // In front of us
             {
-                lane_velocities[lane_nr] = std::min(lane_velocities[lane_nr], v_vehicle);
+                const double gap = Map::s_diff(vehicle.s, ego_vehicle.s);
+                if (gap < kSearchDistance && gap < gap_vehicle_front)
+                {
+                    gap_vehicle_front = gap;
+
+                    const double v = std::sqrt(vehicle.vx * vehicle.vx +
+                                               vehicle.vy * vehicle.vy);
+                    if (v < lane_velocity)
+                    {
+                        lane_velocity = v;
+                    }
+                }
+            }
+            else                            // Behind
+            {
+                gap = -gap;
+                if (gap < kSearchDistance && gap < gap_vehicle_back)
+                {
+                    gap_vehicle_back = gap;
+                }
             }
         }
     }
 
-    // Get current lane
-    const double ego_lane = Map::getLaneNumber(ego_vehicle.d);
+    const double goodness = 0.2 * (gap_vehicle_front / kSearchDistance) +
+                            0.0 * (gap_vehicle_back / kSearchDistance) +
+                            0.7 * (lane_velocity / mph2ms(60.0)) +
+                            0.01 * (ego_lane == lane_number);
 
-    // Decide if it's required to continue straight or change lane
-    CarBehavior output;
-
-    if (std::abs(lane_velocities[ego_lane] - road_speed_limit) < 0.1)
-    {
-        output = CarBehavior::GO_STRAIGHT;
-    }
-    else
-    {
-        const double left_lane = ego_lane - 1;
-        const double right_lane = ego_lane + 1;
-
-        const double v_left = left_lane >= 0 ? lane_velocities[left_lane] : 0.0;
-        const double v_right = right_lane < lane_velocities.size() ? lane_velocities[right_lane] : 0.0;
-
-        if (v_left > v_right)
-        {
-            output = CarBehavior::CHANGE_LANE_LEFT;
-            std::cout << "CHANGE LEFT!";
-        }
-        else
-        {
-            output = CarBehavior::CHANGE_LANE_RIGHT;
-            std::cout << "CHANGE RIGHT!";
-        }
-
-        std::cout << " - VL: " << v_left << " VR: " << v_right
-                  << " - Ego lane: " << ego_lane << std::endl;
-    }
-
-    return output;
+    return 1.0 / goodness;
 }
