@@ -90,7 +90,7 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
                     min_gap = gap;
                     const double v = std::sqrt(vehicle.vx * vehicle.vx +
                                                vehicle.vy * vehicle.vy);
-                    next_state.s_dot = v;
+                    next_state.s_dot = 0.95 * v;
                 }
             }
         }
