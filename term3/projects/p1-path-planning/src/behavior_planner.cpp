@@ -15,7 +15,6 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
     const double road_speed_limit = mph2ms(49.5); // TODO
     const double safety_distance = 30.0;  // [m]
 
-
     std::vector<double> lane_velocities(3U, road_speed_limit);
 
     for (const VehicleData& vehicle : sensor_fusion.vehicles)
