@@ -85,13 +85,12 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
             {
                 const double gap = Map::s_diff(vehicle.s, ego_vehicle_frenet.s);
 
-                if ((gap > 0) && (gap < 10.0) && (gap < min_gap))
+                if ((gap > 0) && (gap < 20.0) && (gap < min_gap))
                 {
                     min_gap = gap;
                     const double v = std::sqrt(vehicle.vx * vehicle.vx +
                                                vehicle.vy * vehicle.vy);
                     next_state.s_dot = v;
-                    next_state.s = Map::s_diff(vehicle.s, 10.0);
                 }
             }
         }
