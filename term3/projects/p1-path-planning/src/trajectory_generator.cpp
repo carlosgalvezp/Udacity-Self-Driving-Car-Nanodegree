@@ -164,30 +164,32 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
         d0 = previous_d_.back();
     }
 
+    const double t_new_trajectory = n_new_points * kSimulationTimeStep;
+
     // s-trajectory
     std::vector<double> coeffs_s;
     if (target_state.s == 0.0)
     {
         // s-Trajectory based on velocity
-        const double v_max = ego_vehicle_data.s_dot + kMaxAcceleration * kTrajectoryDuration;
+        const double v_max = ego_vehicle_data.s_dot + kMaxAcceleration * t_new_trajectory;
         const double v_target = std::min(v_max, target_state.s_dot);
 
 //        generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, 0.0,
 //                                  v_target, 0.0, kTrajectoryDuration, coeffs_s);
         generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot,
-                                  v_target, kTrajectoryDuration, coeffs_s);
+                                  v_target, t_new_trajectory, coeffs_s);
     }
     else
     {
         // s-Trajectory based on position
-        generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, 0.0,
-                                  target_state.s, target_state.s_dot, 0.0, kTrajectoryDuration, coeffs_s);
+        generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, ego_vehicle_data.s_ddot,
+                                  target_state.s, target_state.s_dot, 0.0, t_new_trajectory, coeffs_s);
     }
 
     // d-Trajectory - always based on position
     std::vector<double> coeffs_d;
-    generateJerkMinTrajectory(d0, ego_vehicle_data.d_dot, 0.0,
-                              target_state.d, 0.0, 0.0, kTrajectoryDuration, coeffs_d);
+    generateJerkMinTrajectory(d0, ego_vehicle_data.d_dot, ego_vehicle_data.d_ddot,
+                              2.0, 0.0, 0.0, t_new_trajectory, coeffs_d);
 
     // Create spatial trajectory
     for (std::size_t i = 0U; i < n_new_points; ++i)
