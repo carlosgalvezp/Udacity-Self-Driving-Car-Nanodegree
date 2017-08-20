@@ -26,12 +26,15 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
     for(int lane : available_lanes)
     {
         const double cost = computeLaneCost(ego_vehicle, sensor_fusion, lane);
+        std::cout << cost << ",";
         if (cost < min_cost)
         {
             min_cost = cost;
             best_lane = lane;
         }
     }
+
+    std::cout << std::endl;
 
     // Output desired behaviour
     CarBehavior output;
@@ -48,7 +51,6 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
         output = CarBehavior::GO_STRAIGHT;
     }
 
-    output = CarBehavior::GO_STRAIGHT;
     return output;
 }
 
@@ -56,8 +58,8 @@ double BehaviorPlanner::computeLaneCost(const EgoVehicleData& ego_vehicle,
                                         const SensorFusionData& sensor_fusion,
                                         const int lane_number)
 {
-    double gap_vehicle_front = std::numeric_limits<double>::max();
-    double gap_vehicle_back = std::numeric_limits<double>::max();
+    double gap_vehicle_front = kSearchDistance;
+    double gap_vehicle_back = kSearchDistance;
     double lane_velocity = mph2ms(60.0);
 
     const int ego_lane = Map::getLaneNumber(ego_vehicle.d);
@@ -73,7 +75,7 @@ double BehaviorPlanner::computeLaneCost(const EgoVehicleData& ego_vehicle,
             if (gap > 0.0)  // In front of us
             {
                 const double gap = Map::s_diff(vehicle.s, ego_vehicle.s);
-                if (gap < kSearchDistance && gap < gap_vehicle_front)
+                if (gap < gap_vehicle_front)
                 {
                     gap_vehicle_front = gap;
 
@@ -97,8 +99,8 @@ double BehaviorPlanner::computeLaneCost(const EgoVehicleData& ego_vehicle,
     }
 
     double goodness = 0.2 * (gap_vehicle_front / kSearchDistance) +
-                            0.7 * (lane_velocity / mph2ms(60.0)) +
-                            0.01 * (ego_lane == lane_number);
+                      0.7 * (lane_velocity / mph2ms(60.0)) +
+                      0.1 * (ego_lane == lane_number);
 
     if (ego_lane != lane_number)
     {
@@ -106,7 +108,7 @@ double BehaviorPlanner::computeLaneCost(const EgoVehicleData& ego_vehicle,
             gap_vehicle_front < kMinVehicleGap)
         {
             // Infinite cost if we try to change lane but there's no gap
-            goodness = std::numeric_limits<double>::lowest();
+            goodness = std::numeric_limits<double>::min();
         }
     }
 
