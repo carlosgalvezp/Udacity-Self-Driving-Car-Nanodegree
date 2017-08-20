@@ -16,7 +16,7 @@
 const double kSimulationTimeStep = 0.02;
 
 // The temporal length of the trajectory, in seconds
-const double kTrajectoryDuration = 1.5;
+const double kTrajectoryDuration = 2.0;
 
 // The number of waypoints for the output trajectory
 const std::size_t kNrTrajectoryPoints = static_cast<std::size_t>(kTrajectoryDuration / kSimulationTimeStep);
