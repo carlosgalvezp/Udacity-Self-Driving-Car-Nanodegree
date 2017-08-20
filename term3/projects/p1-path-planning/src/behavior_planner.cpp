@@ -22,7 +22,7 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
 
         // Check if lane change complete
         const double d_diff = std::abs(ego_vehicle.d - d_before_lane_change_);
-        if (std::abs(d_diff - 4.0) < 0.1)
+        if (std::abs(d_diff - 4.0) < 0.01)
         {
             doing_lane_change_ = false;
             std::cout << "STOPPED LANE CHANGE" << std::endl;
@@ -62,16 +62,12 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
             output = CarBehavior::CHANGE_LANE_LEFT;
             doing_lane_change_ = true;
             d_before_lane_change_ = ego_vehicle.d;
-
-            std::cout << "CHANGE_LEFT!" << std::endl;
         }
         else if (best_lane == (ego_lane + 1))
         {
             output = CarBehavior::CHANGE_LANE_RIGHT;
             doing_lane_change_ = true;
             d_before_lane_change_ = ego_vehicle.d;
-
-            std::cout << "CHANGE_RIGHT!" << std::endl;
         }
         else
         {
@@ -132,8 +128,8 @@ double BehaviorPlanner::computeLaneCost(const EgoVehicleData& ego_vehicle,
 
     if (ego_lane != lane_number)
     {
-        if (gap_vehicle_back  < kMinVehicleGap ||
-            gap_vehicle_front < kMinVehicleGap)
+        if (gap_vehicle_back  < kMinVehicleGapBack ||
+            gap_vehicle_front < kMinVehicleGapFront)
         {
             // Infinite cost if we try to change lane but there's no gap
             goodness = std::numeric_limits<double>::min();
