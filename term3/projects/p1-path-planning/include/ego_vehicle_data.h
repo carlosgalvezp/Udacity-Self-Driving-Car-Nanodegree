@@ -1,6 +1,8 @@
 #ifndef EGO_VEHICLE_DATA_H
 #define EGO_VEHICLE_DATA_H
 
+/// Struct containing the raw ego-vehicle data as obtained
+/// from the simulator
 struct EgoVehicleData
 {
     double x;       ///< X position in global coordinates

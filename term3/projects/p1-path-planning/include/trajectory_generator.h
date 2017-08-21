@@ -49,10 +49,22 @@ const double kTargetTrackingMaxGap = 20.0;      // [m]
 /// We slow down if the distance to the next vehicle is smaller than this
 const double kTargetTrackingMinGap = 5.0;       // [m]
 
+/// Low-level class responsible for generating a trajectory, given
+/// the next desired action, and data from the ego-vehicle and its environment
 class TrajectoryGenerator
 {
 public:
     TrajectoryGenerator();
+
+    /// \brief Generates a trajectory given the best action to follow
+    /// \param next_action  action to take
+    /// \param ego_vehicle_data ego-vehicle data
+    /// \param sensor_fusion sensor fusion data
+    /// \param map map data
+    /// \param previous_x previous X points, from the simulator
+    /// \param previous_y previous Y points, from the simulator
+    /// \param out_x output X map coordinates, to send to the simulator
+    /// \param out_y output Y map coordinates, to send to the simulator
     void generateTrajectory(const CarBehavior next_action,
                             const EgoVehicleData& ego_vehicle_data,
                             const SensorFusionData& sensor_fusion,

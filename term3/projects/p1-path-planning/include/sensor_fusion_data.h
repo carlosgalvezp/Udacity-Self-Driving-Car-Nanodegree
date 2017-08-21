@@ -3,6 +3,7 @@
 
 #include <vector>
 
+/// Struct containing the data for one vehicle, not being the ego vehicle
 struct VehicleData
 {
     int id;     ///< ID
@@ -24,6 +25,7 @@ struct VehicleData
     {}
 };
 
+/// Struct containing all the Sensor Fusion data, as a vector of VehicleData
 struct SensorFusionData
 {
 public:
