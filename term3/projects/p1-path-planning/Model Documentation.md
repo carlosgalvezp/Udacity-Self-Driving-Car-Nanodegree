@@ -58,6 +58,9 @@ The main C++ classes that implement the previous modules are:
 
 We will describe these classes in detail in the following sections.
 
+Additionally, the files `src/map.cpp` and `src/utils.cpp` contain
+several utility functions used throughout the project.
+
 Behavior Planning
 -----------------
 
@@ -201,14 +204,81 @@ After some considerations, **we choose to use Frenet coordinates for this projec
 given its simplicity, enough accuracy and **clean and intuitive code** associated to it.
 
 
-Frenet to Cartesian conversion
-------------------------------
+Frenet to Cartesian conversion and Trajectory Smoothing {#trajectory_smoothing}
+-------------------------------------------------------
 
-Trajectory Smoothing {#trajectory_smoothing}
---------------------
+When we first started the project, we realized that the provided `FrenetToXY`
+conversion function was not very accurate, and generated sharp, non smooth
+trajectories that violated the acceleration and jerk limits.
 
+Therefore we decided to create our **own conversion function**, that would,
+in addition, **smooth out the trajectory**.
 
+This function is implemented as part of the `Map` class, in
+`src/map.cpp:58-73`.
 
+- We make intensive use of the `spline.h` utility class, pointed out by Udacity.
+- The `Map` class contains 4 splines:
+  - `spline_x_`: `x` in map coordinates, as a function of `s`.
+  - `spline_y_`: `y` in map coordinates, as a function of `s`.
+  - `spline_dx_`: `dx` in map coordinates, as a function of `s`.
+  - `spline_dy_`: `dy` in map coordinates, as a function of `s`.
+
+- These splines are fitted to the points in the `Map` constructor, after reading
+the raw data from the CSV:
+
+```cpp
+Map::Map(const MapData &raw_data) :
+    raw_data_(raw_data),
+    spline_x_(),
+    spline_y_(),
+    spline_dx_(),
+    spline_dy_()
+{
+    // Push an extra point at s = max_s, to ensure continuity
+    raw_data_.s.push_back(kMaxS);
+    raw_data_.x.push_back(raw_data_.x[0U]);
+    raw_data_.y.push_back(raw_data_.y[0U]);
+    raw_data_.dx.push_back(raw_data_.dx[0U]);
+    raw_data_.dy.push_back(raw_data_.dy[0U]);
+
+    // Compute splines
+    spline_x_.set_points(raw_data_.s, raw_data_.x);
+    spline_y_.set_points(raw_data_.s, raw_data_.y);
+    spline_dx_.set_points(raw_data_.s, raw_data_.dx);
+    spline_dy_.set_points(raw_data_.s, raw_data_.dy);
+}
+```
+
+The `frenetToXy` function is implemented as follows:
+
+```cpp
+std::pair<double, double> Map::frenetToXy(const double s, const double d) const
+{
+    // Compute (x,y) position in the center of the road
+    const double x_center = spline_x_(s);
+    const double y_center = spline_y_(s);
+
+    // Get d vector
+    const double dx = spline_dx_(s);
+    const double dy = spline_dy_(s);
+
+    // Compute final position adding offset in the d direction
+    const double x_out = x_center + d * dx;
+    const double y_out = y_center + d * dy;
+
+    return {x_out, y_out};
+}
+```
+
+1. Get the (x,y) position of the center of the road for a given `s`.
+2. Get the normal vector (dx, dy) for that position.
+3. Compute the final (x,y) by adding the center to a scaled version
+of the normal vector.
+
+As can be seen, it's a very neat way of converting between coordinates,
+and it provides very accurate and smooth results, as seen in the
+demostration video.
 
 Keeping Speed Limit
 -------------------
@@ -401,5 +471,34 @@ We introduce an extra check to ensure the next position doesn't go below 2.0 met
 Then the trajectory generator is in charge of generating a smooth trajectory
 fulfilling that target state.
 
-Final Reflection
-----------------
+Final Reflection and Limitations
+--------------------------------
+
+This project has by far been one of the most challenging, for several reasons:
+
+- Full flexibility when writing code - all approaches are valid as long as they pass
+specifications!
+
+- Spent extra time understanding and reverse-engineering the simulator.
+
+- Hard to reproduce bugs/errors, since every time the simulator starts with a
+random configuration. A good failure logging system would have been benefitial.
+
+- Hard to choose for Frenet or Cartesian coordinates; both have their pros and cons.
+
+### Limitations
+
+The submitted code has some known limitations, which would be addressed given
+more time to complete the project:
+
+- **No prediction is performed**. We currently do not take into account the future
+motion of other vehicles, which can make some trajectories unsafe. Our trajectories
+are safe at the cost of being extra conservative, by including large safety gaps
+before changing lanes.
+
+- **Vehicle can get stuck behind slow traffic**, since the default behavior is
+to follow the vehicle in front until a lane is free. It would be smarter
+to maybe slow down a bit to track a vehicle behind us and change lane.
+
+- **Inaccuracies in Frenet to XY conversion** result in too conservative
+target velocity, below the road speed limit.
