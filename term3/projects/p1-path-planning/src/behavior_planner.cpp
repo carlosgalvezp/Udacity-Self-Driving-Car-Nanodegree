@@ -17,15 +17,14 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
 
     if (doing_lane_change_)
     {
-        std::cout << "DOING LANE CHANGE " << ego_vehicle.d << "," << d_before_lane_change_ << std::endl;
+        std::cout << "COMPLETE_LANE_CHANGE" << std::endl;
         output = CarBehavior::COMPLETE_LANE_CHANGE;
 
         // Check if lane change complete
         const double d_diff = std::abs(ego_vehicle.d - d_before_lane_change_);
-        if (std::abs(d_diff - 4.0) < 0.1)
+        if (std::abs(d_diff - 4.0) < 0.2)
         {
             doing_lane_change_ = false;
-            std::cout << "STOPPED LANE CHANGE" << std::endl;
         }
     }
     else
@@ -42,11 +41,9 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
         // Choose the one with lowest cost
         int best_lane = 0;
         double min_cost = std::numeric_limits<double>::max();
-        std::cout << "[" << ego_lane << "] ";
         for(int lane : available_lanes)
         {
             const double cost = computeLaneCost(ego_vehicle, sensor_fusion, lane);
-            std::cout << cost << ",";
             if (cost < min_cost)
             {
                 min_cost = cost;
@@ -54,23 +51,27 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
             }
         }
 
-        std::cout << std::endl;
-
         // Output desired behaviour
         if (best_lane == (ego_lane - 1))
         {
+            std::cout << "CHANGE LEFT" << std::endl;
+
             output = CarBehavior::CHANGE_LANE_LEFT;
             doing_lane_change_ = true;
             d_before_lane_change_ = ego_vehicle.d;
         }
         else if (best_lane == (ego_lane + 1))
         {
+            std::cout << "CHANGE RIGHT" << std::endl;
+
             output = CarBehavior::CHANGE_LANE_RIGHT;
             doing_lane_change_ = true;
             d_before_lane_change_ = ego_vehicle.d;
         }
         else
         {
+            std::cout << "GO STRAIGHT" << std::endl;
+
             output = CarBehavior::GO_STRAIGHT;
         }
     }
