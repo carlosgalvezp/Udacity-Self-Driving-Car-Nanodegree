@@ -32,6 +32,18 @@ Compilation
 
 1. The code compiles correctly
 ------------------------------
+The code compiles without any errors or warnings on:
+
+- Ubuntu 16.04
+- G++ 5.4.0
+- CMake 3.5.1
+
+By running the following:
+
+    mkdir build
+    cd build
+    cmake ..
+    make
 
 Valid Trajectories
 ==================
