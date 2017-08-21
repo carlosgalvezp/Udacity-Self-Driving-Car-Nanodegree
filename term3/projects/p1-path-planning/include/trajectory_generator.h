@@ -12,32 +12,42 @@
 #include "behavior_planner.h"
 #include "utils.h"
 
-// The delta time between waypoints, in seconds
+/// The delta time between waypoints, in seconds
 const double kSimulationTimeStep = 0.02;
 
-// The temporal length of the trajectory, in seconds
+/// The temporal length of the trajectory, in seconds
 const double kTrajectoryDuration = 2.0;
 
-// The number of waypoints for the output trajectory
+/// The number of waypoints for the output trajectory
 const std::size_t kNrTrajectoryPoints = static_cast<std::size_t>(kTrajectoryDuration / kSimulationTimeStep);
 
-// The reaction time of the vehicle, in seconds.
+/// The reaction time of the vehicle, in seconds.
 // It represents for how much time the vehicle follows the previous planned
 // trajectory, before using a new trajectory based on the Sensor Fusion
 // information.
 // A large value ensures that the trajectory is smooth.
 // However, making it too large will make it slow to react (for example,
-// when another vehicle breaks)
+// when another vehicle brakes)
 const double kReactionTime = 0.1;
 
-// The number of points to keep from the previous path
+/// The number of points to keep from the previous path
 const std::size_t kNrPreviousPathPoints = static_cast<std::size_t>(kReactionTime / kSimulationTimeStep);
 
-// Maximum acceleration
+/// Maximum acceleration
 const double kMaxAcceleration = 9.5;  // [m/s^2]
 
-// Road speed limit
-const std::vector<double> kRoadSpeedLimit = {mph2ms(48.5), mph2ms(47.5), mph2ms(46.0)};  // [m/s]
+/// Target speed for each lane [left, center, right]
+/// Required since Frenet coordinates are not accurate and we end up
+/// getting actual velocities over the speed limit in the simulator.
+/// This has more effect on the right-most lane, thus the smaller
+/// target velocity.
+const std::vector<double> kTargetLaneSpeed = {mph2ms(48.5), mph2ms(47.5), mph2ms(46.0)};  // [m/s]
+
+/// We stop tracking the vehicle in front of us if the gap is larger than this
+const double kTargetTrackingMaxGap = 20.0;      // [m]
+
+/// We slow down if the distance to the next vehicle is smaller than this
+const double kTargetTrackingMinGap = 5.0;       // [m]
 
 class TrajectoryGenerator
 {

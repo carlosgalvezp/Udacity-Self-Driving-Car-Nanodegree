@@ -23,8 +23,8 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
     out_x.clear();
     out_y.clear();
 
-    // Remove the points that the simulator consumed in the last iteration
-    // from previous_s_ and previous_d_
+    // Remove from previous_s_ and previous_d_
+    // the points that the simulator consumed in the last iteration
     const std::size_t n_points_consumed = kNrTrajectoryPoints - previous_x.size();
     for (std::size_t i = 0U; i < n_points_consumed; ++i)
     {
@@ -69,8 +69,10 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
     EgoVehicleFrenet next_state = EgoVehicleFrenet();
     next_state.s_dot = std::numeric_limits<double>::max();
 
+    // Trajectory for going straight. It includes target tracking
     if (next_action == CarBehavior::GO_STRAIGHT)
     {
+        // Stay in same lane
         next_state.d = (Map::getLaneNumber(ego_vehicle_frenet.d) + 0.5) * kLaneWidth;
 
         // Set target velocity to match the one of the vehicle in front
@@ -85,14 +87,16 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
             {
                 const double gap = Map::s_min_diff(vehicle.s, ego_vehicle_frenet.s);
 
-                if ((gap > 0) && (gap < 20.0) && (gap < min_gap))
+                //
+                if ((gap > 0) && (gap < kTargetTrackingMaxGap) && (gap < min_gap))
                 {
                     min_gap = gap;
                     const double v = std::sqrt(vehicle.vx * vehicle.vx +
                                                vehicle.vy * vehicle.vy);
 
-                    if (gap < 5.0)
+                    if (gap < kTargetTrackingMinGap)
                     {
+                        // Slow down a bit if we are too close
                         next_state.s_dot = 0.98 * v;
                     }
                     else
@@ -118,7 +122,9 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
         next_state.d = target_d_for_lane_change_;
     }
 
-    next_state.s_dot = std::min(next_state.s_dot, kRoadSpeedLimit[Map::getLaneNumber(next_state.d)]);
+    // The final target speed is the minimum between the speed limit for the lane
+    // and the previously chosen target speed
+    next_state.s_dot = std::min(next_state.s_dot, kTargetLaneSpeed[Map::getLaneNumber(next_state.d)]);
 
     generateTrajectoryFollowLane(ego_vehicle_frenet, next_state, map, n_new_points, out_x, out_y);
 }
@@ -133,11 +139,6 @@ EgoVehicleFrenet TrajectoryGenerator::getEgoVehicleFrenetFromPreviousTrajectory(
     output.s = previous_s_[last_index];
     output.s_dot = estimateVelocity(previous_s_, last_index, kSimulationTimeStep);
     output.s_ddot = estimateAcceleration(previous_s_, last_index, kSimulationTimeStep);
-
-    if (output.s_dot < 0.0)
-    {
-        std::cerr << "WHAT" << std::endl;
-    }
 
     output.d = previous_d_[last_index];
     output.d_dot = estimateVelocity(previous_d_, last_index, kSimulationTimeStep);
@@ -205,47 +206,39 @@ void TrajectoryGenerator::generateTrajectoryFollowLane(const EgoVehicleFrenet& e
         d0 = previous_d_.back();
     }
 
+    // The time duration of the new trajectory, considering that
+    // we keep a few points from the previous path
     const double t_new_trajectory = n_new_points * kSimulationTimeStep;
 
-    // s-trajectory
+    // s-Trajectory - always based on velocity
     std::vector<double> coeffs_s;
-    if (target_state.s == 0.0)
-    {
-        // s-Trajectory based on velocity
-        const double v_max = ego_vehicle_data.s_dot + kMaxAcceleration * t_new_trajectory;
-        const double v_target = std::min(v_max, target_state.s_dot);
+    const double v_max = ego_vehicle_data.s_dot + kMaxAcceleration * t_new_trajectory;
+    const double v_target = std::min(v_max, target_state.s_dot);
 
-//        generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, 0.0,
-//                                  v_target, 0.0, kTrajectoryDuration, coeffs_s);
-        generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot,
-                                  v_target, t_new_trajectory, coeffs_s);
-    }
-    else
-    {
-        // s-Trajectory based on position
-        generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot, ego_vehicle_data.s_ddot,
-                                  target_state.s, target_state.s_dot, 0.0, t_new_trajectory, coeffs_s);
-    }
+    generateJerkMinTrajectory(s0, ego_vehicle_data.s_dot,
+                              v_target, t_new_trajectory, coeffs_s);
 
     // d-Trajectory - always based on position
     std::vector<double> coeffs_d;
     generateJerkMinTrajectory(d0, ego_vehicle_data.d_dot, ego_vehicle_data.d_ddot,
                               target_state.d, 0.0, 0.0, t_new_trajectory, coeffs_d);
 
-    // Create spatial trajectory
+    // Create final spatial XY trajectory
     for (std::size_t i = 0U; i < n_new_points; ++i)
     {
+        // Get s and d values
         const double t = static_cast<double>(i+1U) * kSimulationTimeStep;
         const double s = std::fmod(evaluatePolynomial(coeffs_s, t), kMaxS);
         const double d =           evaluatePolynomial(coeffs_d, t);
 
-        // Store it for future reference
+        // Store them for future reference
         previous_s_.push_back(s);
         previous_d_.push_back(d);
 
-        // Output
+        // Convert to XY
         std::pair<double, double> xy = map.frenetToXy(s, d);
 
+        // Append to output list
         out_x.push_back(xy.first);
         out_y.push_back(xy.second);
     }

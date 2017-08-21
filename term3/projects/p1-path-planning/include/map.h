@@ -6,12 +6,16 @@
 #include <cmath>
 
 #include "spline.h"
+#include "utils.h"
 
 /// The length of the circuit
-constexpr double kMaxS = 6945.554;  // [m]
+const double kMaxS = 6945.554;  // [m]
 
 /// The lane width
-constexpr double kLaneWidth = 4.0;  // [m]
+const double kLaneWidth = 4.0;  // [m]
+
+/// The speed limit of the road
+const double kRoadSpeedLimit = mph2ms(50.0);  // [m/s]
 
 /// Struct containing the waypoints that represent the map
 struct MapData

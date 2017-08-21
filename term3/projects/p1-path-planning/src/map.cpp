@@ -35,7 +35,11 @@ MapData::MapData(const std::string& map_csv_path):
 }
 
 Map::Map(const MapData &raw_data) :
-    raw_data_(raw_data)
+    raw_data_(raw_data),
+    spline_x_(),
+    spline_y_(),
+    spline_dx_(),
+    spline_dy_()
 {
     // Push an extra point at s = max_s, to ensure continuity
     raw_data_.s.push_back(kMaxS);

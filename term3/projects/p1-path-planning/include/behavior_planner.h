@@ -5,7 +5,7 @@
 #include "ego_vehicle_data.h"
 
 const int kMaxNrLanes = 3;
-const double kSearchDistance = 50.0; // [m] max distance that we search for vehicles ahead
+const double kSearchDistance = 50.0;       // [m] max distance that we search for vehicles ahead
 const double kMinVehicleGapFront = 15.0;   // [m] gap forward that we must keep to other vehicles
 const double kMinVehicleGapBack = 7.5;     // [m] gap forward that we must keep to other vehicles
 

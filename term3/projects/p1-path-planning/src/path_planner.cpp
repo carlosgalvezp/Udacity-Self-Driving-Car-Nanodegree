@@ -1,7 +1,8 @@
 #include "path_planner.h"
 
 PathPlanner::PathPlanner():
-    behavior_planner_()
+    behavior_planner_(),
+    trajectory_generator_()
 {
 }
 

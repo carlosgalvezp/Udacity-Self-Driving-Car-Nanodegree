@@ -98,6 +98,7 @@ void generateJerkMinTrajectory(const double x0, const double x0_d,
     const std::size_t kNrCoeffs = 3U;  // 2nd-order polynomial
     trajectory_coeffs.resize(kNrCoeffs);
 
+    // Set output
     trajectory_coeffs[0U] = x0;
     trajectory_coeffs[1U] = x0_d;
     trajectory_coeffs[2U] = (xf_d - x0_d) / (2.0 * t);
@@ -112,15 +113,4 @@ double evaluatePolynomial(const std::vector<double>& coeffs, const double x)
     }
 
     return result;
-}
-
-std::vector<double> differentiatePolynomial(const std::vector<double> &coeffs)
-{
-    std::vector<double> output(coeffs.size() - 1U);
-    for (std::size_t i = 1U; i < coeffs.size(); ++i)
-    {
-        output[i - 1U] = i * coeffs[i];
-    }
-
-    return output;
 }
