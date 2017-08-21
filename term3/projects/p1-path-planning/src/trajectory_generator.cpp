@@ -97,7 +97,7 @@ void TrajectoryGenerator::generateTrajectory(const CarBehavior next_action,
                     if (gap < kTargetTrackingMinGap)
                     {
                         // Slow down a bit if we are too close
-                        next_state.s_dot = 0.98 * v;
+                        next_state.s_dot = 0.95 * v;
                     }
                     else
                     {

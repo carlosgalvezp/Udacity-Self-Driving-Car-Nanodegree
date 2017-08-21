@@ -7,7 +7,7 @@
 
 BehaviorPlanner::BehaviorPlanner():
     doing_lane_change_(false),
-    d_before_lane_change_(0.0)
+    target_d_(0.0)
 {
 }
 
@@ -23,8 +23,8 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
         output = CarBehavior::COMPLETE_LANE_CHANGE;
 
         // Check if lane change complete
-        const double d_diff = std::abs(ego_vehicle.d - d_before_lane_change_);
-        if (std::abs(d_diff - kLaneWidth) < 0.2)
+        const double d_diff = std::abs(ego_vehicle.d - target_d_);
+        if (d_diff < 0.1)
         {
             doing_lane_change_ = false;
         }
@@ -61,7 +61,7 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
 
             output = CarBehavior::CHANGE_LANE_LEFT;
             doing_lane_change_ = true;
-            d_before_lane_change_ = ego_vehicle.d;
+            target_d_ = (best_lane + 0.5) * kLaneWidth;
         }
         else if (best_lane == (ego_lane + 1))
         {
@@ -69,7 +69,7 @@ CarBehavior BehaviorPlanner::getNextAction(const EgoVehicleData& ego_vehicle,
 
             output = CarBehavior::CHANGE_LANE_RIGHT;
             doing_lane_change_ = true;
-            d_before_lane_change_ = ego_vehicle.d;
+            target_d_ = (best_lane + 0.5) * kLaneWidth;
         }
         else
         {

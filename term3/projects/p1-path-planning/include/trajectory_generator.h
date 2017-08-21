@@ -41,13 +41,13 @@ const double kMaxAcceleration = 9.5;  // [m/s^2]
 /// getting actual velocities over the speed limit in the simulator.
 /// This has more effect on the right-most lane, thus the smaller
 /// target velocity.
-const std::vector<double> kTargetLaneSpeed = {mph2ms(48.5), mph2ms(47.5), mph2ms(46.0)};  // [m/s]
+const std::vector<double> kTargetLaneSpeed = {mph2ms(48.5), mph2ms(47.0), mph2ms(46.0)};  // [m/s]
 
 /// We stop tracking the vehicle in front of us if the gap is larger than this
-const double kTargetTrackingMaxGap = 20.0;      // [m]
+const double kTargetTrackingMaxGap = 30.0;      // [m]
 
 /// We slow down if the distance to the next vehicle is smaller than this
-const double kTargetTrackingMinGap = 5.0;       // [m]
+const double kTargetTrackingMinGap = 10.0;      // [m]
 
 /// Low-level class responsible for generating a trajectory, given
 /// the next desired action, and data from the ego-vehicle and its environment

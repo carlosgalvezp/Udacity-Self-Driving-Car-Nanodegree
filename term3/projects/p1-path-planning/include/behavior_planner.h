@@ -49,7 +49,7 @@ private:
                              const std::size_t lane_number);
 
     bool doing_lane_change_;
-    double d_before_lane_change_;
+    double target_d_;
 };
 
 #endif // BEHAVIOR_PLANNER_H

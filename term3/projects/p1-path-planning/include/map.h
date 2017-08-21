@@ -20,6 +20,8 @@ const double kRoadSpeedLimit = mph2ms(50.0);  // [m/s]
 /// Struct containing the waypoints that represent the map
 struct MapData
 {
+    /// Constructor
+    /// \param Path to the CSV file to read data from
     MapData(const std::string& map_csv_path);
 
     std::vector<double> x;   ///< X coordinates

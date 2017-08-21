@@ -45,12 +45,17 @@ By running the following:
     cmake ..
     make
 
+To run the code, please follow:
+
+    cd build
+    ./path_planning
+
 Valid Trajectories
 ==================
 
 1. The car is able to drive at least 4.32 miles without incident.
 ----------------------------------------------------------------
-
+    
 -> screenshot
 
 2. The car drives according to the speed limit.
