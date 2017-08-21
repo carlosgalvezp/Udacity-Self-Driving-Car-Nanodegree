@@ -8,6 +8,7 @@ Demonstration video
 ===================
 
 Watch [here](path_planning_final.mkv).
+
 ![](res/second_lap.png)
 
 Dockerfile
@@ -68,9 +69,9 @@ This can be observed in the video and in the following picture:
 
 Indeed, the vehicle has traveled 5.18 miles, and one lap is 4.32 miles.
 
-In order to accomplish this, obviously a good trajectory generator is required
+In order to accomplish this, obviously a good path planner is required
 to avoid other cars and stay in lane (explained in detail in the
-[model documentation](Model Documentation.md)).
+[Model Documentation](Model Documentation.md)).
 
 However, two additional aspects are key to accomplish the task of
 going from Lap 1 to Lap 2:
@@ -78,7 +79,7 @@ going from Lap 1 to Lap 2:
 - Wrapping the `s` Frenet coordinate around the maximum `s`. This is performed
 in `src/trajectory_generator.cpp:231`:
 
-    const double s = std::fmod(evaluatePolynomial(coeffs_s, t), kMaxS);
+      const double s = std::fmod(evaluatePolynomial(coeffs_s, t), kMaxS);
 
 note that we take the modulus of the target `s` with respect `kMaxS`.
 
@@ -113,7 +114,7 @@ always be the shortest distance, an can be signed.
 Given that we managed to complete one lap without incidents, we prove that
 the vehicle drives according to the speed limit.
 
-Please refer to XXXX for more details.
+Please refer to the [Model Documentation](Model Documentation.md), section "Keeping the Speed Limit".
 
 3. Max Acceleration and Jerk are not exceeded.
 ----------------------------------------------
@@ -121,7 +122,7 @@ Please refer to XXXX for more details.
 As before, we drive one lap without any issues, meaning that we also fulfill the
 acceleration and jerk requirements.
 
-Please refer to XXXX for more details.
+Please refer to the [Model Documentation](Model Documentation.md), section "Keeping Acceleration and Jerk Limits".
 
 
 4. Car does not have collisions.
@@ -130,7 +131,7 @@ Please refer to XXXX for more details.
 Collision avoidance is also ensured during the test lap, as shown in the picture
 above.
 
-Please refer to XXXX for more details.
+Please refer to the [Model Documentation](Model Documentation.md), section "Collision Avoidance".
 
 
 5. The car stays in its lane, except or the time between changing lanes.
@@ -139,7 +140,7 @@ Please refer to XXXX for more details.
 The simulator also checks that the car stays in lane, so we have accomplished
 that as well.
 
-Please refer to XXXX for more details.
+Please refer to the [Model Documentation](Model Documentation.md), section "Keeping the Vehicle in the Lane".
 
 6. The car is able to change lanes.
 -----------------------------------
@@ -149,7 +150,7 @@ This has been successfully accomplished as shown in the following pictures:
 ![](res/lane_change_1.png)
 ![](res/lane_change_2.png)
 
-Please refer to XXX for more details.
+Please refer to the [Model Documentation](Model Documentation.md), section "Lane Changing".
 
 Reflection
 ==========

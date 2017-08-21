@@ -7,7 +7,7 @@ Introduction
 ------------
 The main goal for this project is to generate a trajectory
 (given in (x,y) Cartesian map coordinates) that is sent to a simulator,
-which will make the vehicle perfectly follow the points (perfect controller)
+which will make the vehicle perfectly follow the points (perfect controller).
 All with the aim of driving around a circuit while staying in lane, avoiding collisions
 and passing slow traffic.
 
@@ -104,7 +104,7 @@ The possible vehicle states are:
 The code implementing `getNextAction` can be found in `src/behavior_planner.cpp:14-83`,
 summarized as follows:
 
-- First, check if we are checking lane. If so, continue in that state
+- First, check if we are changing lane. If so, continue in that state
  until the vehicle is almost in the center of the lane.
 
 - Otherwise, compute the cost for each lane.
@@ -134,21 +134,44 @@ should follow, given the desired action returned from the
 `BehaviorPlanner`. The following steps are taken:
 
 1. Copy the first points of the trajectory sent in the previous timestep
- to the new one, to ensure that the trajectory is smooth. See more [here](#trajectory_smoothing).
+ to the new one, to ensure that the trajectory is smooth:
+
+  ```cpp
+  // Copy part of the previous trajectory to the output
+  for (std::size_t i = 0U; i < n_points_keep; ++i)
+  {
+      out_x.push_back(previous_x[i]);
+      out_y.push_back(previous_y[i]);
+  }
+  ```
 
 2. Generate the future (s, s_dot, s_ddot, d, d_dot, d_ddot) state, stored in
 the `EgoVehicleFrenet` class, depending on the next action:
 
  - If the action is to go straight, then we analyze the other vehicles
  to see if there is any in front of us. If so, we perform target tracking
- (see XXXX) to stay close to it but avoiding collision; otherwise we keep
+ (see Collision Avoidance - Target Tracking section below)
+ to stay close to it but avoiding collision; otherwise we keep
  at the maximum allowed speed. The destination `d` is the same as the current.
 
+ - If the action is to change lane, then we modify the `d` coordinate accordingly:
 
- - If the action is to change lane, then we modify the `d` coordinate accordingly.
+   ```cpp
+    else if (next_action == CarBehavior::CHANGE_LANE_LEFT)
+    {
+        next_state.d = std::max(2.0, (Map::getLaneNumber(ego_vehicle_frenet.d) - 0.5) * kLaneWidth);
+        target_d_for_lane_change_ = next_state.d;
+    }
+    else if (next_action == CarBehavior::CHANGE_LANE_RIGHT)
+    {
+        next_state.d = std::min(10.0, (Map::getLaneNumber(ego_vehicle_frenet.d) + 1.5) * kLaneWidth);
+        target_d_for_lane_change_ = next_state.d;
+    }
+```
 
 3. Generate the trajectory in (s,d) coordinates. For this we use two
- Jerk-Minimizing Trajectory (JMT) generators, as seen in the lectures:
+ Jerk-Minimizing Trajectory (JMT) generators, as seen in the lectures
+(the implementation is omitted since it's the same as in the lectures):
 
 ![](res/polynomial_trajectory.png)
 
@@ -165,7 +188,7 @@ the `EgoVehicleFrenet` class, depending on the next action:
     since the end state is very clear: `(d_lane, s_dot = 0, s_ddot = 0)`.
 
 4. Convert from Frenet (s,d) to Cartesian (x,y) map coordinates to send to the
- simulator. Please see XXXX for more details.
+ simulator. Please see Frenet to Cartesian Conversion below for more details.
 
 
 Coordinate Systems
@@ -204,7 +227,7 @@ After some considerations, **we choose to use Frenet coordinates for this projec
 given its simplicity, enough accuracy and **clean and intuitive code** associated to it.
 
 
-Frenet to Cartesian conversion and Trajectory Smoothing {#trajectory_smoothing}
+Frenet to Cartesian Conversion and Trajectory Smoothing
 -------------------------------------------------------
 
 When we first started the project, we realized that the provided `FrenetToXY`
@@ -280,8 +303,8 @@ As can be seen, it's a very neat way of converting between coordinates,
 and it provides very accurate and smooth results, as seen in the
 demostration video.
 
-Keeping Speed Limit
--------------------
+Keeping the Speed Limit
+-----------------------
 
 In our implementation, we had to be **conservative**, making the vehicle
 drive slightly slower than the speed limit to ensure it is never reached.
@@ -316,7 +339,7 @@ to ensure that's the maximum speed at all times, as seen in
 next_state.s_dot = std::min(next_state.s_dot, kTargetLaneSpeed[Map::getLaneNumber(next_state.d)]);
 ```
 
-Keeping Acceleration and Speed Limits
+Keeping Acceleration and Jerk Limits
 -------------------------------------
 
 - The maximum acceleration is defined in `include/trajectory_generator.h:37`:
@@ -491,14 +514,14 @@ random configuration. A good failure logging system would have been benefitial.
 The submitted code has some known limitations, which would be addressed given
 more time to complete the project:
 
-- **No prediction is performed**. We currently do not take into account the future
+- **No vehicle prediction is performed**. We currently do not take into account the future
 motion of other vehicles, which can make some trajectories unsafe. Our trajectories
 are safe at the cost of being extra conservative, by including large safety gaps
 before changing lanes.
 
-- **Vehicle can get stuck behind slow traffic**, since the default behavior is
-to follow the vehicle in front until a lane is free. It would be smarter
-to maybe slow down a bit to track a vehicle behind us and change lane.
+- **Vehicle can get stuck behind slow traffic until the next lane is free**,
+since the default behavior is to follow the vehicle in front until a lane is free.
+It would be smarter to maybe slow down a bit to track a vehicle behind us and change lane.
 
 - **Inaccuracies in Frenet to XY conversion** result in too conservative
 target velocity, below the road speed limit.
