@@ -92,9 +92,24 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
     """
-    # TODO: Implement function
-    pass
-#tests.test_train_nn(train_nn)
+    # Loop through epocs
+    for i_epoch in range(epochs):
+        # Get batch
+        batch_x_train, batch_y_train = get_batches_fn(batch_size)
+
+        # Create feed dictionary
+        feed_data_train = {input_image: batch_x_train,
+                           correct_label: batch_y_train,
+                           keep_prob: 0.5,
+                           learning_rate: 0.001}
+
+        # Feed it to the network and update the weights
+        sess.run(train_op, feed_dict=feed_data_train)
+
+        # Compute current loss for display purposes
+        print('[Epoch {}] Loss: {}'.format(i_epoch, cross_entropy_loss))
+
+tests.test_train_nn(train_nn)
 
 
 def run():
