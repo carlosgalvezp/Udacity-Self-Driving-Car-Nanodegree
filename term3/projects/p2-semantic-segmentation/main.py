@@ -118,10 +118,10 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
                                learning_rate: 0.001}
 
             # Feed it to the network and update the weights
-            sess.run(train_op, feed_dict=feed_data_train)
+            _, loss_value = sess.run([train_op, cross_entropy_loss], feed_dict=feed_data_train)
 
             # Compute current loss for display purposes
-            print('[Epoch {}] Loss: {}'.format(i_epoch, cross_entropy_loss))
+            print('[Epoch {}] Loss: {}'.format(i_epoch, loss_value))
 
 tests.test_train_nn(train_nn)
 
