@@ -1,10 +1,10 @@
 import os.path
 import tensorflow as tf
+import numpy as np
 import helper
 import warnings
 from distutils.version import LooseVersion
 import project_tests as tests
-
 
 # Check TensorFlow Version
 assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), 'Please use TensorFlow version 1.0 or newer.  You are using {}'.format(tf.__version__)
@@ -35,7 +35,7 @@ def load_vgg(sess, vgg_path):
     vgg_layer3_out_tensor_name = 'layer3_out:0'
     vgg_layer4_out_tensor_name = 'layer4_out:0'
     vgg_layer7_out_tensor_name = 'layer7_out:0'
-    
+
     return tf.get_default_graph().get_tensor_by_name(vgg_input_tensor_name),        \
            tf.get_default_graph().get_tensor_by_name(vgg_keep_prob_tensor_name),    \
            tf.get_default_graph().get_tensor_by_name(vgg_layer3_out_tensor_name),   \
@@ -43,6 +43,12 @@ def load_vgg(sess, vgg_path):
            tf.get_default_graph().get_tensor_by_name(vgg_layer7_out_tensor_name)
 
 tests.test_load_vgg(load_vgg, tf)
+
+def create_placeholders(img_size, num_classes):
+    correct_label = tf.placeholder(tf.float32, shape=[None, img_size[0], img_size[1], num_classes])
+    learning_rate = tf.placeholder(tf.float32)
+
+    return correct_label, learning_rate
 
 def _upsample(tensor_in, num_outputs, scale):
     return tf.layers.conv2d_transpose(tensor_in,
@@ -104,26 +110,26 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     """
     # Loop through epocs
     for i_epoch in range(epochs):
-        # Get batch
-        batch_x_train, batch_y_train = get_batches_fn(batch_size)
+        for batch_x, batch_y in get_batches_fn(batch_size):
+            # Create feed dictionary
+            feed_data_train = {input_image: batch_x,
+                               correct_label: batch_y,
+                               keep_prob: 0.5,
+                               learning_rate: 0.001}
 
-        # Create feed dictionary
-        feed_data_train = {input_image: batch_x_train,
-                           correct_label: batch_y_train,
-                           keep_prob: 0.5,
-                           learning_rate: 0.001}
+            # Feed it to the network and update the weights
+            sess.run(train_op, feed_dict=feed_data_train)
 
-        # Feed it to the network and update the weights
-        sess.run(train_op, feed_dict=feed_data_train)
-
-        # Compute current loss for display purposes
-        print('[Epoch {}] Loss: {}'.format(i_epoch, cross_entropy_loss))
+            # Compute current loss for display purposes
+            print('[Epoch {}] Loss: {}'.format(i_epoch, cross_entropy_loss))
 
 tests.test_train_nn(train_nn)
 
 
 def run():
     num_classes = 2
+    epochs = 10
+    batch_size = 1
     image_shape = (160, 576)
     data_dir = './data'
     runs_dir = './runs'
@@ -137,6 +143,9 @@ def run():
     # You'll need a GPU with at least 10 teraFLOPS to train on.
     #  https://www.cityscapes-dataset.com/
 
+    # Create placeholders
+    correct_label, learning_rate = create_placeholders(image_shape, num_classes)
+
     with tf.Session() as sess:
         # Path to vgg model
         vgg_path = os.path.join(data_dir, 'vgg')
@@ -147,13 +156,21 @@ def run():
         # OPTIONAL: Augment Images for better results
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
-        # TODO: Build NN using load_vgg, layers, and optimize function
-        _, _, vgg_layer3_out, vgg_layer4_out, vgg_layer7_out = load_vgg(sess, vgg_path)
+        # Build NN using load_vgg, layers, and optimize function
+        input_image, keep_prob, vgg_layer3_out, vgg_layer4_out, vgg_layer7_out = load_vgg(sess, vgg_path)
+        output = layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes)
+        logits, train_op, cross_entropy_loss = optimize(output, correct_label, learning_rate, num_classes)
 
-        # TODO: Train NN using the train_nn function
+        # Initialize global variables
+        sess.run(tf.global_variables_initializer())
 
-        # TODO: Save inference data using helper.save_inference_samples
-        #  helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
+        # Train NN using the train_nn function
+        train_nn(sess, epochs, batch_size, get_batches_fn, train_op,
+                 cross_entropy_loss, input_image, correct_label,
+                 keep_prob, learning_rate)
+
+        # Save inference data using helper.save_inference_samples
+        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
 
         # OPTIONAL: Apply the trained model to a video
 
