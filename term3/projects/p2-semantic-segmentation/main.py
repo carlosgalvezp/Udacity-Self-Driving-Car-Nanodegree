@@ -44,6 +44,12 @@ def load_vgg(sess, vgg_path):
 
 tests.test_load_vgg(load_vgg, tf)
 
+def _upsample(tensor_in, num_outputs, scale):
+    return tf.layers.conv2d_transpose(tensor_in,
+                                      filters=num_outputs,
+                                      kernel_size=2,
+                                      strides=scale,
+                                      padding='same')
 
 def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
@@ -55,8 +61,12 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function
-    return None
-#tests.test_layers(layers)
+    # Upsample last layer 32 times to get output
+    output = _upsample(vgg_layer7_out, num_classes, 32)
+
+    return output
+
+tests.test_layers(layers)
 
 
 def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
