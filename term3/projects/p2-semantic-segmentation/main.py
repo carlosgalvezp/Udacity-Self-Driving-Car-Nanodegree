@@ -55,9 +55,17 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
     # Upsample last layer 32 times to get output
     with tf.variable_scope('DecoderVars'):
-        output = tf.layers.conv2d_transpose(vgg_layer7_out,
+        # Add 1x1 convolution
+        conv_1x1 = tf.layers.conv2d(vgg_layer7_out,
+                                    filters=vgg_layer7_out.get_shape()[3],
+                                    kernel_size=1,
+                                    strides=1,
+                                    padding='same')
+
+        # Decoder
+        output = tf.layers.conv2d_transpose(conv_1x1,
                                             filters=num_classes,
-                                            kernel_size=2,
+                                            kernel_size=64,
                                             strides=32,
                                             padding='same')
     return output
@@ -106,7 +114,9 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
 
     # Loop through epocs
     for i_epoch in range(epochs):
+        batch_nr = 1
         for batch_x, batch_y in get_batches_fn(batch_size):
+            batch_nr += 1
             # Create feed dictionary
             feed_data_train = {input_image: batch_x,
                                correct_label: batch_y,
@@ -117,14 +127,14 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             _, loss_value = sess.run([train_op, cross_entropy_loss], feed_dict=feed_data_train)
 
             # Compute current loss for display purposes
-            print('[Epoch {}] Loss: {}'.format(i_epoch, loss_value))
+            print('[Epoch {}][Batch {}] Loss: {}'.format(i_epoch+1, batch_nr, loss_value))
 
 #tests.test_train_nn(train_nn)
 
 
 def run():
     num_classes = 2
-    epochs = 20
+    epochs = 2
     batch_size = 4
     image_shape = (160, 576)
     data_dir = './data'
