@@ -49,6 +49,7 @@ def conv1x1(input_tensor, num_outputs):
                             filters=num_outputs,
                             kernel_size=1,
                             strides=1,
+                            kernel_initializer=tf.truncated_normal_initializer(stddev=0.01),
                             padding='same')
 
 # From
@@ -188,8 +189,8 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             # Create feed dictionary
             feed_data_train = {input_image: batch_x,
                                correct_label: batch_y,
-                               keep_prob: 1.0,
-                               learning_rate: 0.0005}
+                               keep_prob: 0.5,
+                               learning_rate: 0.0001}
 
             # Feed it to the network and update the weights
             _, loss_value = sess.run([train_op, cross_entropy_loss], feed_dict=feed_data_train)
@@ -202,7 +203,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
 
 def run():
     num_classes = 2
-    epochs = 20
+    epochs = 100
     batch_size = 8
     image_shape = (160, 576)
     data_dir = './data'
