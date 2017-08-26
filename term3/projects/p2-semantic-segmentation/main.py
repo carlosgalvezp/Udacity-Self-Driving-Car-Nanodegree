@@ -41,7 +41,21 @@ def load_vgg(sess, vgg_path):
            tf.get_default_graph().get_tensor_by_name(vgg_layer4_out_tensor_name),   \
            tf.get_default_graph().get_tensor_by_name(vgg_layer7_out_tensor_name)
 
-#tests.test_load_vgg(load_vgg, tf)
+tests.test_load_vgg(load_vgg, tf)
+
+def conv1x1(input_tensor, num_outputs):
+    return tf.layers.conv2d(input_tensor,
+                            filters=num_outputs,
+                            kernel_size=1,
+                            strides=1,
+                            padding='same')
+
+def upsample(input_tensor, num_classes, upsample_factor):
+    return tf.layers.conv2d_transpose(input_tensor,
+                                      filters=num_classes,
+                                      kernel_size=upsample_factor * 2,
+                                      strides=upsample_factor,
+                                      padding='same')
 
 
 def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
@@ -55,22 +69,29 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
     # Upsample last layer 32 times to get output
     with tf.variable_scope('DecoderVars'):
-        # Add 1x1 convolution
-        conv_1x1 = tf.layers.conv2d(vgg_layer7_out,
-                                    filters=vgg_layer7_out.get_shape()[3],
-                                    kernel_size=1,
-                                    strides=1,
-                                    padding='same')
+        # Add 1x1 convolution on top of conv7 and upsample
+        conv7_1x1 = conv1x1(vgg_layer7_out, num_classes)
+        conv7_x2 = upsample(conv7_1x1, num_classes, 2)
 
-        # Decoder
-        output = tf.layers.conv2d_transpose(conv_1x1,
-                                            filters=num_classes,
-                                            kernel_size=64,
-                                            strides=32,
-                                            padding='same')
+        # Add 1x1 on top of pool4 to match num_classes
+        pool4_1x1 = conv1x1(vgg_layer4_out, num_classes)
+
+        # Create conv7_x2 + pool4 and upsample
+        conv7x2_plus_pool4 = tf.add(conv7_x2, pool4_1x1)
+        conv7_plus_pool4_x2 = upsample(conv7x2_plus_pool4, num_classes, 2)
+
+        # Add 1x1 on top of pool3 to match num_classes
+        conv3_1x1 = conv1x1(vgg_layer3_out, num_classes)
+
+        # Add
+        conv7x4_plus_pool4x2_plus_pool3 = tf.add(conv3_1x1, conv7_plus_pool4_x2)
+
+        # Final upsampling to get FCN-8
+        output = upsample(conv7x4_plus_pool4x2_plus_pool3, num_classes, 8)
+
     return output
 
-#tests.test_layers(layers)
+tests.test_layers(layers)
 
 
 def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
@@ -91,7 +112,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     train_op = optimizer.minimize(cross_entropy_loss, var_list=decoder_vars)
 
     return logits, train_op, cross_entropy_loss
-#tests.test_optimize(optimize)
+#tests.test_optimize(optimize)  # Interferes with run() function - "No variables to optimize" error
 
 
 def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
@@ -114,7 +135,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
 
     # Loop through epocs
     for i_epoch in range(epochs):
-        batch_nr = 1
+        batch_nr = 0
         for batch_x, batch_y in get_batches_fn(batch_size):
             batch_nr += 1
             # Create feed dictionary
@@ -129,13 +150,13 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             # Compute current loss for display purposes
             print('[Epoch {}][Batch {}] Loss: {}'.format(i_epoch+1, batch_nr, loss_value))
 
-#tests.test_train_nn(train_nn)
+tests.test_train_nn(train_nn)
 
 
 def run():
     num_classes = 2
-    epochs = 2
-    batch_size = 4
+    epochs = 1
+    batch_size = 8
     image_shape = (160, 576)
     data_dir = './data'
     runs_dir = './runs'
