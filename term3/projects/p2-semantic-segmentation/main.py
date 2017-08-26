@@ -4,6 +4,7 @@ import numpy as np
 from math import ceil
 import helper
 import warnings
+import argparse
 from distutils.version import LooseVersion
 import project_tests as tests
 
@@ -147,7 +148,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     Build the TensorFLow loss and optimizer operations.
     :param nn_last_layer: TF Tensor of the last layer in the neural network
     :param correct_label: TF Placeholder for the correct label image
-    :param learning_rate: TF Placeholder for the learning rate
+    :param learning_rate: value for the learning rate
     :param num_classes: Number of classes to classify
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
@@ -164,7 +165,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
 
 
 def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
-             correct_label, keep_prob, learning_rate):
+             correct_label, keep_prob):
     """
     Train neural network and print out the loss during training.
     :param sess: TF Session
@@ -176,7 +177,6 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param input_image: TF Placeholder for input images
     :param correct_label: TF Placeholder for label images
     :param keep_prob: TF Placeholder for dropout keep probability
-    :param learning_rate: TF Placeholder for learning rate
     """
     # Initialize variables
     sess.run(tf.global_variables_initializer())
@@ -189,8 +189,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             # Create feed dictionary
             feed_data_train = {input_image: batch_x,
                                correct_label: batch_y,
-                               keep_prob: 0.5,
-                               learning_rate: 0.0001}
+                               keep_prob: 0.5}
 
             # Feed it to the network and update the weights
             _, loss_value = sess.run([train_op, cross_entropy_loss], feed_dict=feed_data_train)
@@ -200,15 +199,30 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
 
 #tests.test_train_nn(train_nn)
 
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='Runs the Semantic Segmentation Project')
+
+    parser.add_argument('-e', '--epochs',        dest='epochs',        default=100)
+    parser.add_argument('-b', '--batch',         dest='batch_size',    default=8)
+    parser.add_argument('-l', '--learning_rate', dest='learning_rate', default=0.0001)
+
+    return parser.parse_args()
 
 def run():
+    args = parse_arguments()
+
     num_classes = 2
-    epochs = 100
-    batch_size = 8
+    epochs = args.epochs
+    batch_size = args.batch_size
+    learning_rate = args.learning_rate
     image_shape = (160, 576)
+
     data_dir = './data'
-    runs_dir = './runs'
     log_dir = './logs'
+    runs_dir = os.path.join('./runs',
+                            'e{}_b{}_l{}'.format(epochs, batch_size,
+                            str(learning_rate).replace ('.', '_')))
+
     tests.test_for_kitti_dataset(data_dir)
 
     # Download pretrained vgg model
@@ -220,7 +234,6 @@ def run():
 
     # Create placeholders
     correct_label = tf.placeholder(tf.float32, shape=[None, image_shape[0], image_shape[1], num_classes])
-    learning_rate = tf.placeholder(tf.float32)
 
     with tf.Session() as sess:
         # Path to vgg model
@@ -239,8 +252,7 @@ def run():
 
         # Train NN using the train_nn function
         train_nn(sess, epochs, batch_size, get_batches_fn, train_op,
-                 cross_entropy_loss, input_image, correct_label,
-                 keep_prob, learning_rate)
+                 cross_entropy_loss, input_image, correct_label, keep_prob)
 
         # Save inference data using helper.save_inference_samples
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
