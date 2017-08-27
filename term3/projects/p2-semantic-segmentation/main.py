@@ -48,30 +48,30 @@ def load_vgg(sess, vgg_path):
 
 # From
 # https://github.com/MarvinTeichmann/tensorflow-fcn/blob/master/fcn8_vgg.py#L284
-def get_bilinear_filter(f_shape):
-    width = f_shape[0]
-    heigh = f_shape[0]
-    f = ceil(width/2.0)
-    c = (2 * f - 1 - f % 2) / (2.0 * f)
-    bilinear = np.zeros([f_shape[0], f_shape[1]])
-    for x in range(width):
-        for y in range(heigh):
-            value = (1 - abs(x / f - c)) * (1 - abs(y / f - c))
-            bilinear[x, y] = value
-    weights = np.zeros(f_shape)
-    for i in range(f_shape[2]):
-        weights[:, :, i, i] = bilinear
+#def get_bilinear_filter(f_shape):
+#    width = f_shape[0]
+#    heigh = f_shape[0]
+#    f = ceil(width/2.0)
+#    c = (2 * f - 1 - f % 2) / (2.0 * f)
+#    bilinear = np.zeros([f_shape[0], f_shape[1]])
+#    for x in range(width):
+#        for y in range(heigh):
+#            value = (1 - abs(x / f - c)) * (1 - abs(y / f - c))
+#            bilinear[x, y] = value
+#    weights = np.zeros(f_shape)
+#    for i in range(f_shape[2]):
+#        weights[:, :, i, i] = bilinear
 
-    init = tf.constant_initializer(value=weights,
-                                   dtype=tf.float32)
+#    init = tf.constant_initializer(value=weights,
+#                                   dtype=tf.float32)
 
-    var_name = 'up_filter_{}'.format(get_bilinear_filter.count)
-    get_bilinear_filter.count += 1
+#    var_name = 'up_filter_{}'.format(get_bilinear_filter.count)
+#    get_bilinear_filter.count += 1
 
-    var = tf.get_variable(name=var_name, initializer=init,
-                          shape=weights.shape)
-    return var
-get_bilinear_filter.count=0
+#    var = tf.get_variable(name=var_name, initializer=init,
+#                          shape=weights.shape)
+#    return var
+#get_bilinear_filter.count=0
 
 #def upsample(input_tensor, num_classes, upsample_factor):
 #    # Get input shape
@@ -139,7 +139,6 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :param num_classes: Number of classes to classify
     :return: The Tensor for the last layer of output
     """
-    # Upsample last layer 32 times to get output
     with tf.variable_scope('DecoderVars'):
         # Add 1x1 convolution to layer7
         conv7_1x1_4096 = conv1x1(vgg_layer7_out, num_classes, name='conv1x1_1')
@@ -189,7 +188,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     # Add loss to summary
     tf.summary.scalar('cross-entropy loss', cross_entropy_loss)
 
-    # Optimize only the decode weights
+    # Optimize only the decoder weights
     decoder_vars = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='DecoderVars')
     train_op = optimizer.minimize(cross_entropy_loss, var_list=decoder_vars)
 
