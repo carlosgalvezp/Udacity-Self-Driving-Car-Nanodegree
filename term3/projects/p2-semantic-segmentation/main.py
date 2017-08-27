@@ -102,7 +102,7 @@ get_bilinear_filter.count=0
 def upsample(input_tensor, num_classes, upsample_factor, name):
     return tf.layers.conv2d_transpose(input_tensor,
                                       filters=num_classes,
-                                      kernel_size=2*upsample_factor,
+                                      kernel_size=2*upsample_factor-1,
                                       strides=upsample_factor,
                                       padding='same',
                                       name=name,
@@ -115,7 +115,20 @@ def conv1x1(input_tensor, num_outputs, name):
                             strides=1,
                             padding='same',
                             name=name,
+                            activation=tf.nn.relu,
                             kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
+
+def con2d_keep_size(input_tensor, kernel_size, name):
+    """ Performs conv2d preserving the input size """
+    return tf.layers.conv2d(input_tensor,
+                            filters=input_tensor.get_shape()[-1],
+                            kernel_size=kernel_size,
+                            strides=1,
+                            padding='same',
+                            name=name,
+                            activation=tf.nn.relu,
+                            kernel_initializer=tf.truncated_normal_initializer(stddev=0.01))
+
 
 def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
@@ -128,25 +141,32 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
     # Upsample last layer 32 times to get output
     with tf.variable_scope('DecoderVars'):
-        # Add 1x1 convolution on top of conv7 and upsample
-        conv7_1x1 = conv1x1(vgg_layer7_out, num_classes, name='conv1x1_1')
-        conv7_x2 = upsample(conv7_1x1, num_classes, 2, 'upsample_1')
+        # Add 1x1 convolution to layer7
+        conv7_1x1_4096 = conv1x1(vgg_layer7_out, num_classes, name='conv1x1_1')
 
-        # Add 1x1 on top of pool4 to match num_classes
-        pool4_1x1 = conv1x1(vgg_layer4_out, num_classes, 'conv1x1_2')
+        # Upsample (x2) and include a convolution
+        conv7_1x1_512 = upsample(conv7_1x1_4096, 512, 2, 'upsample_1')
+        conv7_1x1_512_conv = con2d_keep_size(conv7_1x1_512, 5, 'conv2d_up_1')
 
-        # Create conv7_x2 + pool4 and upsample
-        conv7x2_plus_pool4 = tf.add(conv7_x2, pool4_1x1)
-        conv7_plus_pool4_x2 = upsample(conv7x2_plus_pool4, num_classes, 2, 'upsample_2')
+        # Add layer 4 to that
+        skip1 = tf.add(conv7_1x1_512_conv, vgg_layer4_out)
 
-        # Add 1x1 on top of pool3 to match num_classes
-        conv3_1x1 = conv1x1(vgg_layer3_out, num_classes, 'conv1x1_3')
+        # Upsample (x2) and include a convolution
+        skip1_256 = upsample(skip1, 256, 2, 'upsample_2')
+        skip1_256_conv = con2d_keep_size(skip1_256, 5, 'conv2d_up_2')
 
-        # Add
-        conv7x4_plus_pool4x2_plus_pool3 = tf.add(conv3_1x1, conv7_plus_pool4_x2)
+        # Add layer 3 to that
+        skip2 = tf.add(skip1_256_conv, vgg_layer3_out)
 
-        # Final upsampling to get FCN-8
-        output = upsample(conv7x4_plus_pool4x2_plus_pool3, num_classes, 8, 'upsample_3')
+        # Upsample x8 in 3 steps to reach final output
+        skip2_128 = upsample(skip2, 128, 2, 'upsample_3')
+        skip2_128_conv = con2d_keep_size(skip2_128, 5, 'conv2d_up_3')
+
+        skip2_64 = upsample(skip2_128_conv, 64, 2, 'upsample_4')
+        skip2_64_conv = con2d_keep_size(skip2_64, 5, 'conv2d_up_4')
+
+        output = upsample(skip2_64_conv, num_classes, 2, 'upsample_5')
+        output = con2d_keep_size(output, 5, 'conv2d_up_5')
 
     return output
 
@@ -177,8 +197,8 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
 #tests.test_optimize(optimize)  # Interferes with run() function - "No variables to optimize" error
 
 
-def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
-             correct_label, keep_prob):
+def train_nn(sess, epochs, batch_size, get_batches_fn, train_op,
+             cross_entropy_loss, input_image, correct_label, keep_prob):
     """
     Train neural network and print out the loss during training.
     :param sess: TF Session
@@ -242,8 +262,8 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Runs the Semantic Segmentation Project')
 
-    parser.add_argument('-e', '--epochs',        dest='epochs',        type=int,   default=100)
-    parser.add_argument('-b', '--batch',         dest='batch_size',    type=int,   default=8)
+    parser.add_argument('-e', '--epochs',        dest='epochs',        type=int,   default=20)
+    parser.add_argument('-b', '--batch',         dest='batch_size',    type=int,   default=4)
     parser.add_argument('-l', '--learning_rate', dest='learning_rate', type=float, default=0.0001)
 
     return parser.parse_args()
@@ -256,6 +276,9 @@ def run():
     batch_size = args.batch_size
     learning_rate = args.learning_rate
     image_shape = (160, 576)
+
+    print('Training with batch size = {}, learning rate = {} for {} epochs'
+          .format(batch_size, learning_rate, epochs))
 
     data_dir = './data'
 
