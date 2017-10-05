@@ -3,6 +3,10 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Submission video
+
+[![Project video](http://img.youtube.com/vi/YwiBgQzRmFI/0.jpg)](https://youtu.be/YwiBgQzRmFI)
+
 ## Dependencies
 
 * cmake >= 3.5
@@ -10,7 +14,7 @@ Self-Driving Car Engineer Nanodegree Program
 * make >= 4.1
   * Linux: make is installed by default on most Linux distros
   * Mac: [install Xcode command line tools to get make](https://developer.apple.com/xcode/features/)
-  * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)
+  * Windows: [Click here for installation instructions](http://gnuwin32.sourceforge.net/packages/make.htm)  
 * gcc/g++ >= 5.4
   * Linux: gcc / g++ is installed by default on most Linux distros
   * Mac: same deal as make - [install Xcode command line tools]((https://developer.apple.com/xcode/features/)

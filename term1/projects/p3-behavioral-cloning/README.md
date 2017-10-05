@@ -3,6 +3,11 @@ Project 3 - Behavioral Cloning
 
 ![](res/intro.jpg)
 
+Submission video
+----------------
+
+[![Project video](http://img.youtube.com/vi/VYLtsQoezMY/0.jpg)](https://youtu.be/VYLtsQoezMY)
+
 Abstract
 --------
 

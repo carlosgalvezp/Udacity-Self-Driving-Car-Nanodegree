@@ -3,6 +3,10 @@ Self-Driving Car Engineer Nanodegree Program
 
 ---
 
+## Submission video
+
+[![Project video](http://img.youtube.com/vi/shMiSfv0ZvU/0.jpg)](https://youtu.be/shMiSfv0ZvU)
+
 ## Dependencies
 
 * cmake >= 3.5

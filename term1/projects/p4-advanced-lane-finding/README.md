@@ -4,6 +4,10 @@
 
 ---
 
+## Submission video
+
+[![Project video](http://img.youtube.com/vi/Nf094uOQrb8/0.jpg)](https://youtu.be/Nf094uOQrb8)
+
 ## General overview
 
 The aim of this project is to design and implement a pipeline to

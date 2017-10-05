@@ -1,6 +1,10 @@
 # Vehicle Detection and Tracking
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
+## Submission video
+
+[![Project video](http://img.youtube.com/vi/AkL0NugR8uo/0.jpg)](https://youtu.be/AkL0NugR8uo)
+
 ##Overview
 
 The goals / steps of this project are the following:
