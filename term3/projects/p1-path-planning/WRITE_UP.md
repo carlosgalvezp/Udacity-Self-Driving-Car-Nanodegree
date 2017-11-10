@@ -4,12 +4,9 @@ Self-Driving Car Nanodegree - Path Planning Project
 In this document we describe the implementation of the Path Planning project for the course,
 following the questions from the [rubric](https://review.udacity.com/#!/projects/318/rubric).
 
-Demonstration video
-===================
+## Submission video
 
-Watch [here](path_planning_final.mkv).
-
-![](res/second_lap.png)
+[![Project video](http://img.youtube.com/vi/3BfypFPTjyg/0.jpg)](https://youtu.be/3BfypFPTjyg)
 
 Dockerfile
 ==========
